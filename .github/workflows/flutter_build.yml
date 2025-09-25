@@ -1,31 +1,28 @@
-name: Flutter Web Build 🚀
+name: 🚀 Flutter Web CI/CD to Firebase Hosting
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: 🧾 Checkout repository
         uses: actions/checkout@v3
 
-      - name: ⚙ Setup Flutter
+      - name: 🛠 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.13.0'
+          flutter-version: '3.35.4'
 
-      - name: 📦 Get dependencies
+      - name: 📦 Install dependencies
         run: flutter pub get
-        working-directory: frontend
 
-      - name: 🌐 Build Flutter web
+      - name: 🏗 Build Flutter Web
         run: flutter build web --release
-        working-directory: frontend
 
       - name: 🚀 Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -33,6 +30,4 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}"
           channelId: live
-          projectId: spaktok-e7866
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
+          target: spaktok
