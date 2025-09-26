@@ -6,6 +6,11 @@
     "dev": "nodemon index.js",
     "build": "echo Building frontend..."
   },
-  "dependencies": { "express": "^4.18.2" },
-  "devDependencies": { "nodemon": "^3.0.1" }
+  "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
 }
