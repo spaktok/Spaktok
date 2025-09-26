@@ -18,11 +18,13 @@ jobs:
         with:
           flutter-version: '3.13.0' # أو اكتب latest
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: flutter pub get
+        working-directory: ./webapp
 
-      - name: Build Flutter Web
+      - name: 🏗 Build Flutter Web
         run: flutter build web --release
+        working-directory: ./webapp
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
