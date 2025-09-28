@@ -9,9 +9,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    # أهم سطرين: يضمن أن كل أوامر run تعمل من داخل frontend/
+    # نجبر كل أوامر run تكون داخل frontend/
     defaults:
       run:
+        shell: bash
         working-directory: frontend
 
     steps:
@@ -25,12 +26,12 @@ jobs:
         with:
           flutter-version: '3.24.0'
 
-      # خطوة تشخيصية (مؤقتاً) للتأكد أننا داخل frontend
-      - name: Debug PWD
+      # خطوة تشخيصية: تتأكد أن pubspec.yaml موجود فعلاً
+      - name: Debug — verify frontend is project root
         run: |
-          pwd
+          echo "PWD=$(pwd)"
           ls -la
-          [ -f pubspec.yaml ] && echo "pubspec.yaml found" || (echo "pubspec.yaml NOT found" && exit 1)
+          test -f pubspec.yaml || (echo "pubspec.yaml NOT FOUND here!" && exit 1)
 
       - name: Install dependencies
         run: flutter pub get
@@ -45,5 +46,5 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}'
           projectId: spaktok-e7866
           channelId: live
-          # مهم جداً لأن firebase.json موجود أيضاً تحت frontend/
+          # مهم جداً لأن firebase.json موجود داخل frontend/
           entryPoint: ./frontend
