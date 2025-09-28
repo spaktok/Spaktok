@@ -1,4 +1,4 @@
-name: Deploy Flutter Web to Firebase Hosting on merge
+name: Firebase Hosting CI/CD
 
 on:
   push:
@@ -9,27 +9,41 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    # أهم سطرين: يضمن أن كل أوامر run تعمل من داخل frontend/
+    defaults:
+      run:
+        working-directory: frontend
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.13.0' # أو اكتب latest
+          flutter-version: '3.24.0'
 
-      - name: 📦 Install dependencies
+      # خطوة تشخيصية (مؤقتاً) للتأكد أننا داخل frontend
+      - name: Debug PWD
+        run: |
+          pwd
+          ls -la
+          [ -f pubspec.yaml ] && echo "pubspec.yaml found" || (echo "pubspec.yaml NOT found" && exit 1)
+
+      - name: Install dependencies
         run: flutter pub get
-        working-directory: ./webapp
 
-      - name: 🏗 Build Flutter Web
+      - name: Build Flutter web
         run: flutter build web --release
-        working-directory: ./webapp
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}"
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}'
+          projectId: spaktok-e7866
           channelId: live
-          target: spaktok
+          # مهم جداً لأن firebase.json موجود أيضاً تحت frontend/
+          entryPoint: ./frontend
