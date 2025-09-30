@@ -127,7 +127,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     if (videoWidgets.isEmpty) {
       return const Center(
         child: Text(
-          'Waiting for participants to join',
+          AppLocalizations.of(context)!.waitingForParticipants,
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
@@ -154,7 +154,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Spaktok Live Stream')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.liveStreamTitle)),
       body: Container(
         color: Colors.black, // خلفية سوداء للفيديو
         child: Stack(
@@ -176,7 +176,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                         await _engine.muteLocalAudioStream(!muted);
                         setState(() {}); // لتحديث حالة الزر
                       },
-                      child: const Text('كتم/إلغاء كتم الصوت'),
+                      child: Text(AppLocalizations.of(context)!.muteUnmuteAudio),
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
@@ -186,7 +186,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                         await _engine.muteLocalVideoStream(videoOff);
                         setState(() {}); // لتحديث حالة الزر
                       },
-                      child: const Text('إيقاف/تشغيل الفيديو'),
+                      child: Text(AppLocalizations.of(context)!.stopStartVideo),
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
@@ -194,7 +194,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                         await _engine.leaveChannel();
                         Navigator.pop(context);
                       },
-                      child: const Text('مغادرة'),
+                      child: Text(AppLocalizations.of(context)!.leaveStream),
                     ),
                   ],
                 ),
