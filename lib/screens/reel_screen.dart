@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:spaktok/lib/models/reel.dart';
-import 'package:spaktok/lib/services/reel_service.dart';
+import 'package:spaktok/models/reel.dart';
+import 'package:spaktok/services/reel_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 

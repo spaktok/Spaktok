@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:spaktok/lib/models/reel.dart';
+import 'package:spaktok/models/reel.dart';
 import 'dart:io';
 
 class ReelService {
