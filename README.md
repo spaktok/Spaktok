@@ -1,16 +1,101 @@
-# spaktok
+# تطبيق Spaktok للبث المباشر والوسائط الاجتماعية
 
-A new Flutter project.
+هذا المشروع هو تطبيق Flutter يهدف إلى أن يكون منصة بث مباشر ووسائط اجتماعية شاملة، مع ميزات مثل البث المباشر متعدد المشاركين، ونظام الهدايا، وميزات الكاميرا المتقدمة، ونظام الدردشة، والمزيد.
 
-## Getting Started
+## البدء
 
-This project is a starting point for a Flutter application.
+توضح هذه التعليمات كيفية إعداد وتشغيل مشروع Spaktok على جهازك المحلي.
 
-A few resources to get you started if this is your first Flutter project:
+### المتطلبات الأساسية
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+تأكد من تثبيت ما يلي على جهازك:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+*   [Flutter SDK](https://flutter.dev/docs/get-started/install)
+*   [Android Studio](https://developer.android.com/studio) (لتطوير Android) أو [Xcode](https://developer.apple.com/xcode/) (لتطوير iOS)
+*   [Firebase CLI](https://firebase.google.com/docs/cli) (إذا كنت تخطط لاستخدام Firebase)
+*   [معرف تطبيق Agora](https://www.agora.io/en/)
+
+### إعداد المشروع
+
+1.  **استنساخ المستودع (إذا كان متاحًا):**
+    ```bash
+    git clone <رابط_المستودع_الخاص_بك>
+    cd spaktok
+    ```
+    إذا لم يكن لديك مستودع، يمكنك إنشاء مشروع Flutter جديد ونسخ الملفات إليه:
+    ```bash
+    flutter create spaktok
+    cd spaktok
+    # انسخ الملفات المعدلة إلى هذا الدليل
+    ```
+
+2.  **تثبيت التبعيات:**
+    انتقل إلى دليل المشروع وقم بتشغيل الأمر التالي لتثبيت جميع التبعيات:
+    ```bash
+    flutter pub get
+    ```
+
+3.  **تكوين Agora:**
+    افتح ملف `lib/screens/live_stream_screen.dart` واستبدل `"YOUR_AGORA_APP_ID"` و `"YOUR_AGORA_TEMP_TOKEN"` بمعرف تطبيق Agora والرمز المميز المؤقت الخاص بك على التوالي.
+
+    ```dart
+    const appId = "YOUR_AGORA_APP_ID"; // استبدل بمعرف تطبيق Agora الخاص بك
+    const token = "YOUR_AGORA_TEMP_TOKEN"; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
+    ```
+
+4.  **تكوين Firebase (اختياري ولكن موصى به):**
+    إذا كنت تخطط لاستخدام Firebase (للمصادقة، قواعد البيانات، إلخ)، فستحتاج إلى تكوين مشروع Firebase الخاص بك.
+
+    *   أنشئ مشروع Firebase جديدًا على [وحدة تحكم Firebase](https://console.firebase.google.com/).
+    *   أضف تطبيقات Android و iOS إلى مشروع Firebase الخاص بك واتبع التعليمات لتنزيل ملفات التكوين (`google-services.json` لنظام Android و `GoogleService-Info.plist` لنظام iOS).
+    *   ضع `google-services.json` في `android/app/`.
+    *   ضع `GoogleService-Info.plist` في `ios/Runner/`.
+    *   قم بتشغيل الأمر التالي لإنشاء `firebase_options.dart`:
+        ```bash
+        flutter pub add firebase_core
+        flutterfire configure
+        ```
+
+### تشغيل التطبيق
+
+لتشغيل التطبيق على جهاز متصل (محاكي أو جهاز فعلي):
+
+```bash
+flutter run
+```
+
+لتشغيل التطبيق على الويب:
+
+```bash
+flutter run -d web
+```
+
+لتشغيل التطبيق على سطح مكتب Linux (بعد تثبيت المتطلبات الأساسية مثل `cmake`, `ninja-build`, `clang`, `libgtk-3-dev`):
+
+```bash
+flutter run -d linux
+```
+
+## الميزات المنفذة حاليًا
+
+*   **إعداد المشروع الأساسي:** مشروع Flutter جديد مع التبعيات الأساسية.
+*   **التوثيق:** ملفات توثيق مفصلة للهندسة المعمارية، مخطط قاعدة البيانات، خطط التطوير الأمامية والخلفية، وتكامل الدفع.
+*   **البث المباشر (أساسي):** شاشة بث مباشر أساسية باستخدام Agora RTC Engine، مع دعم الكاميرا والميكروفون.
+
+## الخطوات التالية
+
+1.  تطوير نظام الغرف متعددة المشاركين (2-4 مشاركين).
+2.  تطوير نظام الهدايا مع تقسيم الإيرادات (40% للمذيعين).
+3.  تنفيذ ميزات الكاميرا المتقدمة (فلاتر Snapchat/TikTok).
+4.  بناء نظام الدردشة المتقدم (الرسائل المختفية، مكالمات الفيديو/الصوت).
+5.  تكامل نظام الدفع العالمي.
+6.  إضافة ميزات اجتماعية (القصص، Reels، الإعجابات، التعليقات).
+7.  دعم اللغات المتعددة والميزات الخاصة بالمنطقة.
+
+## المساهمة
+
+نرحب بالمساهمات! يرجى قراءة `CONTRIBUTING.md` للحصول على إرشادات حول كيفية المساهمة في هذا المشروع.
+
+## الترخيص
+
+هذا المشروع مرخص بموجب ترخيص MIT. انظر ملف `LICENSE` للحصول على التفاصيل.
