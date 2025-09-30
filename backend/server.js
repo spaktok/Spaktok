@@ -7,7 +7,8 @@ const http = require("http");
 const WebSocket = require("ws");
 const path = require("path");
 const streamingRoutes = require("./routes/streaming");
-const battleGiftingRoutes = require("./routes/battle_gifting"); // استيراد مسارات المعارك والهدايا
+const battleGiftingRoutes = require("./routes/battle_gifting");
+const paymentRoutes = require("./routes/payment"); // إضافة مسارات الدفع
 
 const app = express();
 const server = http.createServer(app);
@@ -51,7 +52,8 @@ redisClient.connect()
 
 // Routes
 app.use("/streaming", streamingRoutes);
-app.use("/battle-gifting", battleGiftingRoutes); // استخدام مسارات المعارك والهدايا
+app.use("/battle-gifting", battleGiftingRoutes);
+app.use("/api/payment", paymentRoutes); // استخدام مسارات الدفع
 
 // ✅ API routes
 app.get("/", (req, res) => {
