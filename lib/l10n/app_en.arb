@@ -16,8 +16,7 @@
   "videoPlayerPlaceholder": "Video Player Placeholder",
   "likesCount": "{count} Likes",
   "commentsCount": "{count} Comments",
-  "uploadReelNotImplemented": "Upload reel functionality not yet implemented."
-,
+  "uploadReelNotImplemented": "Upload reel functionality not yet implemented.",
   "explore": "Explore",
   "noTrendingContent": "No trending content available.",
   "error": "Error"
