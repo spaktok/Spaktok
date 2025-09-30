@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:spaktok/lib/models/story.dart';
-import 'package:spaktok/lib/services/story_service.dart';
+import 'package:spaktok/models/story.dart';
+import 'package:spaktok/services/story_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 

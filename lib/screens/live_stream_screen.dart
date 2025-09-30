@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const appId = "YOUR_AGORA_APP_ID"; // استبدل بمعرف تطبيق Agora الخاص بك
 const token = "YOUR_AGORA_TEMP_TOKEN"; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
@@ -182,8 +183,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         // تبديل إيقاف/تشغيل الفيديو
-                        bool videoOff = await _engine.isLocalVideoStreamEnabled();
-                        await _engine.muteLocalVideoStream(videoOff);
+                        // Toggle video on/off
+                        await _engine.muteLocalVideoStream(!_localUserJoined);
                         setState(() {}); // لتحديث حالة الزر
                       },
                       child: Text(AppLocalizations.of(context)!.stopStartVideo),

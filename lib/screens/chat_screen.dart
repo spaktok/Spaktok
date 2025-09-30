@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spaktok/lib/models/chat_message.dart';
-import 'package:spaktok/lib/services/chat_service.dart';
+import 'package:spaktok/models/chat_message.dart';
+import 'package:spaktok/services/chat_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverId; // معرف المستلم
   final String receiverName; // اسم المستلم
 
-  const ChatScreen({Key? key, required this.receiverId, required this.receiverName}) : super(key: key);
+  const ChatScreen({Key? key, this.receiverId = 'default', this.receiverName = 'Chat'}) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
