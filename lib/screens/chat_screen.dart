@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spaktok/lib/models/chat_message.dart';
 import 'package:spaktok/lib/services/chat_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverId; // معرف المستلم
@@ -57,14 +58,14 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     if (_currentUser == null) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Chat')), 
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.chatWith(widget.receiverName))), 
+        body: const Center(child: CircularProgressIndicator()),
       ); 
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Chat with ${widget.receiverName}')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.chatWith(widget.receiverName))),
       body: Column(
         children: [
           Expanded(
@@ -111,9 +112,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter message',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.enterMessage,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),

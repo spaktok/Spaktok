@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spaktok/lib/models/reel.dart';
 import 'package:spaktok/lib/services/reel_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ReelScreen extends StatefulWidget {
   const ReelScreen({Key? key}) : super(key: key);
@@ -39,14 +40,14 @@ class _ReelScreenState extends State<ReelScreen> {
   @override
   Widget build(BuildContext context) {
     if (_currentUser == null) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Reels')),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.reelsTitle)),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reels')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.reelsTitle)),
       body: StreamBuilder<List<Reel>>(
         stream: _reelService.getAllReels(),
         builder: (context, snapshot) {
@@ -58,7 +59,7 @@ class _ReelScreenState extends State<ReelScreen> {
           }
           final reels = snapshot.data ?? [];
           if (reels.isEmpty) {
-            return const Center(child: Text('No reels available.'));
+            return Center(child: Text(AppLocalizations.of(context)!.noReelsAvailable));
           }
           return ListView.builder(
             itemCount: reels.length,
@@ -77,7 +78,7 @@ class _ReelScreenState extends State<ReelScreen> {
                       Container(
                         height: 200,
                         color: Colors.black12,
-                        child: const Center(child: Text('Video Player Placeholder')),
+                        child: Center(child: Text(AppLocalizations.of(context)!.videoPlayerPlaceholder)),
                       ),
                       Row(
                         children: [
@@ -87,18 +88,18 @@ class _ReelScreenState extends State<ReelScreen> {
                               _reelService.likeReel(reel.id, _currentUser!.uid);
                             },
                           ),
-                          Text('${reel.likesCount} Likes'),
+                          Text(AppLocalizations.of(context)!.likesCount(reel.likesCount)),
                           const SizedBox(width: 20),
                           IconButton(
                             icon: const Icon(Icons.comment),
                             onPressed: () {
                               // TODO: Implement comment functionality
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Comment functionality not yet implemented.')),
+                                SnackBar(content: Text(AppLocalizations.of(context)!.commentsCount(0))), // Placeholder for comment functionality
                               );
                             },
                           ),
-                          Text('${reel.commentsCount} Comments'),
+                          Text(AppLocalizations.of(context)!.commentsCount(reel.commentsCount)),
                         ],
                       ),
                       Text('Timestamp: ${reel.timestamp.toDate()}'),
@@ -114,7 +115,7 @@ class _ReelScreenState extends State<ReelScreen> {
         onPressed: () {
           // TODO: Implement reel upload functionality
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Upload reel functionality not yet implemented.')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.uploadReelNotImplemented)),
           );
         },
         child: const Icon(Icons.video_call),

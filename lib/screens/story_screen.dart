@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spaktok/lib/models/story.dart';
 import 'package:spaktok/lib/services/story_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StoryScreen extends StatefulWidget {
   const StoryScreen({Key? key}) : super(key: key);
@@ -39,14 +40,14 @@ class _StoryScreenState extends State<StoryScreen> {
   @override
   Widget build(BuildContext context) {
     if (_currentUser == null) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Stories')),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.storiesTitle)),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Stories')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.storiesTitle)),
       body: StreamBuilder<List<Story>>(
         stream: _storyService.getAllStories(),
         builder: (context, snapshot) {
@@ -58,7 +59,7 @@ class _StoryScreenState extends State<StoryScreen> {
           }
           final stories = snapshot.data ?? [];
           if (stories.isEmpty) {
-            return const Center(child: Text('No stories available.'));
+            return Center(child: Text(AppLocalizations.of(context)!.noStoriesAvailable));
           }
           return ListView.builder(
             itemCount: stories.length,
@@ -88,7 +89,7 @@ class _StoryScreenState extends State<StoryScreen> {
         onPressed: () {
           // TODO: Implement story upload functionality
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Upload story functionality not yet implemented.')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.uploadStoryNotImplemented)),
           );
         },
         child: const Icon(Icons.add_a_photo),
