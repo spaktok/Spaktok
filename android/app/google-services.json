@@ -1,86 +1,29 @@
 {
-  "project_info": {
-    "project_number": "603021639103",
-    "project_id": "spaktok-e7866",
+  "Projektinfo": {
+    "Projektnummer": "603021639103",
+    "Projekt-ID": "spaktok-e7866",
     "storage_bucket": "spaktok-e7866.firebasestorage.app"
   },
-  "client": [
+  "Kunde": [
     {
-      "client_info": {
-        "mobilesdk_app_id": "1:603021639103:android:cc3a22b895ef5db25ab50a",
-        "android_client_info": {
-          "package_name": "SPAKTOK.COM"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
+      "Client-Info": {
         "mobilesdk_app_id": "1:603021639103:android:6fd86d902d359c475ab50a",
         "android_client_info": {
-          "package_name": "Spaktok.com"
+          "Paketname": "Spaktok.com"
         }
       },
       "oauth_client": [],
-      "api_key": [
+      "API-Schlüssel": [
         {
           "current_key": "AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M"
         }
       ],
-      "services": {
+      "Dienste": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:603021639103:android:7d4c621adc13bedf5ab50a",
-        "android_client_info": {
-          "package_name": "com.spaktok.app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:603021639103:android:3423fed07bbea9825ab50a",
-        "android_client_info": {
-          "package_name": "com.spaktok.platform"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
+          "OAuth-Client für andere Plattformen": []
         }
       }
     }
   ],
-  "configuration_version": "1"
+  "Konfigurationsversion": "1"
 }
