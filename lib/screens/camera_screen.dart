@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:camera/camera.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key}) : super(key: key);
@@ -17,6 +18,10 @@ class _CameraScreenState extends State<CameraScreen> {
   double _contrast = 1.0;
   double _saturation = 1.0;
 
+  List<CameraDescription>? cameras;
+  CameraController? cameraController;
+  bool _isCameraInitialized = false;
+
   final List<String> _filters = [
     'None',
     'Vintage',
@@ -27,6 +32,30 @@ class _CameraScreenState extends State<CameraScreen> {
     'Dramatic',
     'Soft'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  @override
+  void dispose() {
+    cameraController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeCamera() async {
+    cameras = await availableCameras();
+    if (cameras != null && cameras!.isNotEmpty) {
+      cameraController = CameraController(cameras![0], ResolutionPreset.high);
+      await cameraController!.initialize();
+      if (!mounted) return;
+      setState(() {
+        _isCameraInitialized = true;
+      });
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -165,23 +194,31 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
               margin: const EdgeInsets.all(16),
               child: _image == null
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.camera_alt,
-                            size: 80,
-                            color: Colors.grey,
+                  ? (_isCameraInitialized && cameraController != null && cameraController!.value.isInitialized
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: ColorFiltered(
+                            colorFilter: _getColorFilter(),
+                            child: CameraPreview(cameraController!),
                           ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No image selected',
-                            style: TextStyle(color: Colors.grey, fontSize: 18),
+                        )
+                      : const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                size: 80,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'No image or camera preview',
+                                style: TextStyle(color: Colors.grey, fontSize: 18),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    )
+                        ))
                   : ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: ColorFiltered(
@@ -196,7 +233,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     ),
             ),
           ),
-          if (_image != null) ...[
+          if (_image != null || (_isCameraInitialized && cameraController != null && cameraController!.value.isInitialized)) ...[
             Container(
               height: 60,
               child: ListView(
@@ -259,6 +296,19 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   ColorFilter _getColorFilter() {
+    // Apply brightness, contrast, and saturation first
+    List<double> matrix = [
+      _contrast, 0, 0, 0, 0,
+      0, _contrast, 0, 0, 0,
+      0, 0, _contrast, 0, 0,
+      0, 0, 0, _saturation, 0,
+    ];
+
+    // Apply brightness after contrast and saturation
+    matrix[4] = _brightness * 255;
+    matrix[9] = _brightness * 255;
+    matrix[14] = _brightness * 255;
+
     switch (_selectedFilter) {
       case 'Black & White':
         return const ColorFilter.matrix([
@@ -310,12 +360,8 @@ class _CameraScreenState extends State<CameraScreen> {
           0, 0, 0, 1, 0,
         ]);
       default:
-        return ColorFilter.matrix([
-          1 + _brightness, 0, 0, 0, 0,
-          0, 1 + _brightness, 0, 0, 0,
-          0, 0, 1 + _brightness, 0, 0,
-          0, 0, 0, 1, 0,
-        ]);
+        return ColorFilter.matrix(matrix);
     }
   }
 }
+
