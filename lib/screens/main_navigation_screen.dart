@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/screens/live_stream_screen.dart';
 import 'package:spaktok/screens/explore_screen.dart';
-import 'package:spaktok/screens/camera_screen.dart';
+import 'package:spaktok/screens/enhanced_camera_screen.dart';
 import 'package:spaktok/screens/story_screen.dart';
 import 'package:spaktok/screens/reel_screen.dart';
 import 'package:spaktok/screens/chat_screen.dart';
+import 'package:spaktok/screens/profile_screen.dart';
+import 'package:spaktok/screens/settings_screen.dart';
+import 'package:spaktok/screens/notifications_screen.dart';
+import 'package:spaktok/screens/search_screen.dart';
+import 'package:spaktok/screens/gifts_screen.dart';
+import 'package:spaktok/services/auth_service.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({Key? key}) : super(key: key);
@@ -16,25 +22,26 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
+  final AuthService _authService = AuthService();
 
   final List<Widget> _screens = [
     const ExploreScreen(),
-    const ReelScreen(),
-    const CameraScreen(),
-    const StoryScreen(),
-    const LiveStreamScreen(),
+    const SearchScreen(),
+    const EnhancedCameraScreen(),
+    const NotificationsScreen(),
+    const ProfileScreen(),
   ];
 
   final List<BottomNavigationBarItem> _navItems = [
     const BottomNavigationBarItem(
-      icon: Icon(Icons.explore),
-      activeIcon: Icon(Icons.explore),
-      label: 'Explore',
+      icon: Icon(Icons.home_outlined),
+      activeIcon: Icon(Icons.home),
+      label: 'Home',
     ),
     const BottomNavigationBarItem(
-      icon: Icon(Icons.video_library),
-      activeIcon: Icon(Icons.video_library),
-      label: 'Reels',
+      icon: Icon(Icons.search_outlined),
+      activeIcon: Icon(Icons.search),
+      label: 'Search',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.add_circle_outline),
@@ -42,14 +49,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       label: 'Create',
     ),
     const BottomNavigationBarItem(
-      icon: Icon(Icons.auto_stories_outlined),
-      activeIcon: Icon(Icons.auto_stories),
-      label: 'Stories',
+      icon: Icon(Icons.notifications_outlined),
+      activeIcon: Icon(Icons.notifications),
+      label: 'Notifications',
     ),
     const BottomNavigationBarItem(
-      icon: Icon(Icons.live_tv_outlined),
-      activeIcon: Icon(Icons.live_tv),
-      label: 'Live',
+      icon: Icon(Icons.person_outline),
+      activeIcon: Icon(Icons.person),
+      label: 'Profile',
     ),
   ];
 
@@ -86,32 +93,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               Colors.black,
             ],
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          selectedItemColor: Theme.of(context).primaryColor,
-          unselectedItemColor: Colors.grey,
-          elevation: 0,
-          items: _navItems,
+        child: SafeArea(
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            selectedItemColor: Theme.of(context).primaryColor,
+            unselectedItemColor: Colors.grey,
+            elevation: 0,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
+            items: _navItems,
+          ),
         ),
       ),
-      floatingActionButton: _currentIndex == 0 // Show only on Explore screen
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChatScreen(),
-                  ),
-                );
-              },
-              backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(Icons.chat),
-            )
-          : null,
       drawer: _buildDrawer(),
     );
   }
@@ -133,10 +137,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ],
               ),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 30,
                   backgroundColor: Colors.white,
                   child: Icon(
@@ -145,18 +149,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     color: Colors.grey,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
-                  'Spaktok User',
-                  style: TextStyle(
+                  _authService.currentUser?.displayName ?? 'Spaktok User',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  '@spaktok_user',
-                  style: TextStyle(
+                  '@${_authService.currentUser?.email?.split('@')[0] ?? 'user'}',
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                   ),
@@ -169,15 +173,77 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             title: 'Profile',
             onTap: () {
               Navigator.pop(context);
-              // Navigate to profile
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
           ),
+          _buildDrawerItem(
+            icon: Icons.video_library,
+            title: 'Reels',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ReelScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.auto_stories,
+            title: 'Stories',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const StoryScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.live_tv,
+            title: 'Live Streams',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LiveStreamScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.chat,
+            title: 'Messages',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatScreen()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.card_giftcard,
+            title: 'Gifts',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const GiftsScreen()),
+              );
+            },
+          ),
+          const Divider(color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.settings,
             title: 'Settings',
             onTap: () {
               Navigator.pop(context);
-              // Navigate to settings
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
             },
           ),
           _buildDrawerItem(
@@ -218,7 +284,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             title: 'About',
             onTap: () {
               Navigator.pop(context);
-              // Show about dialog
               _showAboutDialog();
             },
           ),
@@ -227,7 +292,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             title: 'Logout',
             onTap: () {
               Navigator.pop(context);
-              // Handle logout
               _showLogoutDialog();
             },
           ),
@@ -257,13 +321,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: const Text(
-            'About Spaktok',
-            style: TextStyle(color: Colors.white),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Column(
+            children: [
+              Icon(
+                Icons.app_shortcut,
+                size: 60,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Spaktok',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
           ),
           content: const Text(
-            'Spaktok is a modern social media platform with live streaming, stories, reels, and advanced camera features.',
+            'Spaktok is a modern social media platform with live streaming, stories, reels, advanced camera features, and much more.\n\nVersion 1.0.0',
             style: TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
           ),
           actions: [
             TextButton(
@@ -285,6 +361,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
             'Logout',
             style: TextStyle(color: Colors.white),
@@ -302,9 +379,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Handle actual logout logic here
+              onPressed: () async {
+                await _authService.signOut();
+                if (mounted) {
+                  Navigator.pop(context);
+                  // Navigate to login screen
+                }
               },
               child: Text(
                 'Logout',
