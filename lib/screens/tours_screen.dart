@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/tours_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class ToursScreen extends StatefulWidget {
   const ToursScreen({Key? key}) : super(key: key);

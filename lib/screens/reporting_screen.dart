@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/reporting_service.dart';
 import 'package:spaktok/services/auth_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class ReportingScreen extends StatefulWidget {
   final String? contentId;

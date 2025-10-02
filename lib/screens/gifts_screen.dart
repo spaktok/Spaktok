@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/enhanced_payment_service.dart';
 import 'package:spaktok/services/gift_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class GiftsScreen extends StatefulWidget {
   final String? receiverId;

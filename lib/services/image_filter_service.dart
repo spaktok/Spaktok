@@ -117,7 +117,7 @@ class ImageFilterService {
         return img.gaussianBlur(image, radius: 5);
       
       case FilterType.sharpen:
-        return img.convolution(image, [0, -1, 0, -1, 5, -1, 0, -1, 0]);
+        return img.convolution(image, filter: [0, -1, 0, -1, 5, -1, 0, -1, 0]);
       
       default:
         return image;

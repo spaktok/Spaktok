@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spaktok/models/chat_message.dart';
 import 'package:spaktok/services/enhanced_chat_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class ChatScreen extends StatefulWidget {
   final String receiverId; // معرف المستلم
@@ -68,13 +68,13 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     if (_currentUser == null || _chatRoomId == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.chatWith(widget.receiverName))), 
+        appBar: AppBar(title: Text('Chat with ${widget.receiverName}')), 
         body: const Center(child: CircularProgressIndicator()),
       ); 
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.chatWith(widget.receiverName))),
+      appBar: AppBar(title: Text('Chat with ${widget.receiverName}')),
       body: Column(
         children: [
           Expanded(
@@ -122,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.enterMessage,
+                      hintText: "Enter message",
                       border: const OutlineInputBorder(),
                     ),
                   ),
