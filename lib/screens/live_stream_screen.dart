@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const appId = "a41807bba5c144b5b8e1fd5ee711707b"; // استبدل بمعرف تطبيق Agora الخاص بك
-const token = "YOUR_AGORA_TEMP_TOKEN"; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
+const token = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5klJiabJhiYmSaZJFqmGaSmmqanmhobmQIn09HsZDYGMDGn7c5gYGSAQxGdl8E3MKy1mYAAAut8gzQ=="; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
 const channel = "test_channel";
 
 class LiveStreamScreen extends StatefulWidget {
