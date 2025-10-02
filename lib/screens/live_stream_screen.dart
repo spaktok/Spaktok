@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+
 
 const appId = "a41807bba5c144b5b8e1fd5ee711707b"; // استبدل بمعرف تطبيق Agora الخاص بك
 const token = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5klJiabJhiYmSaZJFqmGaSmmqanmhobmQIn09HsZDYGMDGn7c5gYGSAQxGdl8E3MKy1mYAAAut8gzQ=="; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
@@ -18,6 +19,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   int? _localUid = 0; // معرف المستخدم المحلي (يمكن أن يكون أي رقم غير صفري)
   List<int> _remoteUids = []; // قائمة بمعرفات المستخدمين البعيدين
   bool _localUserJoined = false; // ما إذا كان المستخدم المحلي قد انضم
+  bool _isAudioMuted = false; // حالة كتم الصوت المحلية
   late RtcEngine _engine; // محرك RTC
 
   @override
@@ -70,7 +72,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     await _engine.joinChannel(
       token: token,
       channelId: channel,
-      uid: _localUid, // استخدام معرف المستخدم المحلي
+      uid: _localUid ?? 0, // استخدام معرف المستخدم المحلي
       options: const ChannelMediaOptions(),
     );
   }
@@ -128,7 +130,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     if (videoWidgets.isEmpty) {
       return const Center(
         child: Text(
-          AppLocalizations.of(context)!.waitingForParticipants,
+          "Waiting for participants",
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
@@ -155,7 +157,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.liveStreamTitle)),
+      appBar: AppBar(title: const Text("Live Stream")),
       body: Container(
         color: Colors.black, // خلفية سوداء للفيديو
         child: Stack(
@@ -173,11 +175,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         // تبديل كتم الصوت
-                        bool muted = await _engine.isLocalAudioMuted();
-                        await _engine.muteLocalAudioStream(!muted);
-                        setState(() {}); // لتحديث حالة الزر
+                        setState(() {
+                          _isAudioMuted = !_isAudioMuted;
+                          _engine.muteLocalAudioStream(_isAudioMuted);
+                        }); // لتحديث حالة الزر
                       },
-                      child: Text(AppLocalizations.of(context)!.muteUnmuteAudio),
+                      child: const Text("Mute/Unmute Audio"),
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
@@ -187,7 +190,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                         await _engine.muteLocalVideoStream(!_localUserJoined);
                         setState(() {}); // لتحديث حالة الزر
                       },
-                      child: Text(AppLocalizations.of(context)!.stopStartVideo),
+                      child: const Text("Stop/Start Video"),
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
@@ -195,7 +198,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                         await _engine.leaveChannel();
                         Navigator.pop(context);
                       },
-                      child: Text(AppLocalizations.of(context)!.leaveStream),
+                      child: const Text("Leave Stream"),
                     ),
                   ],
                 ),

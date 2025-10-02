@@ -279,7 +279,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///home/ubuntu/flutter/packages/flutter",
+      "rootUri": "file:///home/ubuntu/snap/flutter/common/flutter/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -297,7 +297,7 @@
     },
     {
       "name": "flutter_localizations",
-      "rootUri": "file:///home/ubuntu/flutter/packages/flutter_localizations",
+      "rootUri": "file:///home/ubuntu/snap/flutter/common/flutter/packages/flutter_localizations",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -315,13 +315,13 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///home/ubuntu/flutter/packages/flutter_test",
+      "rootUri": "file:///home/ubuntu/snap/flutter/common/flutter/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
     {
       "name": "flutter_web_plugins",
-      "rootUri": "file:///home/ubuntu/flutter/packages/flutter_web_plugins",
+      "rootUri": "file:///home/ubuntu/snap/flutter/common/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -669,7 +669,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///home/ubuntu/flutter/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///home/ubuntu/snap/flutter/common/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -826,7 +826,7 @@
   ],
   "generator": "pub",
   "generatorVersion": "3.9.2",
-  "flutterRoot": "file:///home/ubuntu/flutter",
+  "flutterRoot": "file:///home/ubuntu/snap/flutter/common/flutter",
   "flutterVersion": "3.35.5",
   "pubCache": "file:///home/ubuntu/.pub-cache"
 }

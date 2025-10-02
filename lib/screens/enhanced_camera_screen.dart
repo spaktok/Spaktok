@@ -3,7 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:spaktok/screens/filters_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class EnhancedCameraScreen extends StatefulWidget {
   const EnhancedCameraScreen({Key? key}) : super(key: key);

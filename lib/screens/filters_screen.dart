@@ -14,7 +14,7 @@ class FiltersScreen extends StatefulWidget {
 
 class _FiltersScreenState extends State<FiltersScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ImageFilterService _filterService = ImageFilterService();
+  final ImageFilterService _filterService = ImageFilterService.instance;
   String? _selectedFilter;
   double _filterIntensity = 1.0;
 
@@ -41,7 +41,7 @@ class _FiltersScreenState extends State<FiltersScreen> with SingleTickerProvider
   final List<Map<String, dynamic>> _beautyFilters = [
     {'name': 'Smooth', 'icon': Icons.face, 'color': Colors.pink},
     {'name': 'Brighten', 'icon': Icons.brightness_high, 'color': Colors.yellow},
-    {'name': 'Slim Face', 'icon': Icons.face_retouching, 'color': Colors.pink[300]},
+    {'name': 'Slim Face', 'icon': Icons.face, 'color': Colors.pink[300]},
     {'name': 'Big Eyes', 'icon': Icons.remove_red_eye, 'color': Colors.blue},
     {'name': 'Whitening', 'icon': Icons.wb_sunny, 'color': Colors.orange[200]},
   ];
