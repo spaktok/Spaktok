@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spaktok/models/chat_message.dart';
-import 'package:spaktok/services/chat_service.dart';
+import 'package:spaktok/services/enhanced_chat_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -17,9 +17,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final ChatService _chatService = ChatService();
+  final EnhancedChatService _chatService = EnhancedChatService.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser; // المستخدم الحالي
+  String? _chatRoomId;
 
   @override
   void initState() {
@@ -28,6 +29,8 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_currentUser == null) {
       // إذا لم يكن هناك مستخدم مسجل الدخول، قم بتسجيل الدخول كمستخدم تجريبي
       _signInAnonymously();
+    } else {
+      _createChatRoom();
     }
   }
 
@@ -38,18 +41,24 @@ class _ChatScreenState extends State<ChatScreen> {
         _currentUser = _auth.currentUser;
       });
       print("Signed in anonymously with UID: ${_currentUser?.uid}");
+      _createChatRoom();
     } catch (e) {
       print("Error signing in anonymously: $e");
     }
   }
 
+  Future<void> _createChatRoom() async {
+    if (_currentUser != null && widget.receiverId != 'default') {
+      _chatRoomId = await _chatService.createChatRoom(widget.receiverId);
+      setState(() {});
+    }
+  }
+
   void _sendMessage() async {
-    if (_messageController.text.isNotEmpty && _currentUser != null) {
+    if (_messageController.text.isNotEmpty && _currentUser != null && _chatRoomId != null) {
       await _chatService.sendMessage(
-        senderId: _currentUser!.uid,
-        receiverId: widget.receiverId,
-        content: _messageController.text,
-        isDisappearing: false, // يمكن تغييرها لاحقًا
+        chatRoomId: _chatRoomId!,
+        message: _messageController.text,
       );
       _messageController.clear();
     }
@@ -57,7 +66,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentUser == null) {
+    if (_currentUser == null || _chatRoomId == null) {
       return Scaffold(
         appBar: AppBar(title: Text(AppLocalizations.of(context)!.chatWith(widget.receiverName))), 
         body: const Center(child: CircularProgressIndicator()),
@@ -69,8 +78,8 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<List<ChatMessage>>(
-              stream: _chatService.getChatMessages(_currentUser!.uid, widget.receiverId),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _chatService.getMessages(_chatRoomId!),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
@@ -78,7 +87,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final messages = snapshot.data ?? [];
+                final messages = snapshot.data!.docs.map((doc) => ChatMessage.fromJson(doc.data() as Map<String, dynamic>)).toList();
                 return ListView.builder(
                   reverse: true,
                   itemCount: messages.length,
