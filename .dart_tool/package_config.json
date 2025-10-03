@@ -308,6 +308,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "flutter_screenshot_detect",
+      "rootUri": "file:///home/ubuntu/.pub-cache/hosted/pub.dev/flutter_screenshot_detect-0.1.7",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
       "name": "flutter_stripe",
       "rootUri": "file:///home/ubuntu/.pub-cache/hosted/pub.dev/flutter_stripe-11.5.0",
       "packageUri": "lib/",

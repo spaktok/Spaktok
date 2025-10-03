@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spaktok/models/chat_message.dart';
 import 'package:spaktok/services/enhanced_chat_service.dart';
+import 'package:flutter_screenshot_detect/flutter_screenshot_detect.dart';
 
 
 class ChatScreen extends StatefulWidget {
@@ -21,6 +22,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser; // المستخدم الحالي
   String? _chatRoomId;
+  bool _isDisappearingEnabled = false;
+  final FlutterScreenshotDetect _screenshotDetect = FlutterScreenshotDetect();
 
   @override
   void initState() {
@@ -31,6 +34,28 @@ class _ChatScreenState extends State<ChatScreen> {
       _signInAnonymously();
     } else {
       _createChatRoom();
+    }
+    _screenshotDetect.addListener(_onScreenshotDetected);
+  }
+
+  @override
+  void dispose() {
+    _screenshotDetect.removeListener(_onScreenshotDetected);
+    super.dispose();
+  }
+
+  void _onScreenshotDetected() {
+    if (_chatRoomId != null && _currentUser != null) {
+      // This is a placeholder. In a real app, you'd need to know which message was on screen.
+      // For now, we'll send a generic notification.
+      _chatService.sendScreenshotNotification(
+        chatId: _chatRoomId!,
+        userId: _currentUser!.uid,
+        messageId: 'unknown_message_id', // This would ideally be the ID of the message being screenshotted
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Screenshot detected! Notification sent.")),
+      );
     }
   }
 
