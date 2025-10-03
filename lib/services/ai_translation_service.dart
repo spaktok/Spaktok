@@ -11,7 +11,7 @@ class AITranslationService {
 
   // You can use Google Cloud Translation API, DeepL API, or OpenAI API
   // For this example, we'll use a generic API structure
-  static const String _apiKey = 'YOUR_TRANSLATION_API_KEY'; // Replace with actual key
+  static const String _apiKey = ApiConfig.translationApiKey;
   static const String _apiUrl = 'https://translation.googleapis.com/language/translate/v2';
 
   /// Supported languages
