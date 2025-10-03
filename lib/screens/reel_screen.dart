@@ -1,8 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:spaktok/models/reel.dart';
 import 'package:spaktok/services/reel_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
+import 'package:spaktok/screens/comments_screen.dart';
 
 class ReelScreen extends StatefulWidget {
   const ReelScreen({Key? key}) : super(key: key);
@@ -15,6 +18,7 @@ class _ReelScreenState extends State<ReelScreen> {
   final ReelService _reelService = ReelService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser;
+  Map<String, bool> _savedStatus = {};
 
   @override
   void initState() {
@@ -23,6 +27,31 @@ class _ReelScreenState extends State<ReelScreen> {
     if (_currentUser == null) {
       _signInAnonymously();
     }
+  }
+
+  Future<void> _loadSavedStatus(List<Reel> reels) async {
+    if (_currentUser == null) return;
+    final Map<String, bool> status = {};
+    for (var reel in reels) {
+      status[reel.id] = await _reelService.isReelSaved(reel.id, _currentUser!.uid);
+    }
+    setState(() {
+      _savedStatus = status;
+    });
+  }
+
+  Future<void> _toggleSaveReel(String reelId) async {
+    if (_currentUser == null) return;
+
+    final bool currentlySaved = _savedStatus[reelId] ?? false;
+    if (currentlySaved) {
+      await _reelService.unsaveReel(reelId, _currentUser!.uid);
+    } else {
+      await _reelService.saveReel(reelId, _currentUser!.uid);
+    }
+    setState(() {
+      _savedStatus[reelId] = !currentlySaved;
+    });
   }
 
   Future<void> _signInAnonymously() async {
@@ -59,8 +88,12 @@ class _ReelScreenState extends State<ReelScreen> {
           }
           final reels = snapshot.data ?? [];
           if (reels.isEmpty) {
-            return Center(child: const Text("No reels available"));
+            return const Center(child: Text("No reels available"));
           }
+          // Load saved status for all reels once they are available
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _loadSavedStatus(reels);
+          });
           return ListView.builder(
             itemCount: reels.length,
             itemBuilder: (context, index) {
@@ -74,12 +107,8 @@ class _ReelScreenState extends State<ReelScreen> {
                     children: [
                       Text('User ID: ${reel.userId}'),
                       Text('Description: ${reel.description}'),
-                      // هنا يمكن إضافة مشغل فيديو لعرض reel.videoUrl
-                      Container(
-                        height: 200,
-                        color: Colors.black12,
-                        child: Center(child: const Text("Video Player Placeholder")),
-                      ),
+                      // Video Player
+                      ReelVideoPlayer(videoUrl: reel.videoUrl),
                       Row(
                         children: [
                           IconButton(
@@ -93,13 +122,25 @@ class _ReelScreenState extends State<ReelScreen> {
                           IconButton(
                             icon: const Icon(Icons.comment),
                             onPressed: () {
-                              // TODO: Implement comment functionality
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Comments: 0")), // Placeholder for comment functionality
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CommentsScreen(reelId: reel.id),
+                                ),
                               );
                             },
                           ),
                           Text("Comments: ${reel.commentsCount}"),
+                          const SizedBox(width: 20),
+                          IconButton(
+                            icon: Icon(
+                              _savedStatus[reel.id] == true ? Icons.bookmark : Icons.bookmark_border,
+                              color: _savedStatus[reel.id] == true ? Colors.blue : null,
+                            ),
+                            onPressed: () {
+                              _toggleSaveReel(reel.id);
+                            },
+                          ),
                         ],
                       ),
                       Text('Timestamp: ${reel.timestamp.toDate()}'),
@@ -121,6 +162,65 @@ class _ReelScreenState extends State<ReelScreen> {
         child: const Icon(Icons.video_call),
       ),
     );
+  }
+}
+
+class ReelVideoPlayer extends StatefulWidget {
+  final String videoUrl;
+
+  const ReelVideoPlayer({Key? key, required this.videoUrl}) : super(key: key);
+
+  @override
+  State<ReelVideoPlayer> createState() => _ReelVideoPlayerState();
+}
+
+class _ReelVideoPlayerState extends State<ReelVideoPlayer> {
+  late VideoPlayerController _videoPlayerController;
+  ChewieController? _chewieController;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePlayer();
+  }
+
+  Future<void> _initializePlayer() async {
+    _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    await Future.wait([_videoPlayerController.initialize()]);
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController,
+      autoPlay: true,
+      looping: true,
+      showControls: true,
+      // Optional: Add more Chewie options here
+    );
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _chewieController != null &&
+            _chewieController!.videoPlayerController.value.isInitialized
+        ? AspectRatio(
+            aspectRatio: _videoPlayerController.value.aspectRatio,
+            child: Chewie(
+              controller: _chewieController!,
+            ),
+          )
+        : Container(
+            height: 200,
+            color: Colors.black12,
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
   }
 }
 

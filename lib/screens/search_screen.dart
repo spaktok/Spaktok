@@ -14,8 +14,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   String _selectedFilter = 'All';
+  List<String> _searchFilters = ['All', 'Top', 'Accounts', 'Videos', 'Sounds', 'LIVE', 'Hashtags'];
 
-  final List<String> _filters = ['All', 'Users', 'Videos', 'Live', 'Hashtags'];
+
 
   final List<Map<String, dynamic>> _trendingHashtags = [
     {'tag': '#viral', 'posts': '1.2M', 'color': Colors.red},
@@ -101,9 +102,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _filters.length,
+        itemCount: _searchFilters.length,
         itemBuilder: (context, index) {
-          final filter = _filters[index];
+          final filter = _searchFilters[index];
           final isSelected = _selectedFilter == filter;
           
           return GestureDetector(
@@ -139,19 +140,41 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
     return ListView(
       padding: const EdgeInsets.all(15),
       children: [
-        if (_selectedFilter == 'All' || _selectedFilter == 'Users') ...[
-          _buildSectionHeader(context, 'Users'),
+        if (_selectedFilter == 'All' || _selectedFilter == 'Top' || _selectedFilter == 'Accounts') ...[
+          _buildSectionHeader(context, 'Accounts'),
           ..._suggestedUsers.map((user) => _buildUserItem(context, user)).toList(),
         ],
-        if (_selectedFilter == 'All' || _selectedFilter == 'Videos') ...[
+        if (_selectedFilter == 'All' || _selectedFilter == 'Top' || _selectedFilter == 'Videos') ...[
           const SizedBox(height: 20),
           _buildSectionHeader(context, 'Videos'),
           _buildVideosGrid(context),
         ],
-        if (_selectedFilter == 'All' || _selectedFilter == 'Hashtags') ...[
+        if (_selectedFilter == 'All' || _selectedFilter == 'Top' || _selectedFilter == 'Hashtags') ...[
           const SizedBox(height: 20),
           _buildSectionHeader(context, 'Hashtags'),
           ..._trendingHashtags.map((tag) => _buildHashtagItem(context, tag)).toList(),
+        ],
+        if (_selectedFilter == 'All' || _selectedFilter == 'Top' || _selectedFilter == 'Sounds') ...[
+          const SizedBox(height: 20),
+          _buildSectionHeader(context, 'Sounds'),
+          // Placeholder for sounds content
+          Center(
+            child: Text(
+              'Sounds content goes here',
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+          ),
+        ],
+        if (_selectedFilter == 'All' || _selectedFilter == 'Top' || _selectedFilter == 'LIVE') ...[
+          const SizedBox(height: 20),
+          _buildSectionHeader(context, 'LIVE'),
+          // Placeholder for live content
+          Center(
+            child: Text(
+              'Live content goes here',
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+          ),
         ],
       ],
     );

@@ -3,6 +3,7 @@ plugins {
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
+    id "com.google.ar.sceneform.plugin"
 }
 
 android {
@@ -25,10 +26,11 @@ android {
 
     defaultConfig {
         applicationId "com.spaktok.app"
-        minSdkVersion 21
+        minSdkVersion 24 // ARCore requires API Level 24 or higher
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutter.versionCode
         versionName flutter.versionName
+        resValue "string", "arcore_unavailable_message", "ARCore is not available on this device"
     }
 
     buildTypes {
@@ -50,5 +52,14 @@ dependencies {
     implementation "com.google.firebase:firebase-firestore"
     implementation "com.google.firebase:firebase-auth"
     implementation "com.google.firebase:firebase-storage"
+
+    // ARCore and Sceneform dependencies
+    implementation "com.google.ar:core:1.39.0"
+    implementation "com.google.ar.sceneform:ux:1.17.1"
+    implementation "com.google.ar.sceneform:animation:1.17.1"
+    implementation "com.google.ar.sceneform:filament-android:1.17.1"
+    implementation "com.google.ar.sceneform:core:1.17.1"
+    implementation "com.google.ar.sceneform:rendering:1.17.1"
+    implementation "com.google.ar.sceneform:sceneform-base:1.17.1"
 }
 

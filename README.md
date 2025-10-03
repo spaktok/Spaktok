@@ -38,16 +38,28 @@ The primary goal of this project is to develop and implement all features for th
 
 The following features have been implemented and integrated into the application:
 
-*   **AR Shopping**: E-commerce integration with Augmented Reality (AR) product try-on capabilities.
-*   **Snap Map**: Location-based map integration for user interaction and content discovery.
-*   **Mini-apps**: A framework for integrating in-chat games and small applications.
-*   **AI Translation**: Automatic translation for comments and messages to facilitate global communication.
+*   **AR Shopping**: E-commerce integration with Augmented Reality (AR) product try-on capabilities, including 'add to cart', 'buy now', and 'view product' functionalities.
+*   **Snap Map**: Location-based map integration for user interaction and content discovery, including 'share location' and 'view nearby' features.
+*   **Mini-apps**: A framework for integrating in-chat games and small applications, including 'games' and 'leaderboard'.
+*   **AI Translation**: Automatic translation for comments and messages to facilitate global communication, including 'auto-translate' and 'AI recommendations'.
 *   **Group Calls**: Multi-participant voice and video call functionality, powered by Agora.
 *   **Creator Payouts**: A system for managing creator earnings and facilitating payouts.
+*   **Video Player Controls**: Enhanced video player controls for reels, including play/pause, seek, and volume.
+*   **Favorites**: Functionality to save/favorite reels.
+*   **Disappearing Messages**: Implementation of disappearing messages in chat.
+*   **Story Privacy**: Ability to set privacy settings for stories.
+*   **Live Stream Camera Flip**: Functionality to flip the camera during live streams.
+*   **Comments**: Ability to add and view comments on reels.
+*   **Share Stream**: Functionality to share live streams.
+*   **Send Friend Request**: Ability to send and manage friend requests.
+*   **Language Settings**: User-configurable language settings.
+*   **Filter Search**: Enhanced search functionality with various filters.
+*   **Analytics and Insights**: Basic analytics and insights features.
+*   **Account Deletion**: Functionality for users to delete their accounts.
 
 ### Configurations
 
-*   **Firebase**: Configured for Web, Android, and iOS platforms. This includes Firebase Authentication, Firestore, and other related services. (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist` are present).
+*   **Firebase**: Configured for Web, Android, and iOS platforms. This includes Firebase Authentication, Firestore, and other related services. (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist` are present). Firestore rules have been updated to secure access for comments, disappearing messages, stories, friend requests, and AR shopping.
 *   **Agora**: Integrated for real-time communication, specifically for live streaming and group calls. The Agora App ID (`a41807bba5c144b5b8e1fd5ee711707b`) and a temporary token have been set in `lib/screens/live_stream_screen.dart`.
 *   **Stripe**: Integrated for payment processing, particularly for creator payouts and virtual gifts. The Stripe Secret Key (`sk_test_51SDYFHRumpu3fxskjQggMnl7yLzUENBm41WWH0S8vuRgZj3Quu3C1agEyZyhCpCDT9W1FSLfzQLTKt6842b7UU3s00dPzlzgxd`) has been configured as an environment variable in `backend/.env`.
 
@@ -138,4 +150,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ---
 
 **Author**: Manus AI
-**Date**: Oct 02, 2025
+**Date**: Oct 03, 2025
+
