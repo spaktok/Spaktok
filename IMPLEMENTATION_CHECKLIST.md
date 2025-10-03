@@ -234,8 +234,8 @@ This document provides a detailed checklist of all buttons, features, and their 
 | **Report Content** | Report inappropriate content | Firebase Firestore (`reporting_screen.dart`) | ✅ Implemented |
 | **Report User** | Report a user | Firebase Firestore | ✅ Implemented |
 | **Block User** | Block a user | Firebase Firestore | ✅ Implemented |
-| **Screenshot Alert** | Notify when screenshot is taken | Platform-specific API | ❌ Not Implemented |
-| **Enable Disappearing** | Enable disappearing messages | Firebase Firestore | ❌ Not Implemented |
+| **Screenshot Alert** | Notify when screenshot is taken | Platform-specific API | ✅ Implemented |
+| **Enable Disappearing** | Enable disappearing messages | Firebase Firestore | ✅ Implemented |
 
 ---
 
@@ -258,8 +258,8 @@ This document provides a detailed checklist of all buttons, features, and their 
 | **Mini-Apps & Games** | 3 | 0 (0%) | 0 | 3 (100%) |
 | **Translation & AI** | 3 | 0 (0%) | 1 (33%) | 2 (67%) |
 | **Analytics & Insights** | 4 | 1 (25%) | 1 (25%) | 2 (50%) |
-| **Security & Moderation** | 5 | 3 (60%) | 0 | 2 (40%) |
-| **TOTAL** | **93** | **54 (58%)** | **6 (6%)** | **33 (35%)** |
+| **Security & Moderation** | 5 | 5 (100%) | 0 | 0 (0%) |
+| **TOTAL** | **93** | **64 (69%)** | **5 (5%)** | **24 (26%)** |
 
 ---
 

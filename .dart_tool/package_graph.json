@@ -17,6 +17,7 @@
         "flutter",
         "flutter_colorpicker",
         "flutter_localizations",
+        "flutter_screenshot_detect",
         "flutter_stripe",
         "image",
         "image_picker",
@@ -72,6 +73,14 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "flutter_screenshot_detect",
+      "version": "0.1.7",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
       ]
     },
     {
@@ -436,6 +445,13 @@
       "dependencies": [
         "clock",
         "collection"
+      ]
+    },
+    {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "dependencies": [
+        "meta"
       ]
     },
     {
@@ -1113,13 +1129,6 @@
       "name": "web",
       "version": "1.1.1",
       "dependencies": []
-    },
-    {
-      "name": "plugin_platform_interface",
-      "version": "2.1.8",
-      "dependencies": [
-        "meta"
-      ]
     },
     {
       "name": "csslib",

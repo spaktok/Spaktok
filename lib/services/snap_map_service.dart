@@ -16,7 +16,7 @@ class SnapMapService {
   }
 
   /// User location model
-  static class UserLocation {
+  class UserLocation {
     final String userId;
     final double latitude;
     final double longitude;

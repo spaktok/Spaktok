@@ -227,3 +227,27 @@ class DisappearingMessagesService {
     }
   }
 }
+
+
+  // Send screenshot notification
+  Future<void> sendScreenshotNotification({
+    required String chatId,
+    required String userId,
+    required String messageId,
+  }) async {
+    try {
+      await _firestore
+          .collection("chats")
+          .doc(chatId)
+          .collection("notifications")
+          .add({
+        "type": "screenshot",
+        "userId": userId,
+        "messageId": messageId,
+        "timestamp": FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print("Error sending screenshot notification: $e");
+    }
+  }
+

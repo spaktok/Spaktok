@@ -258,8 +258,8 @@ class VideoCallService {
   }) async {
     try {
       await _engine?.setBeautyEffectOptions(
-        true,
-        BeautyOptions(
+        enabled: true,
+        options: BeautyOptions(
           lighteningLevel: lighteningLevel,
           smoothnessLevel: smoothnessLevel,
           rednessLevel: rednessLevel,
@@ -274,7 +274,7 @@ class VideoCallService {
   // Disable beauty effect
   Future<void> disableBeautyEffect() async {
     try {
-      await _engine?.setBeautyEffectOptions(false, const BeautyOptions());
+      await _engine?.setBeautyEffectOptions(enabled: false, options: const BeautyOptions());
     } catch (e) {
       debugPrint('Error disabling beauty effect: $e');
       rethrow;
