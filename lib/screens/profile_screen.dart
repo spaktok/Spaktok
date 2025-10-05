@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   int _followersCount = 0;
   int _followingCount = 0;
   int _postsCount = 0;
+  bool _isPremiumAccount = false;
 
   @override
   void initState() {
@@ -37,7 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         setState(() {
           _followersCount = doc.data()?['followersCount'] ?? 0;
           _followingCount = doc.data()?['followingCount'] ?? 0;
-          _postsCount = doc.data()?['postsCount'] ?? 0;
+          _postsCount = doc.data()?["postsCount"] ?? 0;
+          _isPremiumAccount = doc.data()?["isPremiumAccount"] ?? false;
         });
       }
     }
@@ -157,13 +159,27 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ],
           ),
           const SizedBox(height: 15),
-          Text(
-            _authService.currentUser?.displayName ?? 'Spaktok User',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _authService.currentUser?.displayName ?? 'Spaktok User',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_isPremiumAccount)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: 24,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 5),
           Text(
