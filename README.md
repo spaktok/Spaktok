@@ -1,101 +1,141 @@
-# تطبيق Spaktok للبث المباشر والوسائط الاجتماعية
+# Spaktok Application
 
-هذا المشروع هو تطبيق Flutter يهدف إلى أن يكون منصة بث مباشر ووسائط اجتماعية شاملة، مع ميزات مثل البث المباشر متعدد المشاركين، ونظام الهدايا، وميزات الكاميرا المتقدمة، ونظام الدردشة، والمزيد.
+<div align="center">
 
-## البدء
+![Spaktok Logo](https://img.shields.io/badge/Spaktok-v1.0.0-purple?style=for-the-badge&logo=flutter)
+![Flutter](https://img.shields.io/badge/Flutter-3.16.0-blue?style=for-the-badge&logo=flutter)
+![Firebase](https://img.shields.io/badge/Firebase-Integrated-orange?style=for-the-badge&logo=firebase)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-توضح هذه التعليمات كيفية إعداد وتشغيل مشروع Spaktok على جهازك المحلي.
+**A cutting-edge social media platform with live streaming, stories, reels, and advanced camera features**
 
-### المتطلبات الأساسية
+</div>
 
-تأكد من تثبيت ما يلي على جهازك:
+---
 
-*   [Flutter SDK](https://flutter.dev/docs/get-started/install)
-*   [Android Studio](https://developer.android.com/studio) (لتطوير Android) أو [Xcode](https://developer.apple.com/xcode/) (لتطوير iOS)
-*   [Firebase CLI](https://firebase.google.com/docs/cli) (إذا كنت تخطط لاستخدام Firebase)
-*   [معرف تطبيق Agora](https://www.agora.io/en/)
+## 📱 About Spaktok
 
-### إعداد المشروع
+Spaktok is a modern, feature-rich social media application built with Flutter, offering a unique blend of content creation, live streaming, and social interaction capabilities. Inspired by the best features of TikTok and Snapchat, but with a unique design and innovative features.
 
-1.  **استنساخ المستودع (إذا كان متاحًا):**
+### ✨ Key Highlights
+
+- 🎥 **HD Live Streaming** with Agora RTC integration
+- 📸 **Advanced Camera** with professional filters and effects
+- 🎭 **AR Filters & Stickers** for creative content
+- 💝 **Virtual Gifts System** with in-app currency
+- 🌍 **Multi-language Support** (Currently disabled due to `AppLocalizations` issues)
+- 🔒 **Privacy & Security** focused design
+- 📊 **Real-time Analytics** and engagement metrics
+- 🎨 **Modern UI/UX** with dark theme
+
+## Project Goal
+
+The primary goal of this project is to develop and implement all features for the Spaktok application, complete Firebase, Agora, and Stripe configurations, and finalize documentation. Android SDK setup has been temporarily deferred.
+
+## Current Status
+
+### Implemented Features
+
+The following features have been implemented and integrated into the application:
+
+*   **AR Shopping**: E-commerce integration with Augmented Reality (AR) product try-on capabilities.
+*   **Snap Map**: Location-based map integration for user interaction and content discovery.
+*   **Mini-apps**: A framework for integrating in-chat games and small applications.
+*   **AI Translation**: Automatic translation for comments and messages to facilitate global communication.
+*   **Group Calls**: Multi-participant voice and video call functionality, powered by Agora.
+*   **Creator Payouts**: A system for managing creator earnings and facilitating payouts.
+
+### Configurations
+
+*   **Firebase**: Configured for Web, Android, and iOS platforms. This includes Firebase Authentication, Firestore, and other related services. (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist` are present).
+*   **Agora**: Integrated for real-time communication, specifically for live streaming and group calls. The Agora App ID (`a41807bba5c144b5b8e1fd5ee711707b`) and a temporary token have been set in `lib/screens/live_stream_screen.dart`.
+*   **Stripe**: Integrated for payment processing, particularly for creator payouts and virtual gifts. The Stripe Secret Key (`sk_test_51SDYFHRumpu3fxskjQggMnl7yLzUENBm41WWH0S8vuRgZj3Quu3C1agEyZyhCpCDT9W1FSLfzQLTKt6842b7UU3s00dPzlzgxd`) has been configured as an environment variable in `backend/.env`.
+
+### Known Issues
+
+*   **Android SDK Setup**: The Android SDK setup is currently deferred due to persistent configuration issues. This will be addressed in a later phase, potentially in a different environment.
+*   **AppLocalizations**: All direct references to `AppLocalizations` have been removed from the project to resolve compilation errors. This means the application currently lacks internationalization support. This will need to be re-implemented or properly configured if multi-language support is desired.
+
+## 🚀 Getting Started
+
+This guide will help you set up and run the Spaktok project on your local machine.
+
+### Prerequisites
+
+*   [Flutter SDK](https://flutter.dev/docs/get-started/install) installed and configured.
+*   [Android Studio](https://developer.android.com/studio) (for Android development) or [Xcode](https://developer.apple.com/xcode/) (for iOS development) - *Note: Android SDK setup is currently deferred.*
+*   [Firebase CLI](https://firebase.google.com/docs/cli) installed.
+*   Access to a Firebase project.
+*   Agora App ID and temporary token.
+*   Stripe Secret Key.
+
+### Setup and Installation
+
+1.  **Clone the repository**:
+
     ```bash
-    git clone <رابط_المستودع_الخاص_بك>
-    cd spaktok
-    ```
-    إذا لم يكن لديك مستودع، يمكنك إنشاء مشروع Flutter جديد ونسخ الملفات إليه:
-    ```bash
-    flutter create spaktok
-    cd spaktok
-    # انسخ الملفات المعدلة إلى هذا الدليل
+    git clone https://github.com/spaktok/Spaktok.git
+    cd Spaktok
     ```
 
-2.  **تثبيت التبعيات:**
-    انتقل إلى دليل المشروع وقم بتشغيل الأمر التالي لتثبيت جميع التبعيات:
+2.  **Install Flutter dependencies**:
+
     ```bash
     flutter pub get
     ```
 
-3.  **تكوين Agora:**
-    افتح ملف `lib/screens/live_stream_screen.dart` واستبدل `"YOUR_AGORA_APP_ID"` و `"YOUR_AGORA_TEMP_TOKEN"` بمعرف تطبيق Agora والرمز المميز المؤقت الخاص بك على التوالي.
+3.  **Configure Firebase**: Ensure `firebase_options.dart` is correctly generated and `google-services.json` (for Android) and `GoogleService-Info.plist` (for iOS) are in their respective directories.
 
-    ```dart
-    const appId = "YOUR_AGORA_APP_ID"; // استبدل بمعرف تطبيق Agora الخاص بك
-    const token = "YOUR_AGORA_TEMP_TOKEN"; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
+4.  **Configure Agora**: The App ID is already set in `lib/screens/live_stream_screen.dart`. Ensure a valid Agora token is used for production.
+
+5.  **Configure Stripe**: Set your Stripe Secret Key as an environment variable in the `backend/.env` file:
+
+    ```
+    STRIPE_SECRET_KEY=your_stripe_secret_key_here
     ```
 
-4.  **تكوين Firebase (اختياري ولكن موصى به):**
-    إذا كنت تخطط لاستخدام Firebase (للمصادقة، قواعد البيانات، إلخ)، فستحتاج إلى تكوين مشروع Firebase الخاص بك.
+6.  **Build the application** (e.g., for web):
 
-    *   أنشئ مشروع Firebase جديدًا على [وحدة تحكم Firebase](https://console.firebase.google.com/).
-    *   أضف تطبيقات Android و iOS إلى مشروع Firebase الخاص بك واتبع التعليمات لتنزيل ملفات التكوين (`google-services.json` لنظام Android و `GoogleService-Info.plist` لنظام iOS).
-    *   ضع `google-services.json` في `android/app/`.
-    *   ضع `GoogleService-Info.plist` في `ios/Runner/`.
-    *   قم بتشغيل الأمر التالي لإنشاء `firebase_options.dart`:
-        ```bash
-        flutter pub add firebase_core
-        flutterfire configure
-        ```
+    ```bash
+    flutter build web
+    ```
 
-### تشغيل التطبيق
+### Running the Application
 
-لتشغيل التطبيق على جهاز متصل (محاكي أو جهاز فعلي):
+To run the application on a connected device (emulator or physical device):
 
 ```bash
 flutter run
 ```
 
-لتشغيل التطبيق على الويب:
+To run the application on the web:
 
 ```bash
 flutter run -d web
 ```
 
-لتشغيل التطبيق على سطح مكتب Linux (بعد تثبيت المتطلبات الأساسية مثل `cmake`, `ninja-build`, `clang`, `libgtk-3-dev`):
+To run the application on Linux desktop (after installing prerequisites like `cmake`, `ninja-build`, `clang`, `libgtk-3-dev`):
 
 ```bash
 flutter run -d linux
 ```
 
-## الميزات المنفذة حاليًا
+## Future Work
 
-*   **إعداد المشروع الأساسي:** مشروع Flutter جديد مع التبعيات الأساسية.
-*   **التوثيق:** ملفات توثيق مفصلة للهندسة المعمارية، مخطط قاعدة البيانات، خطط التطوير الأمامية والخلفية، وتكامل الدفع.
-*   **البث المباشر (أساسي):** شاشة بث مباشر أساسية باستخدام Agora RTC Engine، مع دعم الكاميرا والميكروفون.
+*   Revisit and resolve Android SDK setup issues.
+*   Implement proper internationalization using `AppLocalizations`.
+*   Further testing and optimization of all features.
+*   Deployment to production environments.
 
-## الخطوات التالية
+## Contributing
 
-1.  تطوير نظام الغرف متعددة المشاركين (2-4 مشاركين).
-2.  تطوير نظام الهدايا مع تقسيم الإيرادات (40% للمذيعين).
-3.  تنفيذ ميزات الكاميرا المتقدمة (فلاتر Snapchat/TikTok).
-4.  بناء نظام الدردشة المتقدم (الرسائل المختفية، مكالمات الفيديو/الصوت).
-5.  تكامل نظام الدفع العالمي.
-6.  إضافة ميزات اجتماعية (القصص، Reels، الإعجابات، التعليقات).
-7.  دعم اللغات المتعددة والميزات الخاصة بالمنطقة.
+We welcome contributions! Please read `CONTRIBUTING.md` for guidelines on how to contribute to this project.
 
-## المساهمة
+## License
 
-نرحب بالمساهمات! يرجى قراءة `CONTRIBUTING.md` للحصول على إرشادات حول كيفية المساهمة في هذا المشروع.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-## الترخيص
+---
 
-هذا المشروع مرخص بموجب ترخيص MIT. انظر ملف `LICENSE` للحصول على التفاصيل.
+**Author**: Manus AI
+**Date**: Oct 02, 2025
