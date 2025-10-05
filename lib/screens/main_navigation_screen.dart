@@ -11,6 +11,7 @@ import 'package:spaktok/screens/notifications_screen.dart';
 import 'package:spaktok/screens/search_screen.dart';
 import 'package:spaktok/screens/gifts_screen.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'package:spaktok/screens/admin_premium_accounts_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({Key? key}) : super(key: key);
@@ -23,6 +24,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
   final AuthService _authService = AuthService();
+  bool _isAdmin = false;
 
   final List<Widget> _screens = [
     const ExploreScreen(),
@@ -31,6 +33,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const NotificationsScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAdminStatus();
+  }
+
+  Future<void> _loadAdminStatus() async {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      final userData = await _authService.getUserData(currentUser.uid);
+      if (userData != null && userData["isAdmin"] == true) {
+        setState(() {
+          _isAdmin = true;
+        });
+      }
+    }
+  }
 
   final List<BottomNavigationBarItem> _navItems = [
     const BottomNavigationBarItem(
@@ -234,6 +254,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               );
             },
           ),
+          if (_isAdmin)
+            _buildDrawerItem(
+              icon: Icons.admin_panel_settings,
+              title: 'Manage Premium Accounts',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminPremiumAccountsScreen()),
+                );
+              },
+            ),
           const Divider(color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.settings,

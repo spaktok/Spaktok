@@ -43,6 +43,9 @@ class AuthService {
         'isVerified': false,
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
+        'isPremiumAccount': false,
+        'premiumSlotId': null,
+        'isAdmin': false,
       });
 
       return userCredential;
@@ -68,6 +71,9 @@ class AuthService {
       await _firestore.collection('users').doc(userCredential.user?.uid).update({
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
+        'isPremiumAccount': false,
+        'premiumSlotId': null,
+        'isAdmin': false,
       });
 
       return userCredential;
@@ -86,6 +92,9 @@ class AuthService {
         await _firestore.collection('users').doc(currentUser!.uid).update({
           'isOnline': false,
           'lastSeen': FieldValue.serverTimestamp(),
+        'isPremiumAccount': false,
+        'premiumSlotId': null,
+        'isAdmin': false,
         });
       }
 
