@@ -4597,3 +4597,5037 @@ export const updateGiftLeaderboards = onSchedule("every 1 hours", async (event) 
     return null;
   }
 });
+
+// ============================================================================
+// PROFILE SYSTEM FUNCTIONS
+// ============================================================================
+
+/**
+ * Update User Profile
+ */
+export const updateProfile = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const {
+      displayName,
+      bio,
+      website,
+      socialLinks,
+      location,
+      gender,
+      language,
+      theme,
+    } = request.data;
+
+    // Validate bio length
+    if (bio && bio.length > 150) {
+      throw new Error("Bio must be 150 characters or less");
+    }
+
+    // Validate website URL
+    if (website && !isValidUrl(website)) {
+      throw new Error("Invalid website URL");
+    }
+
+    // Check rate limiting (once per hour)
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    const lastUpdate = userData?.updatedAt?.toMillis() || 0;
+    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+    
+    if (lastUpdate > oneHourAgo) {
+      throw new Error("Profile can only be updated once per hour");
+    }
+
+    // Update profile
+    const updateData: any = {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (displayName !== undefined) updateData.displayName = displayName;
+    if (bio !== undefined) updateData.bio = bio;
+    if (website !== undefined) updateData.website = website;
+    if (socialLinks !== undefined) updateData.socialLinks = socialLinks;
+    if (location !== undefined) updateData.location = location;
+    if (gender !== undefined) updateData.gender = gender;
+    if (language !== undefined) updateData.language = language;
+    if (theme !== undefined) updateData.theme = theme;
+
+    await db.collection("users").doc(userId).update(updateData);
+
+    // Update denormalized data in related collections (async)
+    updateDenormalizedUserData(userId, displayName, userData?.profileImage);
+
+    return {
+      success: true,
+      message: "Profile updated successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in updateProfile:", error);
+    throw new Error(error.message || "Failed to update profile");
+  }
+});
+
+/**
+ * Helper function to validate URL
+ */
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Helper function to update denormalized user data
+ */
+async function updateDenormalizedUserData(
+  userId: string,
+  displayName?: string,
+  profileImage?: string
+) {
+  try {
+    const batch = db.batch();
+    let count = 0;
+
+    // Update in videos
+    const videosSnapshot = await db.collection("videos")
+      .where("userId", "==", userId)
+      .limit(500)
+      .get();
+
+    for (const doc of videosSnapshot.docs) {
+      const updates: any = {};
+      if (displayName) updates.username = displayName;
+      if (profileImage) updates.userProfileImage = profileImage;
+      
+      if (Object.keys(updates).length > 0) {
+        batch.update(doc.ref, updates);
+        count++;
+      }
+
+      if (count >= 500) {
+        await batch.commit();
+        count = 0;
+      }
+    }
+
+    // Update in stories
+    const storiesSnapshot = await db.collection("stories")
+      .where("userId", "==", userId)
+      .limit(500)
+      .get();
+
+    for (const doc of storiesSnapshot.docs) {
+      const updates: any = {};
+      if (displayName) updates.username = displayName;
+      if (profileImage) updates.userProfileImage = profileImage;
+      
+      if (Object.keys(updates).length > 0) {
+        batch.update(doc.ref, updates);
+        count++;
+      }
+
+      if (count >= 500) {
+        await batch.commit();
+        count = 0;
+      }
+    }
+
+    if (count > 0) {
+      await batch.commit();
+    }
+  } catch (error) {
+    console.error("Error updating denormalized user data:", error);
+  }
+}
+
+/**
+ * Upload Profile Image
+ */
+export const uploadProfileImage = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { imageType } = request.data; // 'profile' or 'cover'
+
+    if (!imageType || !['profile', 'cover'].includes(imageType)) {
+      throw new Error("Invalid image type");
+    }
+
+    // Generate signed upload URL
+    const bucket = admin.storage().bucket();
+    const fileName = `profiles/${userId}/${imageType}_${Date.now()}.jpg`;
+    const file = bucket.file(fileName);
+
+    const [signedUrl] = await file.getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+      contentType: 'image/jpeg',
+    });
+
+    return {
+      success: true,
+      uploadUrl: signedUrl,
+      fileName,
+      message: "Upload URL generated",
+    };
+  } catch (error: any) {
+    console.error("Error in uploadProfileImage:", error);
+    throw new Error(error.message || "Failed to generate upload URL");
+  }
+});
+
+/**
+ * Confirm Profile Image Upload
+ */
+export const confirmProfileImageUpload = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { fileName, imageType } = request.data;
+
+    // Get public URL
+    const bucket = admin.storage().bucket();
+    const file = bucket.file(fileName);
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
+    // Update user document
+    const updateField = imageType === 'profile' ? 'profileImage' : 'coverImage';
+    await db.collection("users").doc(userId).update({
+      [updateField]: publicUrl,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Delete old image (async)
+    deleteOldProfileImage(userId, imageType);
+
+    return {
+      success: true,
+      imageUrl: publicUrl,
+      message: "Profile image updated",
+    };
+  } catch (error: any) {
+    console.error("Error in confirmProfileImageUpload:", error);
+    throw new Error(error.message || "Failed to confirm upload");
+  }
+});
+
+/**
+ * Helper function to delete old profile image
+ */
+async function deleteOldProfileImage(userId: string, imageType: string) {
+  try {
+    const bucket = admin.storage().bucket();
+    const prefix = `profiles/${userId}/${imageType}_`;
+    
+    const [files] = await bucket.getFiles({ prefix });
+    
+    // Keep only the most recent file, delete others
+    if (files.length > 1) {
+      const sortedFiles = files.sort((a, b) => {
+        const aTime = a.metadata.timeCreated || '';
+        const bTime = b.metadata.timeCreated || '';
+        return bTime.localeCompare(aTime);
+      });
+
+      // Delete all except the first (most recent)
+      for (let i = 1; i < sortedFiles.length; i++) {
+        await sortedFiles[i].delete();
+      }
+    }
+  } catch (error) {
+    console.error("Error deleting old profile image:", error);
+  }
+}
+
+/**
+ * Get User Profile
+ */
+export const getProfile = onCall(async (request) => {
+  const viewerId = request.auth?.uid;
+  const { userId } = request.data;
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  try {
+    // Get user document
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    const userData = userDoc.data();
+
+    // Check if viewer is blocked
+    if (viewerId) {
+      const blockedDoc = await db.collection("users").doc(userId)
+        .collection("blockedUsers").doc(viewerId).get();
+      
+      if (blockedDoc.exists) {
+        throw new Error("You are blocked by this user");
+      }
+    }
+
+    // Check privacy settings
+    const isPrivate = userData?.isPrivate || false;
+    const isOwner = viewerId === userId;
+
+    let canViewProfile = true;
+    if (isPrivate && !isOwner) {
+      // Check if viewer is following
+      if (viewerId) {
+        const followerDoc = await db.collection("followers")
+          .doc(`${viewerId}_${userId}`).get();
+        canViewProfile = followerDoc.exists;
+      } else {
+        canViewProfile = false;
+      }
+    }
+
+    if (!canViewProfile) {
+      return {
+        success: true,
+        profile: {
+          userId: userData?.userId,
+          username: userData?.username,
+          displayName: userData?.displayName,
+          profileImage: userData?.profileImage,
+          isPrivate: true,
+          followerCount: userData?.followerCount || 0,
+          followingCount: userData?.followingCount || 0,
+        },
+        isPrivate: true,
+      };
+    }
+
+    // Record profile view (async)
+    if (viewerId && viewerId !== userId) {
+      recordProfileView(userId, viewerId);
+    }
+
+    // Return full profile
+    return {
+      success: true,
+      profile: {
+        userId: userData?.userId,
+        username: userData?.username,
+        displayName: userData?.displayName,
+        bio: userData?.bio,
+        profileImage: userData?.profileImage,
+        coverImage: userData?.coverImage,
+        website: userData?.website,
+        socialLinks: userData?.socialLinks,
+        location: userData?.location,
+        followerCount: userData?.followerCount || 0,
+        followingCount: userData?.followingCount || 0,
+        videoCount: userData?.videoCount || 0,
+        likeCount: userData?.likeCount || 0,
+        viewCount: userData?.viewCount || 0,
+        isVerified: userData?.isVerified || false,
+        isPremiumAccount: userData?.isPremiumAccount || false,
+        isPrivate: userData?.isPrivate || false,
+        level: userData?.level || 1,
+        badges: userData?.badges || [],
+        createdAt: userData?.createdAt,
+      },
+      isOwner,
+    };
+  } catch (error: any) {
+    console.error("Error in getProfile:", error);
+    throw new Error(error.message || "Failed to get profile");
+  }
+});
+
+/**
+ * Helper function to record profile view
+ */
+async function recordProfileView(profileId: string, viewerId: string) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const viewId = `${profileId}_${viewerId}_${today}`;
+
+    await db.collection("profileViews").doc(viewId).set({
+      profileId,
+      viewerId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      source: "direct",
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error recording profile view:", error);
+  }
+}
+
+/**
+ * Search Users
+ */
+export const searchUsers = onCall(async (request) => {
+  try {
+    const { query, limit = 20 } = request.data;
+
+    if (!query || query.trim().length === 0) {
+      throw new Error("Search query is required");
+    }
+
+    const searchTerm = query.toLowerCase().trim();
+
+    // Search by username (prefix match)
+    const usernameResults = await db.collection("users")
+      .where("username", ">=", searchTerm)
+      .where("username", "<=", searchTerm + '\uf8ff')
+      .limit(limit)
+      .get();
+
+    const users = usernameResults.docs.map(doc => {
+      const data = doc.data();
+      return {
+        userId: data.userId,
+        username: data.username,
+        displayName: data.displayName,
+        profileImage: data.profileImage,
+        isVerified: data.isVerified || false,
+        followerCount: data.followerCount || 0,
+      };
+    });
+
+    return {
+      success: true,
+      users,
+    };
+  } catch (error: any) {
+    console.error("Error in searchUsers:", error);
+    throw new Error(error.message || "Failed to search users");
+  }
+});
+
+/**
+ * Follow User
+ */
+export const followUser = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { targetUserId } = request.data;
+
+    if (userId === targetUserId) {
+      throw new Error("Cannot follow yourself");
+    }
+
+    // Get target user
+    const targetUserDoc = await db.collection("users").doc(targetUserId).get();
+    if (!targetUserDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    const targetUserData = targetUserDoc.data();
+    const isPrivate = targetUserData?.isPrivate || false;
+
+    // Check if already following
+    const followerId = `${userId}_${targetUserId}`;
+    const followerDoc = await db.collection("followers").doc(followerId).get();
+
+    if (followerDoc.exists) {
+      throw new Error("Already following this user");
+    }
+
+    if (isPrivate) {
+      // Create follow request
+      const requestId = `${userId}_${targetUserId}`;
+      const userDoc = await db.collection("users").doc(userId).get();
+      const userData = userDoc.data();
+
+      await db.collection("followRequests").doc(requestId).set({
+        requesterId: userId,
+        targetId: targetUserId,
+        requesterUsername: userData?.displayName || "Unknown",
+        requesterProfileImage: userData?.profileImage || "",
+        status: "pending",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Send notification
+      await db.collection("notifications").add({
+        userId: targetUserId,
+        type: "follow_request",
+        actorId: userId,
+        actorName: userData?.displayName || "Someone",
+        actorProfileImage: userData?.profileImage || "",
+        message: `${userData?.displayName || "Someone"} requested to follow you`,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        success: true,
+        status: "pending",
+        message: "Follow request sent",
+      };
+    } else {
+      // Direct follow
+      const userDoc = await db.collection("users").doc(userId).get();
+      const userData = userDoc.data();
+
+      await db.collection("followers").doc(followerId).set({
+        followerId: userId,
+        followingId: targetUserId,
+        followerUsername: userData?.displayName || "Unknown",
+        followingUsername: targetUserData?.displayName || "Unknown",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        notificationsEnabled: true,
+      });
+
+      // Update counts
+      await db.collection("users").doc(userId).update({
+        followingCount: admin.firestore.FieldValue.increment(1),
+      });
+
+      await db.collection("users").doc(targetUserId).update({
+        followerCount: admin.firestore.FieldValue.increment(1),
+      });
+
+      // Send notification
+      await db.collection("notifications").add({
+        userId: targetUserId,
+        type: "new_follower",
+        actorId: userId,
+        actorName: userData?.displayName || "Someone",
+        actorProfileImage: userData?.profileImage || "",
+        message: `${userData?.displayName || "Someone"} started following you`,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        success: true,
+        status: "following",
+        message: "Now following user",
+      };
+    }
+  } catch (error: any) {
+    console.error("Error in followUser:", error);
+    throw new Error(error.message || "Failed to follow user");
+  }
+});
+
+/**
+ * Unfollow User
+ */
+export const unfollowUser = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { targetUserId } = request.data;
+
+    const followerId = `${userId}_${targetUserId}`;
+    const followerDoc = await db.collection("followers").doc(followerId).get();
+
+    if (!followerDoc.exists) {
+      throw new Error("Not following this user");
+    }
+
+    // Delete follower relationship
+    await db.collection("followers").doc(followerId).delete();
+
+    // Update counts
+    await db.collection("users").doc(userId).update({
+      followingCount: admin.firestore.FieldValue.increment(-1),
+    });
+
+    await db.collection("users").doc(targetUserId).update({
+      followerCount: admin.firestore.FieldValue.increment(-1),
+    });
+
+    return {
+      success: true,
+      message: "Unfollowed user",
+    };
+  } catch (error: any) {
+    console.error("Error in unfollowUser:", error);
+    throw new Error(error.message || "Failed to unfollow user");
+  }
+});
+
+/**
+ * Accept Follow Request
+ */
+export const acceptFollowRequest = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { requesterId } = request.data;
+
+    const requestId = `${requesterId}_${userId}`;
+    const requestDoc = await db.collection("followRequests").doc(requestId).get();
+
+    if (!requestDoc.exists) {
+      throw new Error("Follow request not found");
+    }
+
+    const requestData = requestDoc.data();
+
+    if (requestData?.status !== "pending") {
+      throw new Error("Request already processed");
+    }
+
+    // Create follower relationship
+    const followerId = `${requesterId}_${userId}`;
+    await db.collection("followers").doc(followerId).set({
+      followerId: requesterId,
+      followingId: userId,
+      followerUsername: requestData.requesterUsername,
+      followingUsername: "", // Will be filled by denormalization
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      notificationsEnabled: true,
+    });
+
+    // Update request status
+    await db.collection("followRequests").doc(requestId).update({
+      status: "accepted",
+      respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update counts
+    await db.collection("users").doc(requesterId).update({
+      followingCount: admin.firestore.FieldValue.increment(1),
+    });
+
+    await db.collection("users").doc(userId).update({
+      followerCount: admin.firestore.FieldValue.increment(1),
+    });
+
+    // Send notification
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    await db.collection("notifications").add({
+      userId: requesterId,
+      type: "follow_request_accepted",
+      actorId: userId,
+      actorName: userData?.displayName || "Someone",
+      actorProfileImage: userData?.profileImage || "",
+      message: `${userData?.displayName || "Someone"} accepted your follow request`,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Follow request accepted",
+    };
+  } catch (error: any) {
+    console.error("Error in acceptFollowRequest:", error);
+    throw new Error(error.message || "Failed to accept request");
+  }
+});
+
+/**
+ * Reject Follow Request
+ */
+export const rejectFollowRequest = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { requesterId } = request.data;
+
+    const requestId = `${requesterId}_${userId}`;
+    const requestDoc = await db.collection("followRequests").doc(requestId).get();
+
+    if (!requestDoc.exists) {
+      throw new Error("Follow request not found");
+    }
+
+    // Update request status
+    await db.collection("followRequests").doc(requestId).update({
+      status: "rejected",
+      respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Follow request rejected",
+    };
+  } catch (error: any) {
+    console.error("Error in rejectFollowRequest:", error);
+    throw new Error(error.message || "Failed to reject request");
+  }
+});
+
+/**
+ * Get Followers
+ */
+export const getFollowers = onCall(async (request) => {
+  try {
+    const { userId, limit = 20, lastFollowerId } = request.data;
+
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    let query = db.collection("followers")
+      .where("followingId", "==", userId)
+      .orderBy("timestamp", "desc")
+      .limit(limit);
+
+    if (lastFollowerId) {
+      const lastDoc = await db.collection("followers").doc(lastFollowerId).get();
+      if (lastDoc.exists) {
+        query = query.startAfter(lastDoc);
+      }
+    }
+
+    const followersSnapshot = await query.get();
+    const followers = followersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return {
+      success: true,
+      followers,
+      hasMore: followers.length === limit,
+    };
+  } catch (error: any) {
+    console.error("Error in getFollowers:", error);
+    throw new Error(error.message || "Failed to get followers");
+  }
+});
+
+/**
+ * Get Following
+ */
+export const getFollowing = onCall(async (request) => {
+  try {
+    const { userId, limit = 20, lastFollowingId } = request.data;
+
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    let query = db.collection("followers")
+      .where("followerId", "==", userId)
+      .orderBy("timestamp", "desc")
+      .limit(limit);
+
+    if (lastFollowingId) {
+      const lastDoc = await db.collection("followers").doc(lastFollowingId).get();
+      if (lastDoc.exists) {
+        query = query.startAfter(lastDoc);
+      }
+    }
+
+    const followingSnapshot = await query.get();
+    const following = followingSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return {
+      success: true,
+      following,
+      hasMore: following.length === limit,
+    };
+  } catch (error: any) {
+    console.error("Error in getFollowing:", error);
+    throw new Error(error.message || "Failed to get following");
+  }
+});
+
+/**
+ * Block User
+ */
+export const blockUser = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { targetUserId, reason } = request.data;
+
+    if (userId === targetUserId) {
+      throw new Error("Cannot block yourself");
+    }
+
+    // Get target user data
+    const targetUserDoc = await db.collection("users").doc(targetUserId).get();
+    if (!targetUserDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    const targetUserData = targetUserDoc.data();
+
+    // Add to blocked users
+    await db.collection("users").doc(userId)
+      .collection("blockedUsers").doc(targetUserId).set({
+        blockedUserId: targetUserId,
+        blockedUsername: targetUserData?.displayName || "Unknown",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        reason: reason || "",
+      });
+
+    // Remove follower relationships (both ways)
+    const follower1 = `${userId}_${targetUserId}`;
+    const follower2 = `${targetUserId}_${userId}`;
+
+    const batch = db.batch();
+
+    const follower1Doc = await db.collection("followers").doc(follower1).get();
+    if (follower1Doc.exists) {
+      batch.delete(follower1Doc.ref);
+      batch.update(db.collection("users").doc(userId), {
+        followingCount: admin.firestore.FieldValue.increment(-1),
+      });
+      batch.update(db.collection("users").doc(targetUserId), {
+        followerCount: admin.firestore.FieldValue.increment(-1),
+      });
+    }
+
+    const follower2Doc = await db.collection("followers").doc(follower2).get();
+    if (follower2Doc.exists) {
+      batch.delete(follower2Doc.ref);
+      batch.update(db.collection("users").doc(targetUserId), {
+        followingCount: admin.firestore.FieldValue.increment(-1),
+      });
+      batch.update(db.collection("users").doc(userId), {
+        followerCount: admin.firestore.FieldValue.increment(-1),
+      });
+    }
+
+    await batch.commit();
+
+    return {
+      success: true,
+      message: "User blocked",
+    };
+  } catch (error: any) {
+    console.error("Error in blockUser:", error);
+    throw new Error(error.message || "Failed to block user");
+  }
+});
+
+/**
+ * Unblock User
+ */
+export const unblockUser = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { targetUserId } = request.data;
+
+    await db.collection("users").doc(userId)
+      .collection("blockedUsers").doc(targetUserId).delete();
+
+    return {
+      success: true,
+      message: "User unblocked",
+    };
+  } catch (error: any) {
+    console.error("Error in unblockUser:", error);
+    throw new Error(error.message || "Failed to unblock user");
+  }
+});
+
+/**
+ * Update Privacy Settings
+ */
+export const updatePrivacySettings = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { privacySettings } = request.data;
+
+    if (!privacySettings) {
+      throw new Error("Privacy settings are required");
+    }
+
+    await db.collection("users").doc(userId).update({
+      privacySettings,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // If changing to private, handle existing followers
+    if (privacySettings.isPrivate === true) {
+      await db.collection("users").doc(userId).update({
+        isPrivate: true,
+      });
+    } else if (privacySettings.isPrivate === false) {
+      await db.collection("users").doc(userId).update({
+        isPrivate: false,
+      });
+    }
+
+    return {
+      success: true,
+      message: "Privacy settings updated",
+    };
+  } catch (error: any) {
+    console.error("Error in updatePrivacySettings:", error);
+    throw new Error(error.message || "Failed to update privacy settings");
+  }
+});
+
+/**
+ * Request Verification
+ */
+export const requestVerification = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Get user data
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    const userData = userDoc.data();
+
+    // Check if already verified
+    if (userData?.isVerified) {
+      throw new Error("Account is already verified");
+    }
+
+    // Check eligibility
+    const followerCount = userData?.followerCount || 0;
+    const videoCount = userData?.videoCount || 0;
+    const viewCount = userData?.viewCount || 0;
+
+    if (followerCount < 10000) {
+      throw new Error("Minimum 10,000 followers required");
+    }
+
+    if (viewCount < 100000) {
+      throw new Error("Minimum 100,000 total views required");
+    }
+
+    if (videoCount < 5) {
+      throw new Error("Minimum 5 videos required");
+    }
+
+    // Check for existing request
+    const existingRequest = await db.collection("verificationRequests")
+      .where("userId", "==", userId)
+      .where("status", "==", "pending")
+      .get();
+
+    if (!existingRequest.empty) {
+      throw new Error("Verification request already pending");
+    }
+
+    // Create verification request
+    await db.collection("verificationRequests").add({
+      userId,
+      username: userData.displayName || "Unknown",
+      profileImage: userData.profileImage || "",
+      followerCount,
+      videoCount,
+      viewCount,
+      status: "pending",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Verification request submitted",
+    };
+  } catch (error: any) {
+    console.error("Error in requestVerification:", error);
+    throw new Error(error.message || "Failed to request verification");
+  }
+});
+
+/**
+ * Approve Verification (Admin Only)
+ */
+export const approveVerification = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId, requestId } = request.data;
+
+    // Update user verification status
+    await db.collection("users").doc(userId).update({
+      isVerified: true,
+      verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update request status
+    await db.collection("verificationRequests").doc(requestId).update({
+      status: "approved",
+      approvedBy: adminId,
+      approvedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Send notification to user
+    await db.collection("notifications").add({
+      userId,
+      type: "verification_approved",
+      message: "Congratulations! Your account has been verified",
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Verification approved",
+    };
+  } catch (error: any) {
+    console.error("Error in approveVerification:", error);
+    throw new Error(error.message || "Failed to approve verification");
+  }
+});
+
+/**
+ * Get Profile Analytics
+ */
+export const getProfileAnalytics = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { targetUserId } = request.data;
+    const profileUserId = targetUserId || userId;
+
+    // Verify user is profile owner
+    if (profileUserId !== userId) {
+      throw new Error("Can only view your own analytics");
+    }
+
+    // Get profile views (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const viewsSnapshot = await db.collection("profileViews")
+      .where("profileId", "==", profileUserId)
+      .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+      .get();
+
+    const totalViews = viewsSnapshot.size;
+    const uniqueViewers = new Set(viewsSnapshot.docs.map(doc => doc.data().viewerId)).size;
+
+    // Get follower growth (last 30 days)
+    const followersSnapshot = await db.collection("followers")
+      .where("followingId", "==", profileUserId)
+      .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+      .get();
+
+    const newFollowers = followersSnapshot.size;
+
+    // Get user stats
+    const userDoc = await db.collection("users").doc(profileUserId).get();
+    const userData = userDoc.data();
+
+    return {
+      success: true,
+      analytics: {
+        profileViews: {
+          total: totalViews,
+          unique: uniqueViewers,
+        },
+        followers: {
+          total: userData?.followerCount || 0,
+          newFollowers,
+        },
+        content: {
+          videos: userData?.videoCount || 0,
+          totalLikes: userData?.likeCount || 0,
+          totalViews: userData?.viewCount || 0,
+        },
+        engagement: {
+          averageLikesPerVideo: userData?.videoCount > 0 
+            ? Math.round((userData?.likeCount || 0) / userData.videoCount) 
+            : 0,
+          averageViewsPerVideo: userData?.videoCount > 0 
+            ? Math.round((userData?.viewCount || 0) / userData.videoCount) 
+            : 0,
+        },
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getProfileAnalytics:", error);
+    throw new Error(error.message || "Failed to get analytics");
+  }
+});
+
+// ============================================================================
+// MESSAGING & SNAPS SYSTEM FUNCTIONS
+// ============================================================================
+
+/**
+ * Create Conversation
+ */
+export const createConversation = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { participants, type, groupName, groupDescription } = request.data;
+
+    if (!participants || participants.length === 0) {
+      throw new Error("Participants are required");
+    }
+
+    // Add creator to participants if not already included
+    if (!participants.includes(userId)) {
+      participants.push(userId);
+    }
+
+    // For direct conversations, check if already exists
+    if (type === "direct" && participants.length === 2) {
+      const existingConv = await db.collection("conversations")
+        .where("type", "==", "direct")
+        .where("participants", "array-contains", userId)
+        .get();
+
+      for (const doc of existingConv.docs) {
+        const data = doc.data();
+        if (data.participants.length === 2 && 
+            data.participants.includes(participants[0]) && 
+            data.participants.includes(participants[1])) {
+          return {
+            success: true,
+            conversationId: doc.id,
+            exists: true,
+          };
+        }
+      }
+    }
+
+    // Get participant data
+    const participantData = [];
+    for (const participantId of participants) {
+      const userDoc = await db.collection("users").doc(participantId).get();
+      const userData = userDoc.data();
+      participantData.push({
+        userId: participantId,
+        username: userData?.displayName || "Unknown",
+        profileImage: userData?.profileImage || "",
+      });
+    }
+
+    // Create conversation
+    const conversationRef = await db.collection("conversations").add({
+      type: type || "direct",
+      participants,
+      participantData,
+      groupName: groupName || null,
+      groupImage: null,
+      groupDescription: groupDescription || null,
+      adminIds: type === "group" ? [userId] : [],
+      lastMessage: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: userId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      isArchived: false,
+      isMuted: false,
+      theme: "default",
+      emoji: "👍",
+      disappearingMode: "off",
+      encryptionEnabled: false,
+    });
+
+    const conversationId = conversationRef.id;
+
+    // Create userConversations for all participants
+    const batch = db.batch();
+    for (const participantId of participants) {
+      const userConvRef = db.collection("users").doc(participantId)
+        .collection("conversations").doc(conversationId);
+      
+      batch.set(userConvRef, {
+        conversationId,
+        otherParticipants: participantData.filter(p => p.userId !== participantId),
+        lastMessage: null,
+        unreadCount: 0,
+        lastViewed: admin.firestore.FieldValue.serverTimestamp(),
+        isPinned: false,
+        isMuted: false,
+        isArchived: false,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+
+    return {
+      success: true,
+      conversationId,
+      exists: false,
+    };
+  } catch (error: any) {
+    console.error("Error in createConversation:", error);
+    throw new Error(error.message || "Failed to create conversation");
+  }
+});
+
+/**
+ * Send Message
+ */
+export const sendMessage = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const {
+      conversationId,
+      text,
+      type,
+      mediaUrl,
+      mediaType,
+      mediaDuration,
+      thumbnailUrl,
+      location,
+      sharedContent,
+      replyTo,
+      isEphemeral,
+      expiresIn,
+    } = request.data;
+
+    // Verify user is participant
+    const conversationDoc = await db.collection("conversations").doc(conversationId).get();
+    if (!conversationDoc.exists) {
+      throw new Error("Conversation not found");
+    }
+
+    const conversationData = conversationDoc.data();
+    if (!conversationData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this conversation");
+    }
+
+    // Get sender data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Create message
+    const messageData: any = {
+      conversationId,
+      senderId: userId,
+      senderUsername: userData?.displayName || "Unknown",
+      senderProfileImage: userData?.profileImage || "",
+      type: type || "text",
+      text: text || "",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      status: "sent",
+      isDeleted: false,
+      deletedFor: [],
+      isEdited: false,
+      reactions: {},
+      deliveredTo: [],
+      readBy: [],
+      readTimestamps: {},
+      viewedBy: [],
+    };
+
+    if (mediaUrl) messageData.mediaUrl = mediaUrl;
+    if (mediaType) messageData.mediaType = mediaType;
+    if (mediaDuration) messageData.mediaDuration = mediaDuration;
+    if (thumbnailUrl) messageData.thumbnailUrl = thumbnailUrl;
+    if (location) messageData.location = location;
+    if (sharedContent) messageData.sharedContent = sharedContent;
+    if (replyTo) {
+      messageData.replyTo = replyTo;
+      // Get reply message data
+      const replyDoc = await db.collection("conversations").doc(conversationId)
+        .collection("messages").doc(replyTo).get();
+      if (replyDoc.exists) {
+        const replyData = replyDoc.data();
+        messageData.replyToData = {
+          senderId: replyData?.senderId,
+          senderUsername: replyData?.senderUsername,
+          text: replyData?.text,
+          type: replyData?.type,
+        };
+      }
+    }
+
+    if (isEphemeral) {
+      messageData.isEphemeral = true;
+      if (expiresIn) {
+        const expiresAt = new Date();
+        expiresAt.setSeconds(expiresAt.getSeconds() + expiresIn);
+        messageData.expiresAt = admin.firestore.Timestamp.fromDate(expiresAt);
+      }
+    }
+
+    // Add message to conversation
+    const messageRef = await db.collection("conversations").doc(conversationId)
+      .collection("messages").add(messageData);
+
+    // Update conversation lastMessage
+    await db.collection("conversations").doc(conversationId).update({
+      lastMessage: {
+        senderId: userId,
+        text: text || `Sent a ${type}`,
+        type: type || "text",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update userConversations for all participants
+    const batch = db.batch();
+    for (const participantId of conversationData.participants) {
+      const userConvRef = db.collection("users").doc(participantId)
+        .collection("conversations").doc(conversationId);
+      
+      if (participantId !== userId) {
+        // Increment unread count for other participants
+        batch.update(userConvRef, {
+          lastMessage: {
+            senderId: userId,
+            text: text || `Sent a ${type}`,
+            type: type || "text",
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          unreadCount: admin.firestore.FieldValue.increment(1),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Send push notification (async)
+        sendMessageNotification(participantId, userId, userData?.displayName || "Someone", text || `Sent a ${type}`);
+      } else {
+        // Update last viewed for sender
+        batch.update(userConvRef, {
+          lastMessage: {
+            senderId: userId,
+            text: text || `Sent a ${type}`,
+            type: type || "text",
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          lastViewed: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+    await batch.commit();
+
+    return {
+      success: true,
+      messageId: messageRef.id,
+      message: "Message sent",
+    };
+  } catch (error: any) {
+    console.error("Error in sendMessage:", error);
+    throw new Error(error.message || "Failed to send message");
+  }
+});
+
+/**
+ * Helper function to send message notification
+ */
+async function sendMessageNotification(
+  userId: string,
+  senderId: string,
+  senderName: string,
+  messageText: string
+) {
+  try {
+    await db.collection("notifications").add({
+      userId,
+      type: "new_message",
+      actorId: senderId,
+      actorName: senderName,
+      message: messageText,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error sending message notification:", error);
+  }
+}
+
+/**
+ * Mark Messages as Read
+ */
+export const markMessagesAsRead = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { conversationId, messageIds } = request.data;
+
+    // Verify user is participant
+    const conversationDoc = await db.collection("conversations").doc(conversationId).get();
+    if (!conversationDoc.exists) {
+      throw new Error("Conversation not found");
+    }
+
+    const conversationData = conversationDoc.data();
+    if (!conversationData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this conversation");
+    }
+
+    // Update messages
+    const batch = db.batch();
+    for (const messageId of messageIds) {
+      const messageRef = db.collection("conversations").doc(conversationId)
+        .collection("messages").doc(messageId);
+      
+      batch.update(messageRef, {
+        readBy: admin.firestore.FieldValue.arrayUnion(userId),
+        [`readTimestamps.${userId}`]: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // Reset unread count
+    const userConvRef = db.collection("users").doc(userId)
+      .collection("conversations").doc(conversationId);
+    batch.update(userConvRef, {
+      unreadCount: 0,
+      lastViewed: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+
+    return {
+      success: true,
+      message: "Messages marked as read",
+    };
+  } catch (error: any) {
+    console.error("Error in markMessagesAsRead:", error);
+    throw new Error(error.message || "Failed to mark messages as read");
+  }
+});
+
+/**
+ * Delete Message
+ */
+export const deleteMessage = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { conversationId, messageId, deleteForEveryone } = request.data;
+
+    // Get message
+    const messageDoc = await db.collection("conversations").doc(conversationId)
+      .collection("messages").doc(messageId).get();
+    
+    if (!messageDoc.exists) {
+      throw new Error("Message not found");
+    }
+
+    const messageData = messageDoc.data();
+
+    // Verify user is sender or admin
+    if (messageData?.senderId !== userId && !deleteForEveryone) {
+      // Delete for self only
+      await db.collection("conversations").doc(conversationId)
+        .collection("messages").doc(messageId).update({
+          deletedFor: admin.firestore.FieldValue.arrayUnion(userId),
+        });
+
+      return {
+        success: true,
+        message: "Message deleted for you",
+      };
+    }
+
+    if (deleteForEveryone && messageData?.senderId !== userId) {
+      throw new Error("Can only delete for everyone if you are the sender");
+    }
+
+    // Delete for everyone
+    if (messageData?.isEphemeral) {
+      // Completely delete ephemeral messages
+      await db.collection("conversations").doc(conversationId)
+        .collection("messages").doc(messageId).delete();
+      
+      // Delete media if exists
+      if (messageData.mediaUrl) {
+        deleteMessageMedia(messageData.mediaUrl);
+      }
+    } else {
+      // Mark as deleted
+      await db.collection("conversations").doc(conversationId)
+        .collection("messages").doc(messageId).update({
+          isDeleted: true,
+          text: "",
+          mediaUrl: null,
+        });
+    }
+
+    return {
+      success: true,
+      message: "Message deleted",
+    };
+  } catch (error: any) {
+    console.error("Error in deleteMessage:", error);
+    throw new Error(error.message || "Failed to delete message");
+  }
+});
+
+/**
+ * Helper function to delete message media
+ */
+async function deleteMessageMedia(mediaUrl: string) {
+  try {
+    const bucket = admin.storage().bucket();
+    const fileName = mediaUrl.split('/').pop();
+    if (fileName) {
+      const file = bucket.file(`messages/${fileName}`);
+      await file.delete();
+    }
+  } catch (error) {
+    console.error("Error deleting message media:", error);
+  }
+}
+
+/**
+ * React to Message
+ */
+export const reactToMessage = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { conversationId, messageId, emoji } = request.data;
+
+    // Verify user is participant
+    const conversationDoc = await db.collection("conversations").doc(conversationId).get();
+    if (!conversationDoc.exists) {
+      throw new Error("Conversation not found");
+    }
+
+    const conversationData = conversationDoc.data();
+    if (!conversationData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this conversation");
+    }
+
+    // Get message
+    const messageRef = db.collection("conversations").doc(conversationId)
+      .collection("messages").doc(messageId);
+    const messageDoc = await messageRef.get();
+
+    if (!messageDoc.exists) {
+      throw new Error("Message not found");
+    }
+
+    const messageData = messageDoc.data();
+    const reactions = messageData?.reactions || {};
+
+    // Toggle reaction
+    if (reactions[emoji] && reactions[emoji].includes(userId)) {
+      // Remove reaction
+      reactions[emoji] = reactions[emoji].filter((id: string) => id !== userId);
+      if (reactions[emoji].length === 0) {
+        delete reactions[emoji];
+      }
+    } else {
+      // Add reaction
+      if (!reactions[emoji]) {
+        reactions[emoji] = [];
+      }
+      reactions[emoji].push(userId);
+    }
+
+    await messageRef.update({ reactions });
+
+    // Send notification to message sender
+    if (messageData?.senderId !== userId) {
+      await db.collection("notifications").add({
+        userId: messageData.senderId,
+        type: "message_reaction",
+        actorId: userId,
+        message: `Reacted ${emoji} to your message`,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    return {
+      success: true,
+      reactions,
+    };
+  } catch (error: any) {
+    console.error("Error in reactToMessage:", error);
+    throw new Error(error.message || "Failed to react to message");
+  }
+});
+
+/**
+ * Set Typing Indicator
+ */
+export const setTypingIndicator = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { conversationId, isTyping } = request.data;
+
+    // Get user data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Update typing indicator
+    const typingId = `${conversationId}_${userId}`;
+    await db.collection("typingIndicators").doc(typingId).set({
+      conversationId,
+      userId,
+      username: userData?.displayName || "Unknown",
+      isTyping: isTyping || false,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return {
+      success: true,
+    };
+  } catch (error: any) {
+    console.error("Error in setTypingIndicator:", error);
+    throw new Error(error.message || "Failed to set typing indicator");
+  }
+});
+
+/**
+ * Initiate Call
+ */
+export const initiateCall = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { conversationId, type } = request.data; // type: 'voice' or 'video'
+
+    // Verify user is participant
+    const conversationDoc = await db.collection("conversations").doc(conversationId).get();
+    if (!conversationDoc.exists) {
+      throw new Error("Conversation not found");
+    }
+
+    const conversationData = conversationDoc.data();
+    if (!conversationData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this conversation");
+    }
+
+    // Get caller data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Create call document
+    const callRef = await db.collection("calls").add({
+      conversationId,
+      callerId: userId,
+      callerUsername: userData?.displayName || "Unknown",
+      participants: conversationData.participants,
+      type: type || "voice",
+      status: "ringing",
+      startedAt: admin.firestore.FieldValue.serverTimestamp(),
+      answeredBy: [],
+      missedBy: [],
+      declinedBy: [],
+    });
+
+    // Generate call token (placeholder - integrate with Agora/Twilio)
+    const callToken = `call_token_${callRef.id}`;
+
+    // Send call notifications to other participants
+    for (const participantId of conversationData.participants) {
+      if (participantId !== userId) {
+        await db.collection("notifications").add({
+          userId: participantId,
+          type: "incoming_call",
+          actorId: userId,
+          actorName: userData?.displayName || "Someone",
+          callId: callRef.id,
+          callType: type,
+          message: `${userData?.displayName || "Someone"} is calling...`,
+          isRead: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+    return {
+      success: true,
+      callId: callRef.id,
+      callToken,
+      message: "Call initiated",
+    };
+  } catch (error: any) {
+    console.error("Error in initiateCall:", error);
+    throw new Error(error.message || "Failed to initiate call");
+  }
+});
+
+/**
+ * Answer Call
+ */
+export const answerCall = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { callId } = request.data;
+
+    // Get call document
+    const callDoc = await db.collection("calls").doc(callId).get();
+    if (!callDoc.exists) {
+      throw new Error("Call not found");
+    }
+
+    const callData = callDoc.data();
+
+    // Verify user is participant
+    if (!callData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this call");
+    }
+
+    // Update call status
+    await db.collection("calls").doc(callId).update({
+      status: "ongoing",
+      answeredBy: admin.firestore.FieldValue.arrayUnion(userId),
+    });
+
+    // Generate call token
+    const callToken = `call_token_${callId}_${userId}`;
+
+    return {
+      success: true,
+      callToken,
+      message: "Call answered",
+    };
+  } catch (error: any) {
+    console.error("Error in answerCall:", error);
+    throw new Error(error.message || "Failed to answer call");
+  }
+});
+
+/**
+ * Decline Call
+ */
+export const declineCall = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { callId } = request.data;
+
+    // Get call document
+    const callDoc = await db.collection("calls").doc(callId).get();
+    if (!callDoc.exists) {
+      throw new Error("Call not found");
+    }
+
+    const callData = callDoc.data();
+
+    // Verify user is participant
+    if (!callData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this call");
+    }
+
+    // Update call status
+    await db.collection("calls").doc(callId).update({
+      declinedBy: admin.firestore.FieldValue.arrayUnion(userId),
+    });
+
+    // If all participants declined, end call
+    const declinedCount = (callData.declinedBy?.length || 0) + 1;
+    const totalParticipants = callData.participants.length - 1; // Exclude caller
+
+    if (declinedCount >= totalParticipants) {
+      await db.collection("calls").doc(callId).update({
+        status: "declined",
+        endedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    return {
+      success: true,
+      message: "Call declined",
+    };
+  } catch (error: any) {
+    console.error("Error in declineCall:", error);
+    throw new Error(error.message || "Failed to decline call");
+  }
+});
+
+/**
+ * End Call
+ */
+export const endCall = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { callId } = request.data;
+
+    // Get call document
+    const callDoc = await db.collection("calls").doc(callId).get();
+    if (!callDoc.exists) {
+      throw new Error("Call not found");
+    }
+
+    const callData = callDoc.data();
+
+    // Verify user is participant
+    if (!callData?.participants.includes(userId)) {
+      throw new Error("Not a participant in this call");
+    }
+
+    // Calculate duration
+    const startedAt = callData.startedAt?.toMillis() || Date.now();
+    const duration = Math.floor((Date.now() - startedAt) / 1000);
+
+    // Update call status
+    await db.collection("calls").doc(callId).update({
+      status: "ended",
+      endedAt: admin.firestore.FieldValue.serverTimestamp(),
+      duration,
+    });
+
+    // Create call message in conversation
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    await db.collection("conversations").doc(callData.conversationId)
+      .collection("messages").add({
+        conversationId: callData.conversationId,
+        senderId: userId,
+        senderUsername: userData?.displayName || "Unknown",
+        type: "call",
+        text: `${callData.type === 'video' ? 'Video' : 'Voice'} call - ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        status: "sent",
+        isDeleted: false,
+      });
+
+    return {
+      success: true,
+      duration,
+      message: "Call ended",
+    };
+  } catch (error: any) {
+    console.error("Error in endCall:", error);
+    throw new Error(error.message || "Failed to end call");
+  }
+});
+
+/**
+ * Expire Ephemeral Messages - Scheduled function
+ */
+export const expireEphemeralMessages = onSchedule("every 5 minutes", async (event) => {
+  try {
+    console.log("Expiring ephemeral messages...");
+
+    const now = admin.firestore.Timestamp.now();
+
+    // Query expired messages across all conversations
+    const conversationsSnapshot = await db.collection("conversations").get();
+
+    let expiredCount = 0;
+
+    for (const convDoc of conversationsSnapshot.docs) {
+      const messagesSnapshot = await db.collection("conversations").doc(convDoc.id)
+        .collection("messages")
+        .where("isEphemeral", "==", true)
+        .where("expiresAt", "<=", now)
+        .get();
+
+      const batch = db.batch();
+      for (const msgDoc of messagesSnapshot.docs) {
+        const msgData = msgDoc.data();
+        
+        // Delete media if exists
+        if (msgData.mediaUrl) {
+          deleteMessageMedia(msgData.mediaUrl);
+        }
+
+        // Delete message
+        batch.delete(msgDoc.ref);
+        expiredCount++;
+      }
+
+      if (messagesSnapshot.size > 0) {
+        await batch.commit();
+      }
+    }
+
+    console.log(`Expired ${expiredCount} ephemeral messages`);
+    return null;
+  } catch (error: any) {
+    console.error("Error expiring ephemeral messages:", error);
+    return null;
+  }
+});
+
+/**
+ * Clean Up Old Typing Indicators - Scheduled function
+ */
+export const cleanupTypingIndicators = onSchedule("every 1 minutes", async (event) => {
+  try {
+    console.log("Cleaning up old typing indicators...");
+
+    const fiveSecondsAgo = new Date();
+    fiveSecondsAgo.setSeconds(fiveSecondsAgo.getSeconds() - 5);
+
+    const oldIndicators = await db.collection("typingIndicators")
+      .where("timestamp", "<=", admin.firestore.Timestamp.fromDate(fiveSecondsAgo))
+      .get();
+
+    const batch = db.batch();
+    for (const doc of oldIndicators.docs) {
+      batch.update(doc.ref, { isTyping: false });
+    }
+
+    if (oldIndicators.size > 0) {
+      await batch.commit();
+    }
+
+    console.log(`Cleaned up ${oldIndicators.size} typing indicators`);
+    return null;
+  } catch (error: any) {
+    console.error("Error cleaning up typing indicators:", error);
+    return null;
+  }
+});
+
+// ============================================================================
+// ADS SYSTEM FUNCTIONS
+// ============================================================================
+
+/**
+ * Create Ad (Admin Only)
+ */
+export const createAd = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const {
+      title,
+      description,
+      type,
+      mediaUrl,
+      mediaType,
+      thumbnailUrl,
+      targetUrl,
+      callToAction,
+      budget,
+      costPerImpression,
+      costPerClick,
+      targetAudience,
+      startDate,
+      endDate,
+      isActive,
+    } = request.data;
+
+    // Validate required fields
+    if (!title || !type || !mediaUrl) {
+      throw new Error("Title, type, and media URL are required");
+    }
+
+    // Create ad document
+    const adRef = await db.collection("ads").add({
+      title,
+      description: description || "",
+      type: type || "feed", // feed, rewarded, interstitial
+      mediaUrl,
+      mediaType: mediaType || "image",
+      thumbnailUrl: thumbnailUrl || mediaUrl,
+      targetUrl: targetUrl || "",
+      callToAction: callToAction || "Learn More",
+      budget: budget || 0,
+      spent: 0,
+      costPerImpression: costPerImpression || 0.001,
+      costPerClick: costPerClick || 0.01,
+      impressions: 0,
+      clicks: 0,
+      conversions: 0,
+      targetAudience: targetAudience || {},
+      startDate: startDate ? admin.firestore.Timestamp.fromDate(new Date(startDate)) : admin.firestore.FieldValue.serverTimestamp(),
+      endDate: endDate ? admin.firestore.Timestamp.fromDate(new Date(endDate)) : null,
+      isActive: isActive !== false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: adminId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      adId: adRef.id,
+      message: "Ad created successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in createAd:", error);
+    throw new Error(error.message || "Failed to create ad");
+  }
+});
+
+/**
+ * Update Ad (Admin Only)
+ */
+export const updateAd = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { adId, updates } = request.data;
+
+    if (!adId) {
+      throw new Error("Ad ID is required");
+    }
+
+    // Update ad document
+    await db.collection("ads").doc(adId).update({
+      ...updates,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Ad updated successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in updateAd:", error);
+    throw new Error(error.message || "Failed to update ad");
+  }
+});
+
+/**
+ * Delete Ad (Admin Only)
+ */
+export const deleteAd = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { adId } = request.data;
+
+    if (!adId) {
+      throw new Error("Ad ID is required");
+    }
+
+    // Delete ad document
+    await db.collection("ads").doc(adId).delete();
+
+    return {
+      success: true,
+      message: "Ad deleted successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in deleteAd:", error);
+    throw new Error(error.message || "Failed to delete ad");
+  }
+});
+
+/**
+ * Get Ads for Feed
+ */
+export const getAdsForFeed = onCall(async (request) => {
+  const userId = request.auth?.uid;
+
+  try {
+    const { limit = 5 } = request.data;
+
+    // Get active feed ads
+    const now = admin.firestore.Timestamp.now();
+    
+    let query = db.collection("ads")
+      .where("type", "==", "feed")
+      .where("isActive", "==", true)
+      .where("startDate", "<=", now);
+
+    // Filter by end date if exists
+    const adsSnapshot = await query.limit(limit * 2).get();
+
+    const ads = [];
+    for (const doc of adsSnapshot.docs) {
+      const adData = doc.data();
+      
+      // Check end date
+      if (adData.endDate && adData.endDate.toMillis() < Date.now()) {
+        continue;
+      }
+
+      // Check budget
+      if (adData.budget > 0 && adData.spent >= adData.budget) {
+        continue;
+      }
+
+      // Check target audience (basic filtering)
+      if (userId && adData.targetAudience) {
+        const userDoc = await db.collection("users").doc(userId).get();
+        const userData = userDoc.data();
+
+        // Age filter
+        if (adData.targetAudience.minAge && userData?.age < adData.targetAudience.minAge) {
+          continue;
+        }
+        if (adData.targetAudience.maxAge && userData?.age > adData.targetAudience.maxAge) {
+          continue;
+        }
+
+        // Gender filter
+        if (adData.targetAudience.gender && adData.targetAudience.gender.length > 0) {
+          if (!adData.targetAudience.gender.includes(userData?.gender)) {
+            continue;
+          }
+        }
+
+        // Location filter
+        if (adData.targetAudience.countries && adData.targetAudience.countries.length > 0) {
+          if (!adData.targetAudience.countries.includes(userData?.location?.country)) {
+            continue;
+          }
+        }
+      }
+
+      ads.push({
+        id: doc.id,
+        ...adData,
+      });
+
+      if (ads.length >= limit) {
+        break;
+      }
+    }
+
+    return {
+      success: true,
+      ads,
+    };
+  } catch (error: any) {
+    console.error("Error in getAdsForFeed:", error);
+    throw new Error(error.message || "Failed to get ads");
+  }
+});
+
+/**
+ * Get Rewarded Ad
+ */
+export const getRewardedAd = onCall(async (request) => {
+  const userId = request.auth?.uid;
+
+  try {
+    // Get active rewarded ads
+    const now = admin.firestore.Timestamp.now();
+    
+    const adsSnapshot = await db.collection("ads")
+      .where("type", "==", "rewarded")
+      .where("isActive", "==", true)
+      .where("startDate", "<=", now)
+      .limit(10)
+      .get();
+
+    const eligibleAds = [];
+    for (const doc of adsSnapshot.docs) {
+      const adData = doc.data();
+      
+      // Check end date
+      if (adData.endDate && adData.endDate.toMillis() < Date.now()) {
+        continue;
+      }
+
+      // Check budget
+      if (adData.budget > 0 && adData.spent >= adData.budget) {
+        continue;
+      }
+
+      eligibleAds.push({
+        id: doc.id,
+        ...adData,
+      });
+    }
+
+    // Return random ad
+    if (eligibleAds.length > 0) {
+      const randomAd = eligibleAds[Math.floor(Math.random() * eligibleAds.length)];
+      return {
+        success: true,
+        ad: randomAd,
+      };
+    }
+
+    return {
+      success: false,
+      message: "No rewarded ads available",
+    };
+  } catch (error: any) {
+    console.error("Error in getRewardedAd:", error);
+    throw new Error(error.message || "Failed to get rewarded ad");
+  }
+});
+
+/**
+ * Record Ad Impression
+ */
+export const recordAdImpression = onCall(async (request) => {
+  const userId = request.auth?.uid;
+
+  try {
+    const { adId } = request.data;
+
+    if (!adId) {
+      throw new Error("Ad ID is required");
+    }
+
+    // Get ad document
+    const adDoc = await db.collection("ads").doc(adId).get();
+    if (!adDoc.exists) {
+      throw new Error("Ad not found");
+    }
+
+    const adData = adDoc.data();
+
+    // Calculate cost
+    const cost = adData?.costPerImpression || 0.001;
+
+    // Update ad statistics
+    await db.collection("ads").doc(adId).update({
+      impressions: admin.firestore.FieldValue.increment(1),
+      spent: admin.firestore.FieldValue.increment(cost),
+    });
+
+    // Record impression
+    await db.collection("adImpressions").add({
+      adId,
+      userId: userId || null,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      cost,
+    });
+
+    // Update platform revenue
+    await db.collection("platformRevenue").doc("summary").set({
+      adRevenue: admin.firestore.FieldValue.increment(cost),
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return {
+      success: true,
+      message: "Impression recorded",
+    };
+  } catch (error: any) {
+    console.error("Error in recordAdImpression:", error);
+    throw new Error(error.message || "Failed to record impression");
+  }
+});
+
+/**
+ * Record Ad Click
+ */
+export const recordAdClick = onCall(async (request) => {
+  const userId = request.auth?.uid;
+
+  try {
+    const { adId } = request.data;
+
+    if (!adId) {
+      throw new Error("Ad ID is required");
+    }
+
+    // Get ad document
+    const adDoc = await db.collection("ads").doc(adId).get();
+    if (!adDoc.exists) {
+      throw new Error("Ad not found");
+    }
+
+    const adData = adDoc.data();
+
+    // Calculate cost
+    const cost = adData?.costPerClick || 0.01;
+
+    // Update ad statistics
+    await db.collection("ads").doc(adId).update({
+      clicks: admin.firestore.FieldValue.increment(1),
+      spent: admin.firestore.FieldValue.increment(cost),
+    });
+
+    // Record click
+    await db.collection("adClicks").add({
+      adId,
+      userId: userId || null,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      cost,
+    });
+
+    // Update platform revenue
+    await db.collection("platformRevenue").doc("summary").set({
+      adRevenue: admin.firestore.FieldValue.increment(cost),
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return {
+      success: true,
+      targetUrl: adData?.targetUrl || "",
+      message: "Click recorded",
+    };
+  } catch (error: any) {
+    console.error("Error in recordAdClick:", error);
+    throw new Error(error.message || "Failed to record click");
+  }
+});
+
+/**
+ * Complete Rewarded Ad
+ */
+export const completeRewardedAd = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { adId, rewardType, rewardAmount } = request.data;
+
+    if (!adId) {
+      throw new Error("Ad ID is required");
+    }
+
+    // Get ad document
+    const adDoc = await db.collection("ads").doc(adId).get();
+    if (!adDoc.exists) {
+      throw new Error("Ad not found");
+    }
+
+    const adData = adDoc.data();
+
+    // Verify ad is rewarded type
+    if (adData?.type !== "rewarded") {
+      throw new Error("Ad is not a rewarded ad");
+    }
+
+    // Calculate cost
+    const cost = adData?.costPerImpression || 0.001;
+
+    // Update ad statistics
+    await db.collection("ads").doc(adId).update({
+      conversions: admin.firestore.FieldValue.increment(1),
+      spent: admin.firestore.FieldValue.increment(cost),
+    });
+
+    // Grant reward to user
+    const reward = rewardAmount || 10; // Default 10 coins
+    await db.collection("users").doc(userId).update({
+      coins: admin.firestore.FieldValue.increment(reward),
+    });
+
+    // Record conversion
+    await db.collection("adConversions").add({
+      adId,
+      userId,
+      rewardType: rewardType || "coins",
+      rewardAmount: reward,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      cost,
+    });
+
+    // Update platform revenue
+    await db.collection("platformRevenue").doc("summary").set({
+      adRevenue: admin.firestore.FieldValue.increment(cost),
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return {
+      success: true,
+      reward: {
+        type: rewardType || "coins",
+        amount: reward,
+      },
+      message: "Reward granted",
+    };
+  } catch (error: any) {
+    console.error("Error in completeRewardedAd:", error);
+    throw new Error(error.message || "Failed to complete rewarded ad");
+  }
+});
+
+/**
+ * Get Ad Analytics (Admin Only)
+ */
+export const getAdAnalytics = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { adId, startDate, endDate } = request.data;
+
+    let query: any = db.collection("ads");
+
+    if (adId) {
+      // Get specific ad analytics
+      const adDoc = await db.collection("ads").doc(adId).get();
+      if (!adDoc.exists) {
+        throw new Error("Ad not found");
+      }
+
+      const adData = adDoc.data();
+
+      // Get impressions
+      let impressionsQuery = db.collection("adImpressions").where("adId", "==", adId);
+      if (startDate) {
+        impressionsQuery = impressionsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+      }
+      if (endDate) {
+        impressionsQuery = impressionsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+      }
+      const impressionsSnapshot = await impressionsQuery.get();
+
+      // Get clicks
+      let clicksQuery = db.collection("adClicks").where("adId", "==", adId);
+      if (startDate) {
+        clicksQuery = clicksQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+      }
+      if (endDate) {
+        clicksQuery = clicksQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+      }
+      const clicksSnapshot = await clicksQuery.get();
+
+      // Get conversions
+      let conversionsQuery = db.collection("adConversions").where("adId", "==", adId);
+      if (startDate) {
+        conversionsQuery = conversionsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+      }
+      if (endDate) {
+        conversionsQuery = conversionsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+      }
+      const conversionsSnapshot = await conversionsQuery.get();
+
+      const impressions = impressionsSnapshot.size;
+      const clicks = clicksSnapshot.size;
+      const conversions = conversionsSnapshot.size;
+
+      return {
+        success: true,
+        analytics: {
+          adId,
+          title: adData?.title,
+          type: adData?.type,
+          impressions,
+          clicks,
+          conversions,
+          ctr: impressions > 0 ? (clicks / impressions * 100).toFixed(2) : 0,
+          conversionRate: clicks > 0 ? (conversions / clicks * 100).toFixed(2) : 0,
+          spent: adData?.spent || 0,
+          budget: adData?.budget || 0,
+          isActive: adData?.isActive || false,
+        },
+      };
+    } else {
+      // Get all ads analytics
+      const adsSnapshot = await db.collection("ads").get();
+      
+      const adsAnalytics = [];
+      for (const doc of adsSnapshot.docs) {
+        const adData = doc.data();
+        adsAnalytics.push({
+          adId: doc.id,
+          title: adData.title,
+          type: adData.type,
+          impressions: adData.impressions || 0,
+          clicks: adData.clicks || 0,
+          conversions: adData.conversions || 0,
+          ctr: adData.impressions > 0 ? ((adData.clicks || 0) / adData.impressions * 100).toFixed(2) : 0,
+          spent: adData.spent || 0,
+          budget: adData.budget || 0,
+          isActive: adData.isActive || false,
+        });
+      }
+
+      return {
+        success: true,
+        analytics: adsAnalytics,
+      };
+    }
+  } catch (error: any) {
+    console.error("Error in getAdAnalytics:", error);
+    throw new Error(error.message || "Failed to get ad analytics");
+  }
+});
+
+/**
+ * Pause/Resume Ad (Admin Only)
+ */
+export const toggleAdStatus = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { adId, isActive } = request.data;
+
+    if (!adId) {
+      throw new Error("Ad ID is required");
+    }
+
+    // Update ad status
+    await db.collection("ads").doc(adId).update({
+      isActive: isActive !== false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: isActive ? "Ad activated" : "Ad paused",
+    };
+  } catch (error: any) {
+    console.error("Error in toggleAdStatus:", error);
+    throw new Error(error.message || "Failed to toggle ad status");
+  }
+});
+
+// ============================================================================
+// AGE & SAFETY VERIFICATION SYSTEM FUNCTIONS
+// ============================================================================
+
+/**
+ * Set Birth Date
+ */
+export const setBirthDate = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { birthDate } = request.data;
+
+    if (!birthDate) {
+      throw new Error("Birth date is required");
+    }
+
+    // Parse birth date
+    const birthDateObj = new Date(birthDate);
+    if (isNaN(birthDateObj.getTime())) {
+      throw new Error("Invalid birth date format");
+    }
+
+    // Calculate age
+    const today = new Date();
+    let age = today.getFullYear() - birthDateObj.getFullYear();
+    const monthDiff = today.getMonth() - birthDateObj.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+      age--;
+    }
+
+    // Check minimum age (13 years)
+    if (age < 13) {
+      throw new Error("You must be at least 13 years old to use this platform");
+    }
+
+    // Check if birth date already set
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    if (userData?.birthDate) {
+      throw new Error("Birth date can only be set once");
+    }
+
+    // Update user document
+    await db.collection("users").doc(userId).update({
+      birthDate: admin.firestore.Timestamp.fromDate(birthDateObj),
+      age,
+      isAgeVerified: true,
+      ageVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      contentFilterLevel: age < 18 ? "strict" : "moderate",
+    });
+
+    return {
+      success: true,
+      age,
+      message: "Birth date set successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in setBirthDate:", error);
+    throw new Error(error.message || "Failed to set birth date");
+  }
+});
+
+/**
+ * Request ID Verification
+ */
+export const requestIdVerification = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { idType, idNumber, idImageUrls } = request.data;
+
+    if (!idType || !idNumber || !idImageUrls || idImageUrls.length === 0) {
+      throw new Error("ID type, number, and images are required");
+    }
+
+    // Get user data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Check if already verified
+    if (userData?.isIdVerified) {
+      throw new Error("ID is already verified");
+    }
+
+    // Check for existing pending request
+    const existingRequest = await db.collection("idVerificationRequests")
+      .where("userId", "==", userId)
+      .where("status", "==", "pending")
+      .get();
+
+    if (!existingRequest.empty) {
+      throw new Error("ID verification request already pending");
+    }
+
+    // Create verification request
+    await db.collection("idVerificationRequests").add({
+      userId,
+      username: userData?.displayName || "Unknown",
+      idType,
+      idNumber,
+      idImageUrls,
+      status: "pending",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "ID verification request submitted",
+    };
+  } catch (error: any) {
+    console.error("Error in requestIdVerification:", error);
+    throw new Error(error.message || "Failed to request ID verification");
+  }
+});
+
+/**
+ * Approve ID Verification (Admin Only)
+ */
+export const approveIdVerification = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId, requestId, verifiedAge } = request.data;
+
+    // Update user verification status
+    await db.collection("users").doc(userId).update({
+      isIdVerified: true,
+      idVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      age: verifiedAge || null,
+    });
+
+    // Update request status
+    await db.collection("idVerificationRequests").doc(requestId).update({
+      status: "approved",
+      approvedBy: adminId,
+      approvedAt: admin.firestore.FieldValue.serverTimestamp(),
+      verifiedAge,
+    });
+
+    // Send notification to user
+    await db.collection("notifications").add({
+      userId,
+      type: "id_verification_approved",
+      message: "Your ID verification has been approved",
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "ID verification approved",
+    };
+  } catch (error: any) {
+    console.error("Error in approveIdVerification:", error);
+    throw new Error(error.message || "Failed to approve ID verification");
+  }
+});
+
+/**
+ * Reject ID Verification (Admin Only)
+ */
+export const rejectIdVerification = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId, requestId, reason } = request.data;
+
+    // Update request status
+    await db.collection("idVerificationRequests").doc(requestId).update({
+      status: "rejected",
+      rejectedBy: adminId,
+      rejectedAt: admin.firestore.FieldValue.serverTimestamp(),
+      rejectionReason: reason || "ID verification failed",
+    });
+
+    // Send notification to user
+    await db.collection("notifications").add({
+      userId,
+      type: "id_verification_rejected",
+      message: `ID verification rejected: ${reason || "Please try again with valid documents"}`,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "ID verification rejected",
+    };
+  } catch (error: any) {
+    console.error("Error in rejectIdVerification:", error);
+    throw new Error(error.message || "Failed to reject ID verification");
+  }
+});
+
+/**
+ * Update Content Filter Level
+ */
+export const updateContentFilterLevel = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { level } = request.data; // strict, moderate, off
+
+    if (!level || !['strict', 'moderate', 'off'].includes(level)) {
+      throw new Error("Invalid content filter level");
+    }
+
+    // Get user data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Check age restrictions
+    if (userData?.age && userData.age < 18 && level === 'off') {
+      throw new Error("Users under 18 cannot turn off content filters");
+    }
+
+    // Update content filter level
+    await db.collection("users").doc(userId).update({
+      contentFilterLevel: level,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Content filter level updated",
+    };
+  } catch (error: any) {
+    console.error("Error in updateContentFilterLevel:", error);
+    throw new Error(error.message || "Failed to update content filter level");
+  }
+});
+
+/**
+ * Check Content Age Restriction
+ */
+export const checkContentAgeRestriction = onCall(async (request) => {
+  const userId = request.auth?.uid;
+
+  try {
+    const { contentId, contentType } = request.data; // contentType: video, story, livestream
+
+    if (!contentId || !contentType) {
+      throw new Error("Content ID and type are required");
+    }
+
+    // Get content
+    let contentDoc;
+    if (contentType === "video") {
+      contentDoc = await db.collection("videos").doc(contentId).get();
+    } else if (contentType === "story") {
+      contentDoc = await db.collection("stories").doc(contentId).get();
+    } else if (contentType === "livestream") {
+      contentDoc = await db.collection("liveStreams").doc(contentId).get();
+    } else {
+      throw new Error("Invalid content type");
+    }
+
+    if (!contentDoc || !contentDoc.exists) {
+      throw new Error("Content not found");
+    }
+
+    const contentData = contentDoc.data();
+    const ageRestriction = contentData?.ageRestriction || 0;
+
+    // If no user, check if content is age-restricted
+    if (!userId) {
+      return {
+        success: true,
+        canView: ageRestriction === 0,
+        requiresAuth: ageRestriction > 0,
+        ageRestriction,
+      };
+    }
+
+    // Get user age
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    const userAge = userData?.age || 0;
+
+    // Check if user can view
+    const canView = userAge >= ageRestriction;
+
+    return {
+      success: true,
+      canView,
+      userAge,
+      ageRestriction,
+      message: canView ? "Content accessible" : `This content is restricted to users ${ageRestriction}+`,
+    };
+  } catch (error: any) {
+    console.error("Error in checkContentAgeRestriction:", error);
+    throw new Error(error.message || "Failed to check age restriction");
+  }
+});
+
+/**
+ * Set Content Age Restriction
+ */
+export const setContentAgeRestriction = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { contentId, contentType, ageRestriction } = request.data;
+
+    if (!contentId || !contentType) {
+      throw new Error("Content ID and type are required");
+    }
+
+    if (ageRestriction && (ageRestriction < 0 || ageRestriction > 21)) {
+      throw new Error("Age restriction must be between 0 and 21");
+    }
+
+    // Get content
+    let contentDoc;
+    if (contentType === "video") {
+      contentDoc = await db.collection("videos").doc(contentId).get();
+    } else if (contentType === "story") {
+      contentDoc = await db.collection("stories").doc(contentId).get();
+    } else if (contentType === "livestream") {
+      contentDoc = await db.collection("liveStreams").doc(contentId).get();
+    } else {
+      throw new Error("Invalid content type");
+    }
+
+    if (!contentDoc || !contentDoc.exists) {
+      throw new Error("Content not found");
+    }
+
+    const contentData = contentDoc.data();
+
+    // Verify user is content owner
+    if (contentData?.userId !== userId) {
+      throw new Error("You can only set age restrictions on your own content");
+    }
+
+    // Update content age restriction
+    await contentDoc.ref.update({
+      ageRestriction: ageRestriction || 0,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Age restriction updated",
+    };
+  } catch (error: any) {
+    console.error("Error in setContentAgeRestriction:", error);
+    throw new Error(error.message || "Failed to set age restriction");
+  }
+});
+
+/**
+ * Enable Parental Controls (Admin Only)
+ */
+export const enableParentalControls = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId, settings } = request.data;
+
+    if (!userId || !settings) {
+      throw new Error("User ID and settings are required");
+    }
+
+    // Update user parental controls
+    await db.collection("users").doc(userId).update({
+      parentalControls: {
+        enabled: true,
+        restrictedMode: settings.restrictedMode || true,
+        allowDirectMessages: settings.allowDirectMessages || false,
+        allowComments: settings.allowComments || false,
+        allowLiveStreaming: settings.allowLiveStreaming || false,
+        screenTimeLimit: settings.screenTimeLimit || 0,
+        contentFilterLevel: "strict",
+      },
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Parental controls enabled",
+    };
+  } catch (error: any) {
+    console.error("Error in enableParentalControls:", error);
+    throw new Error(error.message || "Failed to enable parental controls");
+  }
+});
+
+/**
+ * Update Age Verification Status - Scheduled function
+ */
+export const updateAgeVerificationStatus = onSchedule("every 24 hours", async (event) => {
+  try {
+    console.log("Updating age verification status...");
+
+    // Get all users with birth dates
+    const usersSnapshot = await db.collection("users")
+      .where("birthDate", "!=", null)
+      .get();
+
+    const batch = db.batch();
+    let updateCount = 0;
+
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+      const birthDate = userData.birthDate?.toDate();
+
+      if (birthDate) {
+        // Recalculate age
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+
+        // Update age if changed
+        if (userData.age !== age) {
+          batch.update(userDoc.ref, {
+            age,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          updateCount++;
+        }
+
+        // Update content filter level for users turning 18
+        if (userData.age === 17 && age === 18 && userData.contentFilterLevel === "strict") {
+          batch.update(userDoc.ref, {
+            contentFilterLevel: "moderate",
+          });
+        }
+      }
+
+      // Commit batch every 500 updates
+      if (updateCount >= 500) {
+        await batch.commit();
+        updateCount = 0;
+      }
+    }
+
+    if (updateCount > 0) {
+      await batch.commit();
+    }
+
+    console.log(`Updated age for ${updateCount} users`);
+    return null;
+  } catch (error: any) {
+    console.error("Error updating age verification status:", error);
+    return null;
+  }
+});
+
+// ============================================================================
+// REPORTS & PENALTIES SYSTEM FUNCTIONS
+// ============================================================================
+
+/**
+ * Report Content or User
+ */
+export const reportContent = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const {
+      reportType,
+      targetId,
+      targetType,
+      reason,
+      description,
+      evidence,
+    } = request.data;
+
+    if (!reportType || !targetId || !targetType || !reason) {
+      throw new Error("Report type, target ID, target type, and reason are required");
+    }
+
+    // Get reporter data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Check for duplicate reports (same user, same target, within 24 hours)
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const existingReport = await db.collection("reports")
+      .where("reporterId", "==", userId)
+      .where("targetId", "==", targetId)
+      .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(oneDayAgo))
+      .get();
+
+    if (!existingReport.empty) {
+      throw new Error("You have already reported this content recently");
+    }
+
+    // Create report
+    const reportRef = await db.collection("reports").add({
+      reporterId: userId,
+      reporterUsername: userData?.displayName || "Unknown",
+      reportType, // spam, harassment, inappropriate, violence, hate_speech, copyright, other
+      targetId,
+      targetType, // user, video, story, comment, livestream, message
+      reason,
+      description: description || "",
+      evidence: evidence || [],
+      status: "pending",
+      priority: calculateReportPriority(reportType),
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      reviewedBy: null,
+      reviewedAt: null,
+      action: null,
+      actionReason: null,
+    });
+
+    // Increment report count on target
+    if (targetType === "user") {
+      await db.collection("users").doc(targetId).update({
+        reportCount: admin.firestore.FieldValue.increment(1),
+      });
+    } else if (targetType === "video") {
+      await db.collection("videos").doc(targetId).update({
+        reportCount: admin.firestore.FieldValue.increment(1),
+      });
+    } else if (targetType === "story") {
+      await db.collection("stories").doc(targetId).update({
+        reportCount: admin.firestore.FieldValue.increment(1),
+      });
+    } else if (targetType === "livestream") {
+      await db.collection("liveStreams").doc(targetId).update({
+        reportCount: admin.firestore.FieldValue.increment(1),
+      });
+    }
+
+    // Auto-moderate if threshold exceeded
+    await checkAutoModeration(targetId, targetType);
+
+    return {
+      success: true,
+      reportId: reportRef.id,
+      message: "Report submitted successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in reportContent:", error);
+    throw new Error(error.message || "Failed to submit report");
+  }
+});
+
+/**
+ * Helper function to calculate report priority
+ */
+function calculateReportPriority(reportType: string): string {
+  const highPriority = ['violence', 'hate_speech', 'child_safety', 'self_harm'];
+  const mediumPriority = ['harassment', 'inappropriate', 'bullying'];
+  
+  if (highPriority.includes(reportType)) {
+    return "high";
+  } else if (mediumPriority.includes(reportType)) {
+    return "medium";
+  }
+  return "low";
+}
+
+/**
+ * Helper function to check auto-moderation thresholds
+ */
+async function checkAutoModeration(targetId: string, targetType: string) {
+  try {
+    let doc;
+    if (targetType === "video") {
+      doc = await db.collection("videos").doc(targetId).get();
+    } else if (targetType === "story") {
+      doc = await db.collection("stories").doc(targetId).get();
+    } else if (targetType === "livestream") {
+      doc = await db.collection("liveStreams").doc(targetId).get();
+    } else if (targetType === "user") {
+      doc = await db.collection("users").doc(targetId).get();
+    }
+
+    if (!doc || !doc.exists) {
+      return;
+    }
+
+    const data = doc.data();
+    const reportCount = data?.reportCount || 0;
+
+    // Auto-hide content if report threshold exceeded
+    if (targetType !== "user" && reportCount >= 10) {
+      await doc.ref.update({
+        isHidden: true,
+        hiddenReason: "auto_moderation",
+        hiddenAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Notify content owner
+      await db.collection("notifications").add({
+        userId: data?.userId,
+        type: "content_hidden",
+        message: "Your content has been temporarily hidden due to multiple reports",
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // Issue warning to user if threshold exceeded
+    if (targetType === "user" && reportCount >= 5) {
+      await issueWarning(targetId, "Multiple reports received", "auto_moderation");
+    }
+  } catch (error) {
+    console.error("Error in auto-moderation check:", error);
+  }
+}
+
+/**
+ * Review Report (Admin Only)
+ */
+export const reviewReport = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { reportId, action, actionReason, banDuration } = request.data;
+
+    if (!reportId || !action) {
+      throw new Error("Report ID and action are required");
+    }
+
+    // Get report
+    const reportDoc = await db.collection("reports").doc(reportId).get();
+    if (!reportDoc.exists) {
+      throw new Error("Report not found");
+    }
+
+    const reportData = reportDoc.data();
+
+    // Update report status
+    await db.collection("reports").doc(reportId).update({
+      status: action === "dismiss" ? "dismissed" : "resolved",
+      action,
+      actionReason: actionReason || "",
+      reviewedBy: adminId,
+      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Take action based on decision
+    if (action === "remove_content") {
+      await removeContent(reportData?.targetId, reportData?.targetType);
+    } else if (action === "hide_content") {
+      await hideContent(reportData?.targetId, reportData?.targetType);
+    } else if (action === "warn_user") {
+      await issueWarning(reportData?.targetId, actionReason || "Violation of community guidelines", adminId);
+    } else if (action === "ban_user") {
+      await banUser(reportData?.targetId, banDuration || 7, actionReason || "Violation of community guidelines", adminId);
+    }
+
+    return {
+      success: true,
+      message: "Report reviewed successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in reviewReport:", error);
+    throw new Error(error.message || "Failed to review report");
+  }
+});
+
+/**
+ * Helper function to remove content
+ */
+async function removeContent(targetId: string, targetType: string) {
+  try {
+    if (targetType === "video") {
+      await db.collection("videos").doc(targetId).update({
+        isDeleted: true,
+        deletedReason: "community_guidelines_violation",
+        deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else if (targetType === "story") {
+      await db.collection("stories").doc(targetId).delete();
+    } else if (targetType === "comment") {
+      // Find and delete comment (implementation depends on comment structure)
+      // Placeholder for comment deletion logic
+    }
+  } catch (error) {
+    console.error("Error removing content:", error);
+  }
+}
+
+/**
+ * Helper function to hide content
+ */
+async function hideContent(targetId: string, targetType: string) {
+  try {
+    if (targetType === "video") {
+      await db.collection("videos").doc(targetId).update({
+        isHidden: true,
+        hiddenReason: "community_guidelines_violation",
+        hiddenAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else if (targetType === "story") {
+      await db.collection("stories").doc(targetId).update({
+        isHidden: true,
+        hiddenReason: "community_guidelines_violation",
+        hiddenAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else if (targetType === "livestream") {
+      await db.collection("liveStreams").doc(targetId).update({
+        status: "terminated",
+        terminationReason: "community_guidelines_violation",
+      });
+    }
+  } catch (error) {
+    console.error("Error hiding content:", error);
+  }
+}
+
+/**
+ * Helper function to issue warning
+ */
+async function issueWarning(userId: string, reason: string, issuedBy: string) {
+  try {
+    // Get user data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    const currentWarnings = userData?.warningCount || 0;
+
+    // Create warning record
+    await db.collection("warnings").add({
+      userId,
+      reason,
+      issuedBy,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      warningNumber: currentWarnings + 1,
+    });
+
+    // Update user warning count
+    await db.collection("users").doc(userId).update({
+      warningCount: admin.firestore.FieldValue.increment(1),
+    });
+
+    // Send notification
+    await db.collection("notifications").add({
+      userId,
+      type: "warning",
+      message: `Warning ${currentWarnings + 1}/3: ${reason}`,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Auto-ban if 3 warnings reached
+    if (currentWarnings + 1 >= 3) {
+      await banUser(userId, 7, "Three warnings received", "auto_moderation");
+    }
+  } catch (error) {
+    console.error("Error issuing warning:", error);
+  }
+}
+
+/**
+ * Helper function to ban user
+ */
+async function banUser(userId: string, durationDays: number, reason: string, bannedBy: string) {
+  try {
+    const banExpiresAt = new Date();
+    banExpiresAt.setDate(banExpiresAt.getDate() + durationDays);
+
+    // Update user ban status
+    await db.collection("users").doc(userId).update({
+      isBanned: true,
+      banReason: reason,
+      banExpiresAt: admin.firestore.Timestamp.fromDate(banExpiresAt),
+      bannedBy,
+      bannedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Create ban record
+    await db.collection("bans").add({
+      userId,
+      reason,
+      duration: durationDays,
+      expiresAt: admin.firestore.Timestamp.fromDate(banExpiresAt),
+      bannedBy,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      isActive: true,
+    });
+
+    // Send notification
+    await db.collection("notifications").add({
+      userId,
+      type: "account_banned",
+      message: `Your account has been banned for ${durationDays} days. Reason: ${reason}`,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // End any active live streams
+    const liveStreamsSnapshot = await db.collection("liveStreams")
+      .where("userId", "==", userId)
+      .where("status", "==", "live")
+      .get();
+
+    for (const doc of liveStreamsSnapshot.docs) {
+      await doc.ref.update({
+        status: "terminated",
+        terminationReason: "user_banned",
+        endedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  } catch (error) {
+    console.error("Error banning user:", error);
+  }
+}
+
+/**
+ * Ban User (Admin Only)
+ */
+export const banUserManual = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId, durationDays, reason } = request.data;
+
+    if (!userId || !durationDays || !reason) {
+      throw new Error("User ID, duration, and reason are required");
+    }
+
+    await banUser(userId, durationDays, reason, adminId);
+
+    return {
+      success: true,
+      message: "User banned successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in banUserManual:", error);
+    throw new Error(error.message || "Failed to ban user");
+  }
+});
+
+/**
+ * Unban User (Admin Only)
+ */
+export const unbanUser = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId } = request.data;
+
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    // Update user ban status
+    await db.collection("users").doc(userId).update({
+      isBanned: false,
+      banReason: null,
+      banExpiresAt: null,
+      unbannedBy: adminId,
+      unbannedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Deactivate ban records
+    const bansSnapshot = await db.collection("bans")
+      .where("userId", "==", userId)
+      .where("isActive", "==", true)
+      .get();
+
+    const batch = db.batch();
+    for (const doc of bansSnapshot.docs) {
+      batch.update(doc.ref, {
+        isActive: false,
+        unbannedBy: adminId,
+        unbannedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+
+    // Send notification
+    await db.collection("notifications").add({
+      userId,
+      type: "account_unbanned",
+      message: "Your account has been unbanned. Please follow our community guidelines.",
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "User unbanned successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in unbanUser:", error);
+    throw new Error(error.message || "Failed to unban user");
+  }
+});
+
+/**
+ * Get Pending Reports (Admin Only)
+ */
+export const getPendingReports = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { limit = 20, priority } = request.data;
+
+    let query = db.collection("reports")
+      .where("status", "==", "pending")
+      .orderBy("priority", "desc")
+      .orderBy("timestamp", "desc")
+      .limit(limit);
+
+    if (priority) {
+      query = query.where("priority", "==", priority);
+    }
+
+    const reportsSnapshot = await query.get();
+    const reports = reportsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return {
+      success: true,
+      reports,
+    };
+  } catch (error: any) {
+    console.error("Error in getPendingReports:", error);
+    throw new Error(error.message || "Failed to get pending reports");
+  }
+});
+
+/**
+ * Get Moderation Statistics (Admin Only)
+ */
+export const getModerationStats = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { startDate, endDate } = request.data;
+
+    // Get reports statistics
+    let reportsQuery = db.collection("reports");
+    if (startDate) {
+      reportsQuery = reportsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      reportsQuery = reportsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const reportsSnapshot = await reportsQuery.get();
+    const totalReports = reportsSnapshot.size;
+    const pendingReports = reportsSnapshot.docs.filter(doc => doc.data().status === "pending").length;
+    const resolvedReports = reportsSnapshot.docs.filter(doc => doc.data().status === "resolved").length;
+    const dismissedReports = reportsSnapshot.docs.filter(doc => doc.data().status === "dismissed").length;
+
+    // Get warnings statistics
+    let warningsQuery = db.collection("warnings");
+    if (startDate) {
+      warningsQuery = warningsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      warningsQuery = warningsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const warningsSnapshot = await warningsQuery.get();
+    const totalWarnings = warningsSnapshot.size;
+
+    // Get bans statistics
+    let bansQuery = db.collection("bans");
+    if (startDate) {
+      bansQuery = bansQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      bansQuery = bansQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const bansSnapshot = await bansQuery.get();
+    const totalBans = bansSnapshot.size;
+    const activeBans = bansSnapshot.docs.filter(doc => doc.data().isActive).length;
+
+    return {
+      success: true,
+      stats: {
+        reports: {
+          total: totalReports,
+          pending: pendingReports,
+          resolved: resolvedReports,
+          dismissed: dismissedReports,
+        },
+        warnings: {
+          total: totalWarnings,
+        },
+        bans: {
+          total: totalBans,
+          active: activeBans,
+        },
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getModerationStats:", error);
+    throw new Error(error.message || "Failed to get moderation statistics");
+  }
+});
+
+/**
+ * Check and Expire Bans - Scheduled function
+ */
+export const checkExpiredBans = onSchedule("every 1 hours", async (event) => {
+  try {
+    console.log("Checking for expired bans...");
+
+    const now = admin.firestore.Timestamp.now();
+
+    // Get expired bans
+    const expiredBans = await db.collection("bans")
+      .where("isActive", "==", true)
+      .where("expiresAt", "<=", now)
+      .get();
+
+    const batch = db.batch();
+    const unbannedUsers = new Set<string>();
+
+    for (const banDoc of expiredBans.docs) {
+      const banData = banDoc.data();
+      
+      // Deactivate ban
+      batch.update(banDoc.ref, {
+        isActive: false,
+        expiredAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      unbannedUsers.add(banData.userId);
+    }
+
+    // Update user ban status
+    for (const userId of unbannedUsers) {
+      batch.update(db.collection("users").doc(userId), {
+        isBanned: false,
+        banReason: null,
+        banExpiresAt: null,
+      });
+
+      // Send notification
+      await db.collection("notifications").add({
+        userId,
+        type: "ban_expired",
+        message: "Your ban has expired. Welcome back! Please follow our community guidelines.",
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    if (expiredBans.size > 0) {
+      await batch.commit();
+    }
+
+    console.log(`Expired ${expiredBans.size} bans`);
+    return null;
+  } catch (error: any) {
+    console.error("Error checking expired bans:", error);
+    return null;
+  }
+});
+
+/**
+ * Generate Monthly Moderation Report - Scheduled function
+ */
+export const generateMonthlyModerationReport = onSchedule("0 0 1 * *", async (event) => {
+  try {
+    console.log("Generating monthly moderation report...");
+
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Get reports from last month
+    const reportsSnapshot = await db.collection("reports")
+      .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(lastMonth))
+      .where("timestamp", "<", admin.firestore.Timestamp.fromDate(thisMonth))
+      .get();
+
+    // Get warnings from last month
+    const warningsSnapshot = await db.collection("warnings")
+      .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(lastMonth))
+      .where("timestamp", "<", admin.firestore.Timestamp.fromDate(thisMonth))
+      .get();
+
+    // Get bans from last month
+    const bansSnapshot = await db.collection("bans")
+      .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(lastMonth))
+      .where("timestamp", "<", admin.firestore.Timestamp.fromDate(thisMonth))
+      .get();
+
+    // Generate report
+    const report = {
+      period: {
+        start: lastMonth,
+        end: thisMonth,
+      },
+      reports: {
+        total: reportsSnapshot.size,
+        byType: {},
+        byStatus: {},
+      },
+      warnings: {
+        total: warningsSnapshot.size,
+      },
+      bans: {
+        total: bansSnapshot.size,
+      },
+      generatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Count reports by type and status
+    for (const doc of reportsSnapshot.docs) {
+      const data = doc.data();
+      const type = data.reportType || "unknown";
+      const status = data.status || "unknown";
+
+      report.reports.byType[type] = (report.reports.byType[type] || 0) + 1;
+      report.reports.byStatus[status] = (report.reports.byStatus[status] || 0) + 1;
+    }
+
+    // Save report
+    await db.collection("moderationReports").add(report);
+
+    console.log("Monthly moderation report generated");
+    return null;
+  } catch (error: any) {
+    console.error("Error generating monthly moderation report:", error);
+    return null;
+  }
+});
+
+// ============================================================================
+// NOTIFICATIONS SYSTEM FUNCTIONS
+// ============================================================================
+
+/**
+ * Register FCM Token
+ */
+export const registerFcmToken = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { token, platform } = request.data; // platform: ios, android, web
+
+    if (!token) {
+      throw new Error("FCM token is required");
+    }
+
+    // Store token in user document
+    await db.collection("users").doc(userId).update({
+      fcmTokens: admin.firestore.FieldValue.arrayUnion({
+        token,
+        platform: platform || "unknown",
+        registeredAt: admin.firestore.FieldValue.serverTimestamp(),
+      }),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "FCM token registered",
+    };
+  } catch (error: any) {
+    console.error("Error in registerFcmToken:", error);
+    throw new Error(error.message || "Failed to register FCM token");
+  }
+});
+
+/**
+ * Unregister FCM Token
+ */
+export const unregisterFcmToken = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { token } = request.data;
+
+    if (!token) {
+      throw new Error("FCM token is required");
+    }
+
+    // Get user document
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    const fcmTokens = userData?.fcmTokens || [];
+
+    // Remove token
+    const updatedTokens = fcmTokens.filter((t: any) => t.token !== token);
+
+    await db.collection("users").doc(userId).update({
+      fcmTokens: updatedTokens,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "FCM token unregistered",
+    };
+  } catch (error: any) {
+    console.error("Error in unregisterFcmToken:", error);
+    throw new Error(error.message || "Failed to unregister FCM token");
+  }
+});
+
+/**
+ * Send Push Notification
+ */
+async function sendPushNotification(
+  userId: string,
+  title: string,
+  body: string,
+  data?: any
+) {
+  try {
+    // Get user FCM tokens
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    const fcmTokens = userData?.fcmTokens || [];
+
+    if (fcmTokens.length === 0) {
+      console.log(`No FCM tokens for user ${userId}`);
+      return;
+    }
+
+    // Prepare notification payload
+    const message = {
+      notification: {
+        title,
+        body,
+      },
+      data: data || {},
+      tokens: fcmTokens.map((t: any) => t.token),
+    };
+
+    // Send multicast message
+    const response = await admin.messaging().sendMulticast(message);
+
+    console.log(`Sent notification to ${response.successCount} devices`);
+
+    // Remove invalid tokens
+    if (response.failureCount > 0) {
+      const invalidTokens: string[] = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          invalidTokens.push(fcmTokens[idx].token);
+        }
+      });
+
+      if (invalidTokens.length > 0) {
+        const validTokens = fcmTokens.filter((t: any) => !invalidTokens.includes(t.token));
+        await db.collection("users").doc(userId).update({
+          fcmTokens: validTokens,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+  }
+}
+
+/**
+ * Get Notifications
+ */
+export const getNotifications = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { limit = 20, lastNotificationId } = request.data;
+
+    let query = db.collection("notifications")
+      .where("userId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .limit(limit);
+
+    if (lastNotificationId) {
+      const lastDoc = await db.collection("notifications").doc(lastNotificationId).get();
+      if (lastDoc.exists) {
+        query = query.startAfter(lastDoc);
+      }
+    }
+
+    const notificationsSnapshot = await query.get();
+    const notifications = notificationsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Get unread count
+    const unreadSnapshot = await db.collection("notifications")
+      .where("userId", "==", userId)
+      .where("isRead", "==", false)
+      .get();
+
+    return {
+      success: true,
+      notifications,
+      unreadCount: unreadSnapshot.size,
+      hasMore: notifications.length === limit,
+    };
+  } catch (error: any) {
+    console.error("Error in getNotifications:", error);
+    throw new Error(error.message || "Failed to get notifications");
+  }
+});
+
+/**
+ * Mark Notification as Read
+ */
+export const markNotificationAsRead = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { notificationId } = request.data;
+
+    if (!notificationId) {
+      throw new Error("Notification ID is required");
+    }
+
+    // Get notification
+    const notificationDoc = await db.collection("notifications").doc(notificationId).get();
+    if (!notificationDoc.exists) {
+      throw new Error("Notification not found");
+    }
+
+    const notificationData = notificationDoc.data();
+
+    // Verify user owns notification
+    if (notificationData?.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Mark as read
+    await db.collection("notifications").doc(notificationId).update({
+      isRead: true,
+      readAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Notification marked as read",
+    };
+  } catch (error: any) {
+    console.error("Error in markNotificationAsRead:", error);
+    throw new Error(error.message || "Failed to mark notification as read");
+  }
+});
+
+/**
+ * Mark All Notifications as Read
+ */
+export const markAllNotificationsAsRead = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Get unread notifications
+    const unreadNotifications = await db.collection("notifications")
+      .where("userId", "==", userId)
+      .where("isRead", "==", false)
+      .get();
+
+    const batch = db.batch();
+    for (const doc of unreadNotifications.docs) {
+      batch.update(doc.ref, {
+        isRead: true,
+        readAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    await batch.commit();
+
+    return {
+      success: true,
+      count: unreadNotifications.size,
+      message: "All notifications marked as read",
+    };
+  } catch (error: any) {
+    console.error("Error in markAllNotificationsAsRead:", error);
+    throw new Error(error.message || "Failed to mark all notifications as read");
+  }
+});
+
+/**
+ * Delete Notification
+ */
+export const deleteNotification = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { notificationId } = request.data;
+
+    if (!notificationId) {
+      throw new Error("Notification ID is required");
+    }
+
+    // Get notification
+    const notificationDoc = await db.collection("notifications").doc(notificationId).get();
+    if (!notificationDoc.exists) {
+      throw new Error("Notification not found");
+    }
+
+    const notificationData = notificationDoc.data();
+
+    // Verify user owns notification
+    if (notificationData?.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Delete notification
+    await db.collection("notifications").doc(notificationId).delete();
+
+    return {
+      success: true,
+      message: "Notification deleted",
+    };
+  } catch (error: any) {
+    console.error("Error in deleteNotification:", error);
+    throw new Error(error.message || "Failed to delete notification");
+  }
+});
+
+/**
+ * Update Notification Settings
+ */
+export const updateNotificationSettings = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const { settings } = request.data;
+
+    if (!settings) {
+      throw new Error("Settings are required");
+    }
+
+    // Update user notification settings
+    await db.collection("users").doc(userId).update({
+      notificationSettings: settings,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      message: "Notification settings updated",
+    };
+  } catch (error: any) {
+    console.error("Error in updateNotificationSettings:", error);
+    throw new Error(error.message || "Failed to update notification settings");
+  }
+});
+
+/**
+ * Trigger: Send notification when video is liked
+ */
+export const onVideoLiked = onDocumentCreated("videoLikes/{likeId}", async (event) => {
+  try {
+    const likeData = event.data?.data();
+    if (!likeData) return;
+
+    const { videoId, userId } = likeData;
+
+    // Get video
+    const videoDoc = await db.collection("videos").doc(videoId).get();
+    const videoData = videoDoc.data();
+
+    if (!videoData || videoData.userId === userId) {
+      return; // Don't notify if user liked their own video
+    }
+
+    // Get liker data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Check notification settings
+    const videoOwnerDoc = await db.collection("users").doc(videoData.userId).get();
+    const videoOwnerData = videoOwnerDoc.data();
+    const notificationSettings = videoOwnerData?.notificationSettings || {};
+
+    if (notificationSettings.likes === false) {
+      return; // User has disabled like notifications
+    }
+
+    // Create notification
+    await db.collection("notifications").add({
+      userId: videoData.userId,
+      type: "video_like",
+      actorId: userId,
+      actorName: userData?.displayName || "Someone",
+      actorProfileImage: userData?.profileImage || "",
+      videoId,
+      videoThumbnail: videoData.thumbnailUrl || "",
+      message: `${userData?.displayName || "Someone"} liked your video`,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Send push notification
+    await sendPushNotification(
+      videoData.userId,
+      "New Like",
+      `${userData?.displayName || "Someone"} liked your video`,
+      { type: "video_like", videoId, userId }
+    );
+  } catch (error) {
+    console.error("Error in onVideoLiked trigger:", error);
+  }
+});
+
+/**
+ * Trigger: Send notification when comment is added
+ */
+export const onCommentAdded = onDocumentCreated("comments/{commentId}", async (event) => {
+  try {
+    const commentData = event.data?.data();
+    if (!commentData) return;
+
+    const { videoId, userId, text } = commentData;
+
+    // Get video
+    const videoDoc = await db.collection("videos").doc(videoId).get();
+    const videoData = videoDoc.data();
+
+    if (!videoData || videoData.userId === userId) {
+      return; // Don't notify if user commented on their own video
+    }
+
+    // Get commenter data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Check notification settings
+    const videoOwnerDoc = await db.collection("users").doc(videoData.userId).get();
+    const videoOwnerData = videoOwnerDoc.data();
+    const notificationSettings = videoOwnerData?.notificationSettings || {};
+
+    if (notificationSettings.comments === false) {
+      return; // User has disabled comment notifications
+    }
+
+    // Create notification
+    await db.collection("notifications").add({
+      userId: videoData.userId,
+      type: "video_comment",
+      actorId: userId,
+      actorName: userData?.displayName || "Someone",
+      actorProfileImage: userData?.profileImage || "",
+      videoId,
+      videoThumbnail: videoData.thumbnailUrl || "",
+      message: `${userData?.displayName || "Someone"} commented: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Send push notification
+    await sendPushNotification(
+      videoData.userId,
+      "New Comment",
+      `${userData?.displayName || "Someone"} commented on your video`,
+      { type: "video_comment", videoId, userId }
+    );
+  } catch (error) {
+    console.error("Error in onCommentAdded trigger:", error);
+  }
+});
+
+/**
+ * Trigger: Send notification when live stream starts
+ */
+export const onLiveStreamStarted = onDocumentCreated("liveStreams/{streamId}", async (event) => {
+  try {
+    const streamData = event.data?.data();
+    if (!streamData || streamData.status !== "live") return;
+
+    const { userId, title } = streamData;
+
+    // Get streamer data
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+
+    // Get followers
+    const followersSnapshot = await db.collection("followers")
+      .where("followingId", "==", userId)
+      .where("notificationsEnabled", "==", true)
+      .get();
+
+    // Send notifications to all followers
+    const batch = db.batch();
+    const notificationPromises = [];
+
+    for (const followerDoc of followersSnapshot.docs) {
+      const followerData = followerDoc.data();
+      const followerId = followerData.followerId;
+
+      // Check notification settings
+      const followerUserDoc = await db.collection("users").doc(followerId).get();
+      const followerUserData = followerUserDoc.data();
+      const notificationSettings = followerUserData?.notificationSettings || {};
+
+      if (notificationSettings.liveStreams === false) {
+        continue; // User has disabled live stream notifications
+      }
+
+      // Create notification
+      const notificationRef = db.collection("notifications").doc();
+      batch.set(notificationRef, {
+        userId: followerId,
+        type: "live_stream_started",
+        actorId: userId,
+        actorName: userData?.displayName || "Someone",
+        actorProfileImage: userData?.profileImage || "",
+        streamId: event.params.streamId,
+        message: `${userData?.displayName || "Someone"} is live: ${title}`,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Send push notification
+      notificationPromises.push(
+        sendPushNotification(
+          followerId,
+          "Live Now!",
+          `${userData?.displayName || "Someone"} is live: ${title}`,
+          { type: "live_stream_started", streamId: event.params.streamId, userId }
+        )
+      );
+    }
+
+    await batch.commit();
+    await Promise.all(notificationPromises);
+  } catch (error) {
+    console.error("Error in onLiveStreamStarted trigger:", error);
+  }
+});
+
+/**
+ * Clean Up Old Notifications - Scheduled function
+ */
+export const cleanupOldNotifications = onSchedule("every 24 hours", async (event) => {
+  try {
+    console.log("Cleaning up old notifications...");
+
+    // Delete read notifications older than 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const oldNotifications = await db.collection("notifications")
+      .where("isRead", "==", true)
+      .where("createdAt", "<=", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+      .limit(500)
+      .get();
+
+    const batch = db.batch();
+    for (const doc of oldNotifications.docs) {
+      batch.delete(doc.ref);
+    }
+
+    if (oldNotifications.size > 0) {
+      await batch.commit();
+    }
+
+    console.log(`Deleted ${oldNotifications.size} old notifications`);
+    return null;
+  } catch (error: any) {
+    console.error("Error cleaning up old notifications:", error);
+    return null;
+  }
+});
+
+// ============================================================================
+// ADMIN DASHBOARD & INTERNAL ECONOMY FUNCTIONS
+// ============================================================================
+
+/**
+ * Get Platform Statistics (Admin Only)
+ */
+export const getPlatformStatistics = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    // Get total users
+    const usersSnapshot = await db.collection("users").count().get();
+    const totalUsers = usersSnapshot.data().count;
+
+    // Get active users (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const activeUsersSnapshot = await db.collection("users")
+      .where("lastActive", ">=", admin.firestore.Timestamp.fromDate(sevenDaysAgo))
+      .count()
+      .get();
+    const activeUsers = activeUsersSnapshot.data().count;
+
+    // Get total videos
+    const videosSnapshot = await db.collection("videos").count().get();
+    const totalVideos = videosSnapshot.data().count;
+
+    // Get total live streams
+    const liveStreamsSnapshot = await db.collection("liveStreams")
+      .where("status", "==", "live")
+      .count()
+      .get();
+    const activeLiveStreams = liveStreamsSnapshot.data().count;
+
+    // Get platform revenue
+    const revenueDoc = await db.collection("platformRevenue").doc("summary").get();
+    const revenueData = revenueDoc.data();
+
+    // Get premium users
+    const premiumUsersSnapshot = await db.collection("users")
+      .where("isPremiumAccount", "==", true)
+      .count()
+      .get();
+    const premiumUsers = premiumUsersSnapshot.data().count;
+
+    // Get banned users
+    const bannedUsersSnapshot = await db.collection("users")
+      .where("isBanned", "==", true)
+      .count()
+      .get();
+    const bannedUsers = bannedUsersSnapshot.data().count;
+
+    return {
+      success: true,
+      statistics: {
+        users: {
+          total: totalUsers,
+          active: activeUsers,
+          premium: premiumUsers,
+          banned: bannedUsers,
+        },
+        content: {
+          totalVideos,
+          activeLiveStreams,
+        },
+        revenue: {
+          total: revenueData?.totalRevenue || 0,
+          gifts: revenueData?.giftRevenue || 0,
+          premium: revenueData?.premiumRevenue || 0,
+          ads: revenueData?.adRevenue || 0,
+        },
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getPlatformStatistics:", error);
+    throw new Error(error.message || "Failed to get platform statistics");
+  }
+});
+
+/**
+ * Get User Analytics (Admin Only)
+ */
+export const getUserAnalytics = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { startDate, endDate } = request.data;
+
+    // Get new users
+    let newUsersQuery = db.collection("users");
+    if (startDate) {
+      newUsersQuery = newUsersQuery.where("createdAt", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      newUsersQuery = newUsersQuery.where("createdAt", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const newUsersSnapshot = await newUsersQuery.count().get();
+    const newUsers = newUsersSnapshot.data().count;
+
+    // Get user engagement metrics
+    const engagementMetrics = {
+      averageSessionDuration: 0, // Placeholder
+      averageVideosWatched: 0, // Placeholder
+      averageInteractions: 0, // Placeholder
+    };
+
+    return {
+      success: true,
+      analytics: {
+        newUsers,
+        engagement: engagementMetrics,
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getUserAnalytics:", error);
+    throw new Error(error.message || "Failed to get user analytics");
+  }
+});
+
+/**
+ * Get Revenue Analytics (Admin Only)
+ */
+export const getRevenueAnalytics = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { startDate, endDate } = request.data;
+
+    // Get gift revenue
+    let giftTransactionsQuery = db.collection("giftTransactions");
+    if (startDate) {
+      giftTransactionsQuery = giftTransactionsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      giftTransactionsQuery = giftTransactionsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const giftTransactionsSnapshot = await giftTransactionsQuery.get();
+    let giftRevenue = 0;
+    for (const doc of giftTransactionsSnapshot.docs) {
+      const data = doc.data();
+      giftRevenue += data.platformFee || 0;
+    }
+
+    // Get premium revenue
+    let premiumTransactionsQuery = db.collection("premiumTransactions");
+    if (startDate) {
+      premiumTransactionsQuery = premiumTransactionsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      premiumTransactionsQuery = premiumTransactionsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const premiumTransactionsSnapshot = await premiumTransactionsQuery.get();
+    let premiumRevenue = 0;
+    for (const doc of premiumTransactionsSnapshot.docs) {
+      const data = doc.data();
+      premiumRevenue += data.amount || 0;
+    }
+
+    // Get ad revenue
+    const revenueDoc = await db.collection("platformRevenue").doc("summary").get();
+    const revenueData = revenueDoc.data();
+    const adRevenue = revenueData?.adRevenue || 0;
+
+    // Get coin purchases revenue
+    let coinPurchasesQuery = db.collection("coinPurchases")
+      .where("status", "==", "completed");
+    if (startDate) {
+      coinPurchasesQuery = coinPurchasesQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      coinPurchasesQuery = coinPurchasesQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const coinPurchasesSnapshot = await coinPurchasesQuery.get();
+    let coinRevenue = 0;
+    for (const doc of coinPurchasesSnapshot.docs) {
+      const data = doc.data();
+      coinRevenue += data.amount || 0;
+    }
+
+    // Get payout expenses
+    let payoutsQuery = db.collection("payouts")
+      .where("status", "==", "completed");
+    if (startDate) {
+      payoutsQuery = payoutsQuery.where("timestamp", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      payoutsQuery = payoutsQuery.where("timestamp", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const payoutsSnapshot = await payoutsQuery.get();
+    let payoutExpenses = 0;
+    for (const doc of payoutsSnapshot.docs) {
+      const data = doc.data();
+      payoutExpenses += data.amount || 0;
+    }
+
+    const totalRevenue = giftRevenue + premiumRevenue + adRevenue + coinRevenue;
+    const netRevenue = totalRevenue - payoutExpenses;
+
+    return {
+      success: true,
+      analytics: {
+        revenue: {
+          gifts: giftRevenue,
+          premium: premiumRevenue,
+          ads: adRevenue,
+          coins: coinRevenue,
+          total: totalRevenue,
+        },
+        expenses: {
+          payouts: payoutExpenses,
+        },
+        netRevenue,
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getRevenueAnalytics:", error);
+    throw new Error(error.message || "Failed to get revenue analytics");
+  }
+});
+
+/**
+ * Get Content Analytics (Admin Only)
+ */
+export const getContentAnalytics = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { startDate, endDate } = request.data;
+
+    // Get videos uploaded
+    let videosQuery = db.collection("videos");
+    if (startDate) {
+      videosQuery = videosQuery.where("createdAt", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      videosQuery = videosQuery.where("createdAt", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const videosSnapshot = await videosQuery.get();
+    const videosUploaded = videosSnapshot.size;
+
+    // Calculate total views, likes, comments
+    let totalViews = 0;
+    let totalLikes = 0;
+    let totalComments = 0;
+
+    for (const doc of videosSnapshot.docs) {
+      const data = doc.data();
+      totalViews += data.views || 0;
+      totalLikes += data.likes || 0;
+      totalComments += data.comments || 0;
+    }
+
+    // Get live streams
+    let liveStreamsQuery = db.collection("liveStreams");
+    if (startDate) {
+      liveStreamsQuery = liveStreamsQuery.where("startedAt", ">=", admin.firestore.Timestamp.fromDate(new Date(startDate)));
+    }
+    if (endDate) {
+      liveStreamsQuery = liveStreamsQuery.where("startedAt", "<=", admin.firestore.Timestamp.fromDate(new Date(endDate)));
+    }
+
+    const liveStreamsSnapshot = await liveStreamsQuery.get();
+    const liveStreamsCount = liveStreamsSnapshot.size;
+
+    return {
+      success: true,
+      analytics: {
+        videos: {
+          uploaded: videosUploaded,
+          totalViews,
+          totalLikes,
+          totalComments,
+          averageViews: videosUploaded > 0 ? Math.round(totalViews / videosUploaded) : 0,
+          averageLikes: videosUploaded > 0 ? Math.round(totalLikes / videosUploaded) : 0,
+        },
+        liveStreams: {
+          total: liveStreamsCount,
+        },
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getContentAnalytics:", error);
+    throw new Error(error.message || "Failed to get content analytics");
+  }
+});
+
+/**
+ * Manage User (Admin Only)
+ */
+export const manageUser = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { userId, action, data } = request.data;
+
+    if (!userId || !action) {
+      throw new Error("User ID and action are required");
+    }
+
+    switch (action) {
+      case "verify":
+        await db.collection("users").doc(userId).update({
+          isVerified: true,
+          verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        break;
+
+      case "unverify":
+        await db.collection("users").doc(userId).update({
+          isVerified: false,
+          verifiedAt: null,
+        });
+        break;
+
+      case "grant_premium":
+        await db.collection("users").doc(userId).update({
+          isPremiumAccount: true,
+          premiumGrantedBy: adminId,
+          premiumGrantedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        break;
+
+      case "revoke_premium":
+        await db.collection("users").doc(userId).update({
+          isPremiumAccount: false,
+          premiumSlotId: null,
+        });
+        break;
+
+      case "adjust_balance":
+        if (data && data.amount !== undefined) {
+          await db.collection("users").doc(userId).update({
+            balance: admin.firestore.FieldValue.increment(data.amount),
+          });
+        }
+        break;
+
+      case "adjust_coins":
+        if (data && data.amount !== undefined) {
+          await db.collection("users").doc(userId).update({
+            coins: admin.firestore.FieldValue.increment(data.amount),
+          });
+        }
+        break;
+
+      case "delete_account":
+        // Soft delete
+        await db.collection("users").doc(userId).update({
+          isDeleted: true,
+          deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+          deletedBy: adminId,
+        });
+        break;
+
+      default:
+        throw new Error("Invalid action");
+    }
+
+    return {
+      success: true,
+      message: `User ${action} completed`,
+    };
+  } catch (error: any) {
+    console.error("Error in manageUser:", error);
+    throw new Error(error.message || "Failed to manage user");
+  }
+});
+
+/**
+ * Get All Users (Admin Only)
+ */
+export const getAllUsers = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const { limit = 50, lastUserId, filters } = request.data;
+
+    let query: any = db.collection("users").orderBy("createdAt", "desc").limit(limit);
+
+    // Apply filters
+    if (filters) {
+      if (filters.isPremium !== undefined) {
+        query = query.where("isPremiumAccount", "==", filters.isPremium);
+      }
+      if (filters.isVerified !== undefined) {
+        query = query.where("isVerified", "==", filters.isVerified);
+      }
+      if (filters.isBanned !== undefined) {
+        query = query.where("isBanned", "==", filters.isBanned);
+      }
+    }
+
+    if (lastUserId) {
+      const lastDoc = await db.collection("users").doc(lastUserId).get();
+      if (lastDoc.exists) {
+        query = query.startAfter(lastDoc);
+      }
+    }
+
+    const usersSnapshot = await query.get();
+    const users = usersSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        userId: doc.id,
+        username: data.username,
+        displayName: data.displayName,
+        email: data.email,
+        profileImage: data.profileImage,
+        followerCount: data.followerCount || 0,
+        videoCount: data.videoCount || 0,
+        balance: data.balance || 0,
+        coins: data.coins || 0,
+        isPremiumAccount: data.isPremiumAccount || false,
+        isVerified: data.isVerified || false,
+        isBanned: data.isBanned || false,
+        createdAt: data.createdAt,
+        lastActive: data.lastActive,
+      };
+    });
+
+    return {
+      success: true,
+      users,
+      hasMore: users.length === limit,
+    };
+  } catch (error: any) {
+    console.error("Error in getAllUsers:", error);
+    throw new Error(error.message || "Failed to get users");
+  }
+});
+
+/**
+ * Synchronize Internal Economy - Scheduled function
+ */
+export const synchronizeInternalEconomy = onSchedule("every 1 hours", async (event) => {
+  try {
+    console.log("Synchronizing internal economy...");
+
+    // Calculate total platform revenue
+    const giftTransactionsSnapshot = await db.collection("giftTransactions").get();
+    let giftRevenue = 0;
+    for (const doc of giftTransactionsSnapshot.docs) {
+      const data = doc.data();
+      giftRevenue += data.platformFee || 0;
+    }
+
+    // Calculate premium revenue
+    const premiumTransactionsSnapshot = await db.collection("premiumTransactions").get();
+    let premiumRevenue = 0;
+    for (const doc of premiumTransactionsSnapshot.docs) {
+      const data = doc.data();
+      premiumRevenue += data.amount || 0;
+    }
+
+    // Calculate coin purchase revenue
+    const coinPurchasesSnapshot = await db.collection("coinPurchases")
+      .where("status", "==", "completed")
+      .get();
+    let coinRevenue = 0;
+    for (const doc of coinPurchasesSnapshot.docs) {
+      const data = doc.data();
+      coinRevenue += data.amount || 0;
+    }
+
+    // Get ad revenue from existing summary
+    const revenueDoc = await db.collection("platformRevenue").doc("summary").get();
+    const existingRevenueData = revenueDoc.data();
+    const adRevenue = existingRevenueData?.adRevenue || 0;
+
+    // Calculate total payout expenses
+    const payoutsSnapshot = await db.collection("payouts")
+      .where("status", "==", "completed")
+      .get();
+    let payoutExpenses = 0;
+    for (const doc of payoutsSnapshot.docs) {
+      const data = doc.data();
+      payoutExpenses += data.amount || 0;
+    }
+
+    const totalRevenue = giftRevenue + premiumRevenue + adRevenue + coinRevenue;
+    const netRevenue = totalRevenue - payoutExpenses;
+
+    // Update platform revenue summary
+    await db.collection("platformRevenue").doc("summary").set({
+      giftRevenue,
+      premiumRevenue,
+      adRevenue,
+      coinRevenue,
+      totalRevenue,
+      payoutExpenses,
+      netRevenue,
+      lastSynchronized: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    // Create daily revenue log
+    const today = new Date().toISOString().split('T')[0];
+    await db.collection("revenueLog").doc(today).set({
+      date: today,
+      giftRevenue,
+      premiumRevenue,
+      adRevenue,
+      coinRevenue,
+      totalRevenue,
+      payoutExpenses,
+      netRevenue,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    console.log(`Economy synchronized. Total revenue: $${totalRevenue}, Net revenue: $${netRevenue}`);
+    return null;
+  } catch (error: any) {
+    console.error("Error synchronizing internal economy:", error);
+    return null;
+  }
+});
+
+/**
+ * Get Economy Insights (Admin Only)
+ */
+export const getEconomyInsights = onCall(async (request) => {
+  const adminId = request.auth?.uid;
+  if (!adminId) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    // Verify admin privileges
+    const adminDoc = await db.collection("users").doc(adminId).get();
+    const adminData = adminDoc.data();
+
+    if (!adminData?.isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    // Get platform revenue summary
+    const revenueDoc = await db.collection("platformRevenue").doc("summary").get();
+    const revenueData = revenueDoc.data();
+
+    // Get total user balances
+    const usersSnapshot = await db.collection("users").get();
+    let totalUserBalances = 0;
+    let totalUserCoins = 0;
+
+    for (const doc of usersSnapshot.docs) {
+      const data = doc.data();
+      totalUserBalances += data.balance || 0;
+      totalUserCoins += data.coins || 0;
+    }
+
+    // Get pending payouts
+    const pendingPayoutsSnapshot = await db.collection("payouts")
+      .where("status", "==", "pending")
+      .get();
+    let pendingPayoutAmount = 0;
+
+    for (const doc of pendingPayoutsSnapshot.docs) {
+      const data = doc.data();
+      pendingPayoutAmount += data.amount || 0;
+    }
+
+    return {
+      success: true,
+      insights: {
+        revenue: {
+          total: revenueData?.totalRevenue || 0,
+          gifts: revenueData?.giftRevenue || 0,
+          premium: revenueData?.premiumRevenue || 0,
+          ads: revenueData?.adRevenue || 0,
+          coins: revenueData?.coinRevenue || 0,
+        },
+        expenses: {
+          payouts: revenueData?.payoutExpenses || 0,
+          pending: pendingPayoutAmount,
+        },
+        userBalances: {
+          totalBalance: totalUserBalances,
+          totalCoins: totalUserCoins,
+        },
+        netRevenue: revenueData?.netRevenue || 0,
+        lastSynchronized: revenueData?.lastSynchronized,
+      },
+    };
+  } catch (error: any) {
+    console.error("Error in getEconomyInsights:", error);
+    throw new Error(error.message || "Failed to get economy insights");
+  }
+});
