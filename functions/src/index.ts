@@ -1,4 +1,3 @@
-
 import * as functions from "firebase-functions";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onCall } from "firebase-functions/v2/https";
@@ -7,14 +6,30 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 const db = admin.firestore();
 
+// TODO: Set these in your Firebase environment configuration
+// For Stripe: functions.config().stripe.secret_key
+// For PayPal: functions.config().paypal.client_id, functions.config().paypal.client_secret
+
 interface UserData {
   isPremiumAccount?: boolean;
   premiumSlotId?: string | null;
   isAdmin?: boolean;
   balance?: number;
+  coins?: number;
   friends?: string[];
   sentFriendRequests?: string[];
   receivedFriendRequests?: string[];
+  stripeAccountId?: string;
+  displayName?: string; // Added for gift messages
+  paypalEmail?: string; // Added for payout requests
+  bankAccountDetails?: { // Added for payout requests
+    bankName: string;
+    accountNumber: string;
+    accountHolderName: string;
+    swiftCode?: string;
+    iban?: string;
+    country: string;
+  };
 }
 
 interface SettingsData {
@@ -498,7 +513,6 @@ export const sendFriendRequest = onCall(async (request) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Add to sender's sentFriendRequests and receiver's receivedFriendRequests
     await db.collection("users").doc(senderId).update({
       sentFriendRequests: admin.firestore.FieldValue.arrayUnion(receiverId),
     });
@@ -691,4 +705,227 @@ export const deleteEphemeralMessage = onDocumentCreated(
     return null;
   }
 );
+
+
+
+/**
+ * Callable Cloud Function for users to purchase coins.
+ * This function should integrate with a payment provider like Stripe or PayPal.
+ */
+export const purchaseCoins = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can purchase coins."
+    );
+  }
+
+  const { amount, paymentMethodToken } = request.data;
+  const userId = request.auth.uid;
+
+  if (!amount || !paymentMethodToken) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Amount and payment method token are required."
+    );
+  }
+
+  // TODO: Implement payment processing with Stripe or another payment provider.
+  // This is a placeholder for the actual payment logic.
+  // Example with Stripe:
+  // const stripe = new Stripe(functions.config().stripe.secret_key, { apiVersion: "2022-11-15" });
+  // const charge = await stripe.charges.create({
+  //   amount: amount * 100, // Amount in cents
+  //   currency: "usd",
+  //   source: paymentMethodToken,
+  //   description: `Coin purchase by user ${userId}`,
+  // });
+
+  // For now, we will just simulate a successful payment.
+  const coinsPurchased = amount; // Assuming 1 coin = 1 unit of currency
+
+  try {
+    const userRef = db.collection("users").doc(userId);
+    await userRef.update({
+      coins: admin.firestore.FieldValue.increment(coinsPurchased),
+    });
+
+    // Record the transaction
+    await db.collection("transactions").add({
+      userId,
+      type: "purchase",
+      amount: coinsPurchased,
+      currency: "coins",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      details: {
+        paymentProvider: "simulated",
+        // chargeId: charge.id, // From real payment provider
+      },
+    });
+
+    return { success: true, message: `${coinsPurchased} coins purchased successfully.` };
+  } catch (error: any) {
+    console.error("Error purchasing coins:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to purchase coins.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Callable Cloud Function for users to request a payout of their balance.
+ */
+export const requestPayout = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can request a payout."
+    );
+  }
+
+  const { amount, payoutMethod, payoutDetails } = request.data;
+  const userId = request.auth.uid;
+
+  if (!amount || !payoutMethod) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Amount and payout method are required."
+    );
+  }
+
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      throw new functions.https.HttpsError("not-found", "User not found.");
+    }
+
+    const userData = userDoc.data() as UserData;
+    const currentBalance = userData.balance || 0;
+
+    if (amount > currentBalance) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Requested payout amount exceeds current balance."
+      );
+    }
+
+    // Create a payout request
+    const payoutRequestRef = await db.collection("payoutRequests").add({
+      userId,
+      amount,
+      status: "pending",
+      payoutMethod, // e.g., "paypal", "bank_transfer"
+      payoutDetails, // e.g., { email: "user@example.com" } or bank account info
+      requestedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Deduct the requested amount from the user's balance and move it to a pending state
+    await userRef.update({
+      balance: admin.firestore.FieldValue.increment(-amount),
+    });
+
+    return { success: true, message: "Payout request submitted successfully.", requestId: payoutRequestRef.id };
+  } catch (error: any) {
+    console.error("Error requesting payout:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to request payout.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Callable Cloud Function for administrators to process a payout request.
+ */
+export const processPayout = onCall(async (request) => {
+  if (!request.auth || !request.auth.token.admin) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Only administrators can process payouts."
+    );
+  }
+
+  const { requestId, action } = request.data; // action can be "approve" or "reject"
+
+  if (!requestId || !action) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Request ID and action are required."
+    );
+  }
+
+  try {
+    const requestRef = db.collection("payoutRequests").doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      throw new functions.https.HttpsError("not-found", "Payout request not found.");
+    }
+
+    const requestData = requestDoc.data();
+    if (requestData?.status !== "pending") {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Payout request is not in a pending state."
+      );
+    }
+
+    if (action === "approve") {
+      // TODO: Implement actual payout logic with PayPal or Stripe Connect.
+      // This is a placeholder for the actual payout logic.
+
+      // On successful payout, update the request status.
+      await requestRef.update({
+        status: "completed",
+        processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        processedBy: request.auth?.uid,
+      });
+
+      // Record the transaction for the platform's revenue
+      const platformFee = requestData.amount * 0.1; // Example: 10% platform fee
+      await db.collection("platformRevenue").add({
+        payoutRequestId: requestId,
+        userId: requestData.userId,
+        amount: platformFee,
+        currency: "usd", // Or the currency of the payout
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+
+      return { success: true, message: "Payout request approved and processed." };
+    } else if (action === "reject") {
+      // If rejected, refund the amount to the user's balance.
+      await db.runTransaction(async (transaction) => {
+        const userRef = db.collection("users").doc(requestData.userId);
+        transaction.update(userRef, {
+          balance: admin.firestore.FieldValue.increment(requestData.amount),
+        });
+        transaction.update(requestRef, {
+          status: "rejected",
+          processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          processedBy: request.auth?.uid,
+        });
+      });
+
+      return { success: true, message: "Payout request rejected." };
+    } else {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Invalid action. Must be a approve or reject."
+      );
+    }
+  } catch (error: any) {
+    console.error("Error processing payout:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to process payout.",
+      error.message
+    );
+  }
+});
 

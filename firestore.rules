@@ -17,11 +17,15 @@ service cloud.firestore {
 
       // Users can update their own location and privacy settings
       allow update: if request.auth != null && request.auth.uid == userId &&
-                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastKnownLocation', 'locationUpdatedAt', 'locationPrivacy', 'sharedWithFriends', 'excludedFriends', 'isLiveLocationSharing', 'liveLocationExpiresAt']));
+                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["lastKnownLocation", "locationUpdatedAt", "locationPrivacy", "sharedWithFriends", "excludedFriends", "isLiveLocationSharing", "liveLocationExpiresAt"]));
 
       // Users can update their own friend lists (add/remove friends)
       allow update: if request.auth != null && request.auth.uid == userId &&
-                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends', 'sentFriendRequests', 'receivedFriendRequests']));
+                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["friends", "sentFriendRequests", "receivedFriendRequests"]));
+
+      // Users can update their own wallet details (paypalEmail, bankAccountDetails, but not balance/coins directly)
+      allow update: if request.auth != null && request.auth.uid == userId &&
+                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["paypalEmail", "bankAccountDetails"]));
 
       // Allow friends to read location based on privacy settings
       match /location_data/{locationId} {
@@ -39,7 +43,7 @@ service cloud.firestore {
     // Gifts collection (read by all authenticated users)
     match /gifts/{giftId} {
       allow read: if request.auth != null;
-      allow write: if false; // Gifts are managed by admin or Cloud Functions
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // Sent gifts (write by authenticated users, read by Cloud Functions)
@@ -75,9 +79,32 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
+    // Transactions collection
+    match /transactions/{transactionId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update: if false; // Transactions are immutable after creation
+      allow delete: if false;
+    }
+
+    // Payout Requests collection
+    match /payoutRequests/{payoutRequestId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true);
+      allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      allow delete: if false;
+    }
+
+    // Platform Revenue collection (admin only)
+    match /platformRevenue/{document=**} {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
     // Default rule for other collections (adjust as needed)
-    match /{document=} {
+    match /{document=**} {
       allow read, write: if false; // Deny by default, explicitly allow for specific collections
     }
   }
 }
+
