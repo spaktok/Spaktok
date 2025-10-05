@@ -1,23 +1,83 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // User profiles and basic data
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if request.auth != null && request.auth.uid == userId &&
                    !("isPremiumAccount" in request.resource.data) &&
-                   !("premiumSlotId" in request.resource.data);
-      // Admin can update isPremiumAccount and premiumSlotId
+                   !("premiumSlotId" in request.resource.data) &&
+                   !("isAdmin" in request.resource.data) &&
+                   !("friends" in request.resource.data) &&
+                   !("sentFriendRequests" in request.resource.data) &&
+                   !("receivedFriendRequests" in request.resource.data);
+
+      // Admin can update isPremiumAccount, premiumSlotId, and isAdmin
       allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+
+      // Users can update their own location and privacy settings
+      allow update: if request.auth != null && request.auth.uid == userId &&
+                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastKnownLocation', 'locationUpdatedAt', 'locationPrivacy', 'sharedWithFriends', 'excludedFriends', 'isLiveLocationSharing', 'liveLocationExpiresAt']));
+
+      // Users can update their own friend lists (add/remove friends)
+      allow update: if request.auth != null && request.auth.uid == userId &&
+                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends', 'sentFriendRequests', 'receivedFriendRequests']));
+
+      // Allow friends to read location based on privacy settings
+      match /location_data/{locationId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // More complex rules for friend-based location sharing will be handled by Cloud Functions
+      }
     }
 
+    // Premium settings (admin only)
     match /settings/premium_settings {
       allow read: if request.auth != null;
       allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
+    // Gifts collection (read by all authenticated users)
+    match /gifts/{giftId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Gifts are managed by admin or Cloud Functions
+    }
+
+    // Sent gifts (write by authenticated users, read by Cloud Functions)
+    match /sentGifts/{sentGiftId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && request.auth.uid == resource.data.senderId;
+      allow write: if false;
+    }
+
+    // Conversations
+    match /conversations/{conversationId} {
+      allow create: if request.auth != null && request.resource.data.participants.hasAny([request.auth.uid]);
+      allow read, update: if request.auth != null && resource.data.participants.hasAny([request.auth.uid]);
+
+      // Messages subcollection within conversations
+      match /messages/{messageId} {
+        allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants.hasAny([request.auth.uid]);
+        allow read: if request.auth != null && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants.hasAny([request.auth.uid]);
+        // Ephemeral messages deletion will be handled by Cloud Functions
+      }
+    }
+
+    // Friend Requests
+    match /friendRequests/{requestId} {
+      allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+      allow read: if request.auth != null && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+      allow update: if request.auth != null && request.auth.uid == resource.data.receiverId && request.resource.data.status in ['accepted', 'declined'];
+    }
+
+    // Stream messages (existing rules, ensure they are compatible)
+    match /streams/{streamId}/messages/{messageId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
     // Default rule for other collections (adjust as needed)
     match /{document=} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false; // Deny by default, explicitly allow for specific collections
     }
   }
 }

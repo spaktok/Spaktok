@@ -3,6 +3,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spaktok/services/stream_service.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'package:spaktok/widgets/gift_bottom_sheet.dart';
 
 const appId = "a41807bba5c144b5b8e1fd5ee711707b";
 
@@ -268,7 +269,7 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Chat messages
+                    // Chat and Gift messages
                     Container(
                       height: 200,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -285,33 +286,77 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
                               final message = messages[index].data() as Map<String, dynamic>;
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: RichText(
-                                    text: TextSpan(
+                              // Check if it's a gift message
+                              if (message.containsKey('giftName') && message.containsKey('giftImageUrl')) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
                                       children: [
-                                        TextSpan(
-                                          text: '${message['userName']}: ',
-                                          style: const TextStyle(
-                                            color: Colors.blue,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        Image.network(
+                                          message['giftImageUrl'],
+                                          height: 30,
+                                          width: 30,
+                                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.white),
                                         ),
-                                        TextSpan(
-                                          text: message['message'],
-                                          style: const TextStyle(color: Colors.white),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: '${message['userName']} sent a ${message['giftName']}! ',
+                                                  style: const TextStyle(
+                                                    color: Colors.yellowAccent,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: '(Cost: ${message['giftCost']} coins)',
+                                                  style: const TextStyle(color: Colors.white70),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                              );
+                                );
+                              } else { // Regular chat message
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: '${message['userName']}: ',
+                                            style: const TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: message['message'],
+                                            style: const TextStyle(color: Colors.white),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                           );
                         },
@@ -346,6 +391,20 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                               onSubmitted: (_) => _sendMessage(),
                             ),
                           ),
+
+                          // Gift button for viewers
+                          if (!widget.isHost) ...[
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.card_giftcard, color: Colors.white),
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => GiftBottomSheet(receiverId: widget.streamId), // Assuming streamId is the host's UID
+                                );
+                              },
+                            ),
+                          ],
 
                           if (widget.isHost) ...[
                             const SizedBox(width: 8),

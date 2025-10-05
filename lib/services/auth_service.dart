@@ -43,9 +43,7 @@ class AuthService {
         'isVerified': false,
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
-        'isPremiumAccount': false,
-        'premiumSlotId': null,
-        'isAdmin': false,
+
       });
 
       return userCredential;
@@ -71,9 +69,7 @@ class AuthService {
       await _firestore.collection('users').doc(userCredential.user?.uid).update({
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
-        'isPremiumAccount': false,
-        'premiumSlotId': null,
-        'isAdmin': false,
+
       });
 
       return userCredential;
@@ -92,9 +88,7 @@ class AuthService {
         await _firestore.collection('users').doc(currentUser!.uid).update({
           'isOnline': false,
           'lastSeen': FieldValue.serverTimestamp(),
-        'isPremiumAccount': false,
-        'premiumSlotId': null,
-        'isAdmin': false,
+
         });
       }
 
@@ -198,4 +192,90 @@ class AuthService {
         return 'Authentication error: ${e.message}';
     }
   }
-}
+
+  Future<Map<String, dynamic>?> getGiftData(String giftName) async {
+    try {
+      final giftDoc = await _firestore.collection("gifts").doc(giftName).get();
+      return giftDoc.data();
+    } catch (e) {
+      print("Error getting gift data: $e");
+      return null;
+    }
+  }
+
+
+
+  // Send a friend request
+  Future<void> sendFriendRequest(String receiverId) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception("User not logged in.");
+    }
+    try {
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable("sendFriendRequest");
+      await callable.call({"receiverId": receiverId});
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception("Failed to send friend request: ${e.message}");
+    } catch (e) {
+      throw Exception("An unexpected error occurred: $e");
+    }
+  }
+
+  // Accept a friend request
+  Future<void> acceptFriendRequest(String requestId) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception("User not logged in.");
+    }
+    try {
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable("acceptFriendRequest");
+      await callable.call({"requestId": requestId});
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception("Failed to accept friend request: ${e.message}");
+    } catch (e) {
+      throw Exception("An unexpected error occurred: $e");
+    }
+  }
+
+  // Decline a friend request
+  Future<void> declineFriendRequest(String requestId) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception("User not logged in.");
+    }
+    try {
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable("declineFriendRequest");
+      await callable.call({"requestId": requestId});
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception("Failed to decline friend request: ${e.message}");
+    } catch (e) {
+      throw Exception("An unexpected error occurred: $e");
+    }
+  }
+
+  // Get friend requests (sent and received)
+  Stream<QuerySnapshot> getFriendRequests(String userId) {
+    return _firestore
+        .collection("friendRequests")
+        .where("receiverId", isEqualTo: userId)
+        .where("status", isEqualTo: "pending")
+        .snapshots();
+  }
+
+  // Get user's friends list
+  Stream<DocumentSnapshot> getUserFriendsStream(String userId) {
+    return _firestore.collection("users").doc(userId).snapshots();
+  }
+
+  // Get user data by ID
+  Future<Map<String, dynamic>?> getUserDataById(String userId) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection("users").doc(userId).get();
+      return doc.data() as Map<String, dynamic>?;
+    } catch (e) {
+      print("Error getting user data by ID: $e");
+      return null;
+    }
+  }
+
+

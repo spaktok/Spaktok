@@ -1,24 +1,27 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatMessage {
   final String id;
   final String senderId;
   final String receiverId;
-  final String content;
+  final String? text;
+  final String? mediaUrl;
+  final String? mediaType;
   final Timestamp timestamp;
-  final bool isDisappearing; // لتحديد ما إذا كانت الرسالة تختفي
-  final int? disappearDuration; // مدة اختفاء الرسالة بالثواني (اختياري)
-  final bool? isRead; // لتتبع ما إذا كانت الرسالة قد قرئت
+  final bool isEphemeral;
+  final List<String> viewedBy;
 
   ChatMessage({
     required this.id,
     required this.senderId,
     required this.receiverId,
-    required this.content,
+    this.text,
+    this.mediaUrl,
+    this.mediaType,
     required this.timestamp,
-    this.isDisappearing = false,
-    this.disappearDuration,
-    this.isRead = false,
+    this.isEphemeral = false,
+    this.viewedBy = const [],
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -26,11 +29,12 @@ class ChatMessage {
       id: json['id'],
       senderId: json['senderId'],
       receiverId: json['receiverId'],
-      content: json['content'],
+      text: json['text'],
+      mediaUrl: json['mediaUrl'],
+      mediaType: json['mediaType'],
       timestamp: json['timestamp'] as Timestamp,
-      isDisappearing: json['isDisappearing'] ?? false,
-      disappearDuration: json['disappearDuration'],
-      isRead: json['isRead'] ?? false,
+      isEphemeral: json['isEphemeral'] ?? false,
+      viewedBy: List<String>.from(json['viewedBy'] ?? []),
     );
   }
 
@@ -39,11 +43,12 @@ class ChatMessage {
       'id': id,
       'senderId': senderId,
       'receiverId': receiverId,
-      'content': content,
+      'text': text,
+      'mediaUrl': mediaUrl,
+      'mediaType': mediaType,
       'timestamp': timestamp,
-      'isDisappearing': isDisappearing,
-      'disappearDuration': disappearDuration,
-      'isRead': isRead,
+      'isEphemeral': isEphemeral,
+      'viewedBy': viewedBy,
     };
   }
 }

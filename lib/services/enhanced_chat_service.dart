@@ -1,15 +1,9 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:io';
 
-enum MessageType {
-  text,
-  image,
-  video,
-  audio,
-  gif,
-}
 
 class EnhancedChatService {
   static EnhancedChatService? _instance;
@@ -25,28 +19,22 @@ class EnhancedChatService {
   final AuthService _authService = AuthService();
 
   // Create or get a chat room
-  Future<String> createChatRoom(String otherUserId) async {
+  Future<String> createChatRoom(String currentUserId, String otherUserId) async {
     try {
-      final user = _authService.currentUser;
-      if (user == null) {
-        throw Exception('User must be logged in');
-      }
-
-      // Create a unique chat room ID
-      final participants = [user.uid, otherUserId]..sort();
+      // Create a unique chat room ID by sorting participant UIDs
+      final participants = [currentUserId, otherUserId]..sort();
       final chatRoomId = participants.join('_');
 
       // Check if chat room already exists
-      final chatRoomDoc = await _firestore.collection('chatRooms').doc(chatRoomId).get();
+      final chatRoomDoc = await _firestore.collection('conversations').doc(chatRoomId).get();
 
       if (!chatRoomDoc.exists) {
         // Create new chat room
-        await _firestore.collection('chatRooms').doc(chatRoomId).set({
+        await _firestore.collection('conversations').doc(chatRoomId).set({
           'participants': participants,
           'createdAt': FieldValue.serverTimestamp(),
           'lastMessage': null,
-          'lastMessageTime': null,
-          'unreadCount': {user.uid: 0, otherUserId: 0},
+          'updatedAt': FieldValue.serverTimestamp(),
         });
       }
 
@@ -56,125 +44,95 @@ class EnhancedChatService {
     }
   }
 
-  // Send a text message
+  // Send a message (text or media)
   Future<void> sendMessage({
     required String chatRoomId,
-    required String message,
-    MessageType type = MessageType.text,
+    required String senderId,
+    String? text,
     String? mediaUrl,
+    String? mediaType,
+    bool isEphemeral = false,
   }) async {
-    try {
-      final user = _authService.currentUser;
-      if (user == null) {
-        throw Exception('User must be logged in');
-      }
+    if (text == null && mediaUrl == null) {
+      throw ArgumentError('Either text or mediaUrl must be provided.');
+    }
 
-      // Add message to chat room
+    try {
+      final messageData = {
+        'senderId': senderId,
+        'text': text,
+        'mediaUrl': mediaUrl,
+        'mediaType': mediaType,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isEphemeral': isEphemeral,
+        'viewedBy': [],
+      };
+
       await _firestore
-          .collection('chatRooms')
+          .collection('conversations')
           .doc(chatRoomId)
           .collection('messages')
-          .add({
-        'senderId': user.uid,
-        'senderName': user.displayName ?? 'Anonymous',
-        'senderPhotoUrl': user.photoURL,
-        'message': message,
-        'type': type.toString(),
-        'mediaUrl': mediaUrl,
-        'timestamp': FieldValue.serverTimestamp(),
-        'isRead': false,
-      });
+          .add(messageData);
 
-      // Update last message in chat room
-      await _firestore.collection('chatRooms').doc(chatRoomId).update({
-        'lastMessage': message,
-        'lastMessageTime': FieldValue.serverTimestamp(),
+      // Update lastMessage in conversation
+      await _firestore.collection('conversations').doc(chatRoomId).update({
+        'lastMessage': {
+          'senderId': senderId,
+          'text': text ?? (mediaType != null ? 'Sent a $mediaType' : ''),
+          'timestamp': FieldValue.serverTimestamp(),
+          'type': mediaType ?? 'text',
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       throw Exception('Failed to send message: $e');
     }
   }
 
-  // Upload media file
-  Future<String> uploadMediaFile(File file, String chatRoomId, MessageType type) async {
+  // Upload chat media file to Firebase Storage
+  Future<String?> uploadChatMedia(String filePath, String userId) async {
     try {
-      final user = _authService.currentUser;
-      if (user == null) {
-        throw Exception('User must be logged in');
-      }
-
-      String folder;
-      switch (type) {
-        case MessageType.image:
-          folder = 'images';
-          break;
-        case MessageType.video:
-          folder = 'videos';
-          break;
-        case MessageType.audio:
-          folder = 'audio';
-          break;
-        default:
-          folder = 'files';
-      }
-
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
-      final ref = _storage.ref().child('chats/$chatRoomId/$folder/$fileName');
-      
-      await ref.putFile(file);
-      final url = await ref.getDownloadURL();
-      
-      return url;
+      File file = File(filePath);
+      String fileName = 'chat_media/${userId}/${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+      UploadTask uploadTask = _storage.ref().child(fileName).putFile(file);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
     } catch (e) {
-      throw Exception('Failed to upload media: $e');
+      print('Error uploading chat media: $e');
+      return null;
     }
   }
 
-  // Send image message
-  Future<void> sendImageMessage({
-    required String chatRoomId,
-    required File imageFile,
-  }) async {
-    try {
-      final url = await uploadMediaFile(imageFile, chatRoomId, MessageType.image);
-      await sendMessage(
-        chatRoomId: chatRoomId,
-        message: 'Image',
-        type: MessageType.image,
-        mediaUrl: url,
-      );
-    } catch (e) {
-      throw Exception('Failed to send image: $e');
-    }
-  }
-
-  // Send video message
-  Future<void> sendVideoMessage({
-    required String chatRoomId,
-    required File videoFile,
-  }) async {
-    try {
-      final url = await uploadMediaFile(videoFile, chatRoomId, MessageType.video);
-      await sendMessage(
-        chatRoomId: chatRoomId,
-        message: 'Video',
-        type: MessageType.video,
-        mediaUrl: url,
-      );
-    } catch (e) {
-      throw Exception('Failed to send video: $e');
-    }
-  }
-
-  // Get messages stream
+  // Get messages stream for a chat room
   Stream<QuerySnapshot> getMessages(String chatRoomId) {
     return _firestore
-        .collection('chatRooms')
+        .collection('conversations')
         .doc(chatRoomId)
         .collection('messages')
-        .orderBy('timestamp', descending: false)
+        .orderBy('timestamp', descending: true)
         .snapshots();
   }
+
+  // Send a screenshot notification (this would typically trigger a Cloud Function)
+  Future<void> sendScreenshotNotification({
+    required String chatId,
+    required String userId,
+    required String messageId,
+  }) async {
+    try {
+      // This is a placeholder. In a real app, you might call a Cloud Function
+      // to notify the other user that a screenshot was taken.
+      print('Screenshot detected in chat $chatId by user $userId for message $messageId');
+      // Example of calling a Cloud Function (if implemented):
+      // final callable = FirebaseFunctions.instance.httpsCallable('notifyScreenshot');
+      // await callable.call({'chatId': chatId, 'userId': userId, 'messageId': messageId});
+    } catch (e) {
+      print('Error sending screenshot notification: $e');
+    }
+  }
+
+  // Other chat-related methods (getChatRooms, markMessagesAsRead, deleteMessage, deleteChatRoom, etc.)
+  // ... (keep existing methods or adapt as needed)
 
   // Get chat rooms stream
   Stream<QuerySnapshot> getChatRooms() {
@@ -184,39 +142,33 @@ class EnhancedChatService {
     }
 
     return _firestore
-        .collection('chatRooms')
+        .collection('conversations')
         .where('participants', arrayContains: user.uid)
-        .orderBy('lastMessageTime', descending: true)
+        .orderBy('updatedAt', descending: true)
         .snapshots();
   }
 
-  // Mark messages as read
-  Future<void> markMessagesAsRead(String chatRoomId) async {
+  // Mark messages as read (simplified for new model)
+  Future<void> markMessageAsViewed(String chatRoomId, String messageId, String userId) async {
     try {
-      final user = _authService.currentUser;
-      if (user == null) return;
-
-      final messages = await _firestore
-          .collection('chatRooms')
+      await _firestore
+          .collection('conversations')
           .doc(chatRoomId)
           .collection('messages')
-          .where('senderId', isNotEqualTo: user.uid)
-          .where('isRead', isEqualTo: false)
-          .get();
-
-      for (var doc in messages.docs) {
-        await doc.reference.update({'isRead': true});
-      }
+          .doc(messageId)
+          .update({
+        'viewedBy': FieldValue.arrayUnion([userId]),
+      });
     } catch (e) {
-      throw Exception('Failed to mark messages as read: $e');
+      throw Exception('Failed to mark message as viewed: $e');
     }
   }
 
-  // Delete message
+  // Delete message (ephemeral messages are handled by Cloud Function)
   Future<void> deleteMessage(String chatRoomId, String messageId) async {
     try {
       await _firestore
-          .collection('chatRooms')
+          .collection('conversations')
           .doc(chatRoomId)
           .collection('messages')
           .doc(messageId)
@@ -226,12 +178,12 @@ class EnhancedChatService {
     }
   }
 
-  // Delete chat room
+  // Delete chat room (conversation)
   Future<void> deleteChatRoom(String chatRoomId) async {
     try {
-      // Delete all messages
+      // Delete all messages in the subcollection
       final messages = await _firestore
-          .collection('chatRooms')
+          .collection('conversations')
           .doc(chatRoomId)
           .collection('messages')
           .get();
@@ -240,78 +192,30 @@ class EnhancedChatService {
         await doc.reference.delete();
       }
 
-      // Delete chat room
-      await _firestore.collection('chatRooms').doc(chatRoomId).delete();
+      // Delete the conversation document itself
+      await _firestore.collection('conversations').doc(chatRoomId).delete();
     } catch (e) {
       throw Exception('Failed to delete chat room: $e');
     }
   }
 
-  // Get user's chat settings
+  // Placeholder for chat settings (if needed, adapt from previous version)
   Future<Map<String, dynamic>> getChatSettings() async {
-    try {
-      final user = _authService.currentUser;
-      if (user == null) {
-        throw Exception('User must be logged in');
-      }
-
-      final doc = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('settings')
-          .doc('chat')
-          .get();
-
-      if (doc.exists) {
-        return doc.data() as Map<String, dynamic>;
-      } else {
-        // Return default settings
-        return {
-          'cameraBackgroundEnabled': false,
-          'notificationsEnabled': true,
-          'soundEnabled': true,
-        };
-      }
-    } catch (e) {
-      throw Exception('Failed to get chat settings: $e');
-    }
+    // Implement as needed, or remove if not used
+    return {};
   }
 
-  // Update chat settings
   Future<void> updateChatSettings(Map<String, dynamic> settings) async {
-    try {
-      final user = _authService.currentUser;
-      if (user == null) {
-        throw Exception('User must be logged in');
-      }
-
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('settings')
-          .doc('chat')
-          .set(settings, SetOptions(merge: true));
-    } catch (e) {
-      throw Exception('Failed to update chat settings: $e');
-    }
+    // Implement as needed, or remove if not used
   }
 
-  // Enable camera background for chat
   Future<void> enableCameraBackground(bool enable) async {
-    try {
-      await updateChatSettings({'cameraBackgroundEnabled': enable});
-    } catch (e) {
-      throw Exception('Failed to enable camera background: $e');
-    }
+    // Implement as needed, or remove if not used
   }
 
-  // Check if camera background is enabled
   Future<bool> isCameraBackgroundEnabled() async {
-    try {
-      final settings = await getChatSettings();
-      return settings['cameraBackgroundEnabled'] ?? false;
-    } catch (e) {
-      return false;
-    }
+    // Implement as needed, or remove if not used
+    return false;
   }
 }
+

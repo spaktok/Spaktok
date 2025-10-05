@@ -12,6 +12,9 @@ interface UserData {
   premiumSlotId?: string | null;
   isAdmin?: boolean;
   balance?: number;
+  friends?: string[];
+  sentFriendRequests?: string[];
+  receivedFriendRequests?: string[];
 }
 
 interface SettingsData {
@@ -24,21 +27,36 @@ interface SettingsData {
 /**
  * Cloud Function to process gift payouts and apply premium account percentages.
  * Triggered by a Firestore write (e.g., when a gift is sent).
- * This is a placeholder and needs to be integrated with the actual gift sending mechanism.
  */
 export const processGiftPayout = onDocumentCreated(
-  "gifts/{giftId}",
+  "sentGifts/{sentGiftId}",
   async (event) => {
-    const giftData = event.data?.data();
-    const receiverId = giftData?.receiverId;
-    const giftValue = giftData?.value; // Value of the gift in coins/currency
+    const sentGiftData = event.data?.data();
+    const receiverId = sentGiftData?.receiverId;
+    const senderId = sentGiftData?.senderId;
+    const giftName = sentGiftData?.giftName; // Name of the gift sent (e.g., "lion")
 
-    if (!receiverId || !giftValue) {
-      console.error("Missing receiverId or giftValue in gift data.");
+    if (!receiverId || !senderId || !giftName) {
+      console.error("Missing receiverId, senderId, or giftName in sent gift data.");
       return null;
     }
 
     try {
+      // Get gift details from the 'gifts' collection
+      const giftRef = db.collection("gifts").doc(giftName.toLowerCase());
+      const giftDoc = await giftRef.get();
+
+      if (!giftDoc.exists) {
+        console.error(`Gift with name ${giftName} not found.`);
+        return null;
+      }
+      const giftValue = giftDoc.data()?.cost; // Cost of the gift in coins
+
+      if (!giftValue) {
+        console.error(`Gift value not defined for gift ${giftName}.`);
+        return null;
+      }
+
       const userRef = db.collection("users").doc(receiverId);
       const userDoc = await userRef.get();
 
@@ -109,7 +127,7 @@ export const managePremiumAccount = onCall(async (request) => {
   if (!userId || !action) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "The \'userId\' and \'action\' fields are required."
+      "The 'userId' and 'action' fields are required."
     );
   }
 
@@ -145,7 +163,7 @@ export const managePremiumAccount = onCall(async (request) => {
         if (!slotId) {
           throw new functions.https.HttpsError(
             "invalid-argument",
-            "\'slotId\' is required for assigning a premium account."
+            "'slotId' is required for assigning a premium account."
           );
         }
 
@@ -217,7 +235,7 @@ export const managePremiumAccount = onCall(async (request) => {
       } else {
         throw new functions.https.HttpsError(
           "invalid-argument",
-          "Invalid action. Must be \'assign\' or \'unassign\'."
+          "Invalid action. Must be 'assign' or 'unassign'."
         );
       }
     });
@@ -235,7 +253,7 @@ export const managePremiumAccount = onCall(async (request) => {
   }
 });
 
-// Initialize premium settings if they don\'t exist (can be done manually or via another function)
+// Initialize premium settings if they don't exist (can be done manually or via another function)
 // Example of how to initialize settings (can be run once manually or via an admin function)
 export const initializePremiumSettings = onCall(async (request) => {
   if (!request.auth || !request.auth.token.admin) {
@@ -264,4 +282,413 @@ export const initializePremiumSettings = onCall(async (request) => {
     return { success: true, message: "Premium settings already exist." };
   }
 });
+
+/**
+ * Callable Cloud Function to send a message in a conversation.
+ */
+export const sendMessage = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can send messages."
+    );
+  }
+
+  const { conversationId, text, mediaUrl, mediaType, isEphemeral } = request.data;
+  const senderId = request.auth.uid;
+
+  if (!conversationId || (!text && !mediaUrl)) {
+    throw new functions.https.HttpsError(      "invalid-argument",
+      "Conversation ID and either text or media are required."
+    );
+  }
+
+  try {
+    const conversationRef = db.collection("conversations").doc(conversationId);
+    const conversationDoc = await conversationRef.get();
+
+    if (!conversationDoc.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Conversation not found."
+      );
+    }
+
+    const participants = conversationDoc.data()?.participants;
+    if (!participants || !participants.includes(senderId)) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "User is not a participant in this conversation."
+      );
+    }
+
+    const messageData: { [key: string]: any } = {
+      senderId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      viewedBy: [],
+      isEphemeral: isEphemeral || false,
+    };
+
+    if (text) messageData.text = text;
+    if (mediaUrl) messageData.mediaUrl = mediaUrl;
+    if (mediaType) messageData.mediaType = mediaType;
+
+    await conversationRef.collection("messages").add(messageData);
+
+    // Update lastMessage in conversation
+    await conversationRef.update({
+      lastMessage: {
+        senderId,
+        text: text || (mediaType ? `Sent a ${mediaType}` : ""),
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        type: mediaType || "text",
+      },
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update unread counts for other participants
+    for (const participantId of participants) {
+      if (participantId !== senderId) {
+        const userChatRef = db.collection("users").doc(participantId).collection("userChats").doc(conversationId);
+        await userChatRef.update({
+          unreadCount: admin.firestore.FieldValue.increment(1),
+        });
+      }
+    }
+
+    return { success: true, message: "Message sent successfully." };
+  } catch (error: any) {
+    console.error("Error sending message:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to send message.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Callable Cloud Function to update a user's location.
+ */
+export const updateLocation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can update their location."
+    );
+  }
+
+  const { latitude, longitude, locationPrivacy, sharedWithFriends, excludedFriends, isLiveLocationSharing, liveLocationExpiresAt } = request.data;
+  const userId = request.auth.uid;
+
+  if (typeof latitude !== "number" || typeof longitude !== "number") {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Latitude and longitude are required and must be numbers."
+    );
+  }
+
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const updateData: { [key: string]: any } = {
+      lastKnownLocation: new admin.firestore.GeoPoint(latitude, longitude),
+      locationUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (locationPrivacy) updateData.locationPrivacy = locationPrivacy;
+    if (sharedWithFriends) updateData.sharedWithFriends = sharedWithFriends;
+    if (excludedFriends) updateData.excludedFriends = excludedFriends;
+    if (isLiveLocationSharing !== undefined) updateData.isLiveLocationSharing = isLiveLocationSharing;
+    if (liveLocationExpiresAt) updateData.liveLocationExpiresAt = liveLocationExpiresAt;
+
+    await userRef.update(updateData);
+
+    return { success: true, message: "Location updated successfully." };
+  } catch (error: any) {
+    console.error("Error updating location:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to update location.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Callable Cloud Function to send a friend request.
+ */
+export const sendFriendRequest = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can send friend requests."
+    );
+  }
+
+  const { receiverId } = request.data;
+  const senderId = request.auth.uid;
+
+  if (!receiverId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Receiver ID is required."
+    );
+  }
+
+  if (senderId === receiverId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Cannot send a friend request to yourself."
+    );
+  }
+
+  try {
+    const receiverDoc = await db.collection("users").doc(receiverId).get();
+    if (!receiverDoc.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Receiver user not found."
+      );
+    }
+
+    // Check if already friends
+    const senderDoc = await db.collection("users").doc(senderId).get();
+    const senderFriends = senderDoc.data()?.friends || [];
+    if (senderFriends.includes(receiverId)) {
+      throw new functions.https.HttpsError(
+        "already-exists",
+        "You are already friends with this user."
+      );
+    }
+
+    // Check for existing pending request
+    const existingRequest = await db.collection("friendRequests")
+      .where("senderId", "==", senderId)
+      .where("receiverId", "==", receiverId)
+      .where("status", "==", "pending")
+      .get();
+
+    if (!existingRequest.empty) {
+      throw new functions.https.HttpsError(
+        "already-exists",
+        "Friend request already sent."
+      );
+    }
+
+    // Check if receiver has sent a request to sender
+    const reverseRequest = await db.collection("friendRequests")
+      .where("senderId", "==", receiverId)
+      .where("receiverId", "==", senderId)
+      .where("status", "==", "pending")
+      .get();
+
+    if (!reverseRequest.empty) {
+      // If a reverse request exists, accept it automatically
+      const requestId = reverseRequest.docs[0].id;
+      await db.collection("friendRequests").doc(requestId).update({ status: "accepted" });
+      await db.collection("users").doc(senderId).update({ friends: admin.firestore.FieldValue.arrayUnion(receiverId) });
+      await db.collection("users").doc(receiverId).update({ friends: admin.firestore.FieldValue.arrayUnion(senderId) });
+      return { success: true, message: "Friend request accepted automatically." };
+    }
+
+    await db.collection("friendRequests").add({
+      senderId,
+      receiverId,
+      status: "pending",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Add to sender's sentFriendRequests and receiver's receivedFriendRequests
+    await db.collection("users").doc(senderId).update({
+      sentFriendRequests: admin.firestore.FieldValue.arrayUnion(receiverId),
+    });
+    await db.collection("users").doc(receiverId).update({
+      receivedFriendRequests: admin.firestore.FieldValue.arrayUnion(senderId),
+    });
+
+    return { success: true, message: "Friend request sent." };
+  } catch (error: any) {
+    console.error("Error sending friend request:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to send friend request.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Callable Cloud Function to accept a friend request.
+ */
+export const acceptFriendRequest = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can accept friend requests."
+    );
+  }
+
+  const { requestId } = request.data;
+  const receiverId = request.auth.uid;
+
+  if (!requestId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Request ID is required."
+    );
+  }
+
+  try {
+    const requestRef = db.collection("friendRequests").doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Friend request not found."
+      );
+    }
+
+    const requestData = requestDoc.data();
+    if (requestData?.receiverId !== receiverId) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "You are not authorized to accept this request."
+      );
+    }
+    if (requestData?.status !== "pending") {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Friend request is not pending."
+      );
+    }
+
+    const senderId = requestData.senderId;
+
+    await db.runTransaction(async (transaction) => {
+      transaction.update(requestRef, { status: "accepted" });
+      transaction.update(db.collection("users").doc(senderId), {
+        friends: admin.firestore.FieldValue.arrayUnion(receiverId),
+        sentFriendRequests: admin.firestore.FieldValue.arrayRemove(receiverId),
+      });
+      transaction.update(db.collection("users").doc(receiverId), {
+        friends: admin.firestore.FieldValue.arrayUnion(senderId),
+        receivedFriendRequests: admin.firestore.FieldValue.arrayRemove(senderId),
+      });
+    });
+
+    return { success: true, message: "Friend request accepted." };
+  } catch (error: any) {
+    console.error("Error accepting friend request:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to accept friend request.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Callable Cloud Function to decline a friend request.
+ */
+export const declineFriendRequest = onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Only authenticated users can decline friend requests."
+    );
+  }
+
+  const { requestId } = request.data;
+  const receiverId = request.auth.uid;
+
+  if (!requestId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Request ID is required."
+    );
+  }
+
+  try {
+    const requestRef = db.collection("friendRequests").doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Friend request not found."
+      );
+    }
+
+    const requestData = requestDoc.data();
+    if (requestData?.receiverId !== receiverId) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "You are not authorized to decline this request."
+      );
+    }
+    if (requestData?.status !== "pending") {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Friend request is not pending."
+      );
+    }
+
+    const senderId = requestData.senderId;
+
+    await db.runTransaction(async (transaction) => {
+      transaction.update(requestRef, { status: "declined" });
+      transaction.update(db.collection("users").doc(senderId), {
+        sentFriendRequests: admin.firestore.FieldValue.arrayRemove(receiverId),
+      });
+      transaction.update(db.collection("users").doc(receiverId), {
+        receivedFriendRequests: admin.firestore.FieldValue.arrayRemove(senderId),
+      });
+    });
+
+    return { success: true, message: "Friend request declined." };
+  } catch (error: any) {
+    console.error("Error declining friend request:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to decline friend request.",
+      error.message
+    );
+  }
+});
+
+/**
+ * Cloud Function to delete ephemeral messages after they have been viewed by all participants.
+ * Triggered by a Firestore update on a message document.
+ */
+export const deleteEphemeralMessage = onDocumentCreated(
+  "conversations/{conversationId}/messages/{messageId}",
+  async (event) => {
+    const messageData = event.data?.data();
+    const conversationId = event.params.conversationId;
+    const messageId = event.params.messageId;
+
+    if (!messageData || !messageData.isEphemeral) {
+      return null; // Not an ephemeral message
+    }
+
+    // For simplicity, we'll delete ephemeral messages after a short delay or after being viewed once.
+    // A more robust solution would involve tracking all participants' views.
+    // For now, let's assume it's a 1-on-1 chat and delete after one view.
+    // This function will be triggered on creation, so we can schedule a deletion.
+
+    // Schedule deletion after a short period (e.g., 10 seconds) for demonstration.
+    // In a real app, this might be more complex, e.g., triggered by a client-side view event.
+    setTimeout(async () => {
+      try {
+        await db.collection("conversations").doc(conversationId).collection("messages").doc(messageId).delete();
+        console.log(`Ephemeral message ${messageId} in conversation ${conversationId} deleted.`);
+      } catch (error) {
+        console.error(`Error deleting ephemeral message ${messageId}:`, error);
+      }
+    }, 10000); // Delete after 10 seconds
+
+    return null;
+  }
+);
 

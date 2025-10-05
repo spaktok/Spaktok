@@ -12,6 +12,7 @@ import 'package:spaktok/screens/search_screen.dart';
 import 'package:spaktok/screens/gifts_screen.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/screens/admin_premium_accounts_screen.dart';
+import 'package:spaktok/screens/friend_list_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({Key? key}) : super(key: key);
@@ -239,7 +240,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ChatScreen()),
+                MaterialPageRoute(builder: (context) => const ChatScreen(receiverId: 'default', receiverName: 'Chat')),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.people,
+            title: 'Friends',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FriendListScreen()),
               );
             },
           ),
