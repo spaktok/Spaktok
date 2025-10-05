@@ -43,7 +43,10 @@ class AuthService {
         'isVerified': false,
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
-
+        'balance': 0.0,
+        'coins': 0,
+        'paypalEmail': null,
+        'bankAccountDetails': null,
       });
 
       return userCredential;
@@ -161,7 +164,17 @@ class AuthService {
   Future<Map<String, dynamic>?> getUserData(String uid) async {
     try {
       DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
-      return doc.data() as Map<String, dynamic>?;
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data != null) {
+        return {
+          ...data,
+          'balance': (data['balance'] as num?)?.toDouble() ?? 0.0,
+          'coins': (data['coins'] as num?)?.toInt() ?? 0,
+          'paypalEmail': data['paypalEmail'] as String?,
+          'bankAccountDetails': data['bankAccountDetails'] as Map<String, dynamic>?,
+        };
+      }
+      return null;
     } catch (e) {
       throw Exception('Failed to get user data: $e');
     }
@@ -271,7 +284,17 @@ class AuthService {
   Future<Map<String, dynamic>?> getUserDataById(String userId) async {
     try {
       DocumentSnapshot doc = await _firestore.collection("users").doc(userId).get();
-      return doc.data() as Map<String, dynamic>?;
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data != null) {
+        return {
+          ...data,
+          'balance': (data['balance'] as num?)?.toDouble() ?? 0.0,
+          'coins': (data['coins'] as num?)?.toInt() ?? 0,
+          'paypalEmail': data['paypalEmail'] as String?,
+          'bankAccountDetails': data['bankAccountDetails'] as Map<String, dynamic>?,
+        };
+      }
+      return null;
     } catch (e) {
       print("Error getting user data by ID: $e");
       return null;
