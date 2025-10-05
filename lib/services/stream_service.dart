@@ -95,26 +95,38 @@ class StreamService {
   Future<void> sendStreamMessage({
     required String streamId,
     required String message,
+    String? giftName,
+    String? giftImageUrl,
+    int? giftCost,
   }) async {
     try {
       final user = _authService.currentUser;
       if (user == null) {
-        throw Exception('User must be logged in to send messages');
+        throw Exception(\'User must be logged in to send messages\');
+      }
+
+      final Map<String, dynamic> messageData = {
+        \'userId\': user.uid,
+        \'userName\': user.displayName ?? \'Anonymous\',
+        \'userPhotoUrl\': user.photoURL,
+        \'timestamp\': FieldValue.serverTimestamp(),
+      };
+
+      if (giftName != null && giftImageUrl != null && giftCost != null) {
+        messageData[\'giftName\'] = giftName;
+        messageData[\'giftImageUrl\'] = giftImageUrl;
+        messageData[\'giftCost\'] = giftCost;
+      } else {
+        messageData[\'message\'] = message;
       }
 
       await _firestore
-          .collection('streams')
+          .collection(\'streams\')
           .doc(streamId)
-          .collection('messages')
-          .add({
-        'userId': user.uid,
-        'userName': user.displayName ?? 'Anonymous',
-        'userPhotoUrl': user.photoURL,
-        'message': message,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+          .collection(\'messages\')
+          .add(messageData);
     } catch (e) {
-      throw Exception('Failed to send message: $e');
+      throw Exception(\'Failed to send message: $e\');
     }
   }
 
