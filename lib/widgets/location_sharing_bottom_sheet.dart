@@ -1,9 +1,6 @@
 
 import 'package:flutter/material.dart';
-
-enum LocationPrivacy {
-  off, friends, selectedFriends, live
-}
+import 'package:spaktok/services/location_service.dart';
 
 class LocationSharingBottomSheet extends StatefulWidget {
   final Function(LocationPrivacy privacy, List<String>? sharedWithFriends, bool isLive, DateTime? liveExpiresAt) onShareLocation;

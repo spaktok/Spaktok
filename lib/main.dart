@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
-
 import 'package:firebase_core/firebase_core.dart';
-import 'package:spaktok/firebase_options.dart';
+import 'package:spaktok/core/firebase_options.dart';
 import 'package:spaktok/screens/main_navigation_screen.dart';
 import 'package:spaktok/screens/auth/login_screen.dart';
 import 'package:spaktok/services/auth_service.dart';
