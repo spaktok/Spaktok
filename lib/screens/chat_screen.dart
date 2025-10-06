@@ -39,12 +39,14 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       _createChatRoom();
     }
-    _screenshotDetect.addListener(_onScreenshotDetected);
+    _screenshotDetect.startScreenshotListening((filePath) {
+      _onScreenshotDetected();
+    });
   }
 
   @override
   void dispose() {
-    _screenshotDetect.removeListener(_onScreenshotDetected);
+    _screenshotDetect.stopScreenshotListening();
     _messageController.dispose();
     super.dispose();
   }
