@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_functions_interop/firebase_functions_interop.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class AdminPremiumAccountsScreen extends StatefulWidget {
   const AdminPremiumAccountsScreen({Key? key}) : super(key: key);
@@ -12,18 +12,20 @@ class AdminPremiumAccountsScreen extends StatefulWidget {
 
 class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final HttpsCallable _managePremiumAccount = FirebaseFunctions.instance.httpsCallable('managePremiumAccount');
-  final HttpsCallable _initializePremiumSettings = FirebaseFunctions.instance.httpsCallable('initializePremiumSettings');
-
-  List<Map<String, dynamic>> _users = [];
-  Map<String, dynamic> _premiumSettings = {};
-  bool _isLoading = true;
+  late final HttpsCallable _managePremiumAccount;
+  late final HttpsCallable _initializePremiumSettings;
 
   @override
   void initState() {
     super.initState();
+    _managePremiumAccount = FirebaseFunctions.instance.httpsCallable('managePremiumAccount');
+    _initializePremiumSettings = FirebaseFunctions.instance.httpsCallable('initializePremiumSettings');
     _loadData();
   }
+
+  List<Map<String, dynamic>> _users = [];
+  Map<String, dynamic> _premiumSettings = {};
+  bool _isLoading = true;
 
   Future<void> _loadData() async {
     setState(() {
@@ -87,9 +89,9 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Manage Premium Accounts')),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: const Text('Manage Premium Accounts')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 

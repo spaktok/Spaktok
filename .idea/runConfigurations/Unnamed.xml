@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Unnamed" type="docker-deploy" factoryName="docker-compose.yml" singleton="false" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="" />
+        <option name="removeOrphansOnComposeDown" value="false" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

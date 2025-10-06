@@ -26,9 +26,9 @@ class _FriendListScreenState extends State<FriendListScreen> {
   @override
   Widget build(BuildContext context) {
     if (_currentUser == null) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Friends')),
-        body: Center(child: Text('Please log in to view your friends.')),
+      return Scaffold(
+        appBar: AppBar(title: const Text('Friends')),
+        body: const Center(child: Text('Please log in to view your friends.')),
       );
     }
 
