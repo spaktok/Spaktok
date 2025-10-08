@@ -1,0 +1,79 @@
+version: '3.8'
+
+# ========================================
+# SPAKTOK - PRODUCTION DOCKER COMPOSE
+# Phase 1: Intelligent Infrastructure
+# ========================================
+# Complete stack for local development and testing
+# Includes: Backend, Redis, Monitoring
+# ========================================
+
+services:
+  # Backend API Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.production
+    container_name: spaktok-backend
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CORS_ORIGIN=*
+    volumes:
+      - ./firebase:/app/firebase:ro
+      - ./backend/logs:/app/logs
+    depends_on:
+      - redis
+    networks:
+      - spaktok-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: spaktok-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - spaktok-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Redis Commander (Web UI for Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: spaktok-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - spaktok-network
+
+networks:
+  spaktok-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
