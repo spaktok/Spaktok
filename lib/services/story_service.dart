@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:spaktok/lib/models/story.dart';
+import 'package:spaktok/models/story.dart';
 import 'dart:io';
 
 class StoryService {

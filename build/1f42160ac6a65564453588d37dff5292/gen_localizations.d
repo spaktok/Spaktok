@@ -1,0 +1,1 @@
+ /home/ubuntu/spaktok/.dart_tool/flutter_gen/gen_l10n/app_localizations_ar.dart /home/ubuntu/spaktok/.dart_tool/flutter_gen/gen_l10n/app_localizations_en.dart /home/ubuntu/spaktok/.dart_tool/flutter_gen/gen_l10n/app_localizations.dart:  /home/ubuntu/spaktok/l10n.yaml /home/ubuntu/spaktok/lib/l10n/app_ar.arb /home/ubuntu/spaktok/lib/l10n/app_en.arb
