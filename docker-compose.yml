@@ -14,7 +14,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "5000:5000"
+      - "5003:5000"
     volumes:
       - ./backend:/app
     restart: unless-stopped
@@ -24,7 +24,7 @@ services:
     ports:
       - "4000:4000"
       - "5001:5001"
-      - "5000:5000"
+      - "5003:5000"
       - "8080:8080"
       - "9099:9099"
       - "9199:9199"
