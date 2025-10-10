@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-﻿version: "3.9"
-=======
-version: '3.9'
->>>>>>> 323a4b16d6849b971bf2ddd9bd651dbaf7ae3ab3
+version: "3.9"
 
 services:
   frontend:
     build: ./frontend
-<<<<<<< HEAD
     container_name: spaktok-frontend
     ports:
       - "8080:8080"
@@ -22,10 +17,10 @@ services:
       - "5000:5000"
     restart: always
     environment:
-      - NODE_ENV=production
-      - DB_URI=mongodb://mongo:27017/spaktok
-      - REDIS_HOST=redis
-      - POSTGRES_URI=postgres://spaktok:123dano@postgres:5432/spaktok
+      NODE_ENV: production
+      DB_URI: mongodb://mongo:27017/spaktok
+      REDIS_HOST: redis
+      POSTGRES_URI: postgres://spaktok:123dano@postgres:5432/spaktok
     depends_on:
       - mongo
       - redis
@@ -58,38 +53,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
 
 volumes:
   mongo-data:
-  pg-data:
-=======
-    ports:
-      - "8080:8080"
-    depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-    restart: unless-stopped
-
-  backend:
-    build: ./backend
-    ports:
-      - "5003:5000"
-    volumes:
-      - ./backend:/app
-    restart: unless-stopped
-
-  firebase:
-    build: ./firebase
-    ports:
-      - "4000:4000"
-      - "5001:5001"
-      - "5003:5000"
-      - "8080:8080"
-      - "9099:9099"
-      - "9199:9199"
-    volumes:
-      - ./firebase:/firebase
-    restart: unless-stopped
->>>>>>> 323a4b16d6849b971bf2ddd9bd651dbaf7ae3ab3
+  pg_data:
