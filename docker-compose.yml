@@ -1,0 +1,60 @@
+﻿version: "3.9"
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: spaktok-frontend
+    ports:
+      - "8080:8080"
+    restart: always
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    container_name: spaktok-backend
+    ports:
+      - "5000:5000"
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DB_URI=mongodb://mongo:27017/spaktok
+      - REDIS_HOST=redis
+      - POSTGRES_URI=postgres://spaktok:123dano@postgres:5432/spaktok
+    depends_on:
+      - mongo
+      - redis
+      - postgres
+
+  mongo:
+    image: mongo:6
+    container_name: spaktok-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: spaktok-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: spaktok-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: spaktok
+      POSTGRES_PASSWORD: 123dano
+      POSTGRES_DB: spaktok
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+volumes:
+  mongo-data:
+  pg-data:
