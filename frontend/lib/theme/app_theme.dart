@@ -32,7 +32,7 @@ class AppTheme {
       primaryColor: electricBlue,
       hintColor: cyanGlow,
       cardColor: darkSurface,
-      dividerColor: Colors.white.withOpacity(0.1),
+      dividerColor: Colors.white.withAlpha((255 * 0.1).round()),
       textTheme: const TextTheme(
         displayLarge: TextStyle(fontFamily: fontInter, color: pureWhite, fontSize: 32, fontWeight: FontWeight.bold),
         displayMedium: TextStyle(fontFamily: fontInter, color: pureWhite, fontSize: 28, fontWeight: FontWeight.bold),
@@ -80,7 +80,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurface,
-        hintStyle: TextStyle(color: pureWhite.withOpacity(0.5)),
+        hintStyle: TextStyle(color: pureWhite.withAlpha((255 * 0.5).round())),
         labelStyle: const TextStyle(color: pureWhite),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
@@ -92,7 +92,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide(color: pureWhite.withOpacity(0.2), width: 1.0),
+          borderSide: BorderSide(color: pureWhite.withAlpha((255 * 0.2).round()), width: 1.0),
         ),
       ),
       iconTheme: const IconThemeData(
@@ -102,56 +102,56 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: darkSurface,
         selectedItemColor: electricBlue,
-        unselectedItemColor: pureWhite.withOpacity(0.6),
+        unselectedItemColor: pureWhite.withAlpha((255 * 0.6).round()),
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: const TextStyle(fontFamily: fontInter, fontSize: 12),
         unselectedLabelStyle: const TextStyle(fontFamily: fontInter, fontSize: 12),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: ThemeData().tabBarTheme.copyWith(
         labelColor: electricBlue,
-        unselectedLabelColor: pureWhite.withOpacity(0.6),
-        indicator: UnderlineTabIndicator(
+        unselectedLabelColor: pureWhite.withAlpha((255 * 0.6).round()),
+        indicator: const UnderlineTabIndicator(
           borderSide: BorderSide(color: electricBlue, width: 3.0),
-          borderRadius: BorderRadius.circular(3.0),
+          borderRadius: BorderRadius.all(Radius.circular(3.0)),
         ),
         labelStyle: const TextStyle(fontFamily: fontInter, fontSize: 14, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontFamily: fontInter, fontSize: 14, fontWeight: FontWeight.w600),
       ),
-      cardTheme: CardTheme(
-        color: darkSurface,
+      cardTheme: const CardTheme(
+        color: AppTheme.darkSurface,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-        margin: const EdgeInsets.all(8.0),
+        margin: EdgeInsets.all(8.0),
       ),
-      dialogTheme: DialogTheme(
-        backgroundColor: darkSurface,
+      dialogTheme: const DialogTheme(
+        backgroundColor: AppTheme.darkSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-        titleTextStyle: const TextStyle(fontFamily: fontInter, color: pureWhite, fontSize: 20, fontWeight: FontWeight.bold),
-        contentTextStyle: const TextStyle(fontFamily: fontInter, color: pureWhite, fontSize: 16),
+        titleTextStyle: TextStyle(fontFamily: AppTheme.fontInter, color: AppTheme.pureWhite, fontSize: 20, fontWeight: FontWeight.bold),
+        contentTextStyle: TextStyle(fontFamily: AppTheme.fontInter, color: AppTheme.pureWhite, fontSize: 16),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: electricBlue,
-        inactiveTrackColor: pureWhite.withOpacity(0.3),
+        inactiveTrackColor: pureWhite.withAlpha((255 * 0.3).round()),
         thumbColor: electricBlue,
-        overlayColor: electricBlue.withOpacity(0.2),
+        overlayColor: electricBlue.withAlpha((255 * 0.2).round()),
         valueIndicatorColor: electricBlue,
         valueIndicatorTextStyle: const TextStyle(fontFamily: fontInter, color: pureWhite),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith<Color?>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
               return electricBlue;
             }
-            return pureWhite.withOpacity(0.8);
+            return pureWhite.withAlpha((255 * 0.8).round());
           },
         ),
-        trackColor: MaterialStateProperty.resolveWith<Color?>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.selected)) {
-              return electricBlue.withOpacity(0.5);
+        trackColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
+              return electricBlue.withAlpha((255 * 0.5).round());
             }
-            return pureWhite.withOpacity(0.3);
+            return pureWhite.withAlpha((255 * 0.3).round());
           },
         ),
       ),
