@@ -1,0 +1,20 @@
+{
+  "@@locale": "ar",
+  "appTitle": "سباكتوك",
+  "liveStreamTitle": "بث سباكتوك المباشر",
+  "muteUnmuteAudio": "كتم/إلغاء كتم الصوت",
+  "stopStartVideo": "إيقاف/بدء الفيديو",
+  "leaveStream": "مغادرة البث",
+  "waitingForParticipants": "في انتظار انضمام المشاركين",
+  "chatWith": "الدردشة مع {receiverName}",
+  "enterMessage": "أدخل رسالة",
+  "storiesTitle": "القصص",
+  "noStoriesAvailable": "لا توجد قصص متاحة.",
+  "uploadStoryNotImplemented": "لم يتم تنفيذ وظيفة تحميل القصة بعد.",
+  "reelsTitle": "مقاطع ريلز",
+  "noReelsAvailable": "لا توجد مقاطع ريلز متاحة.",
+  "videoPlayerPlaceholder": "عنصر نائب لمشغل الفيديو",
+  "likesCount": "{count} إعجاب",
+  "commentsCount": "{count} تعليق",
+  "uploadReelNotImplemented": "لم يتم تنفيذ وظيفة تحميل مقطع ريلز بعد."
+}
