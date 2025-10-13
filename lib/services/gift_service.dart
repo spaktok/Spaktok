@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:spaktok/lib/models/gift.dart';
+import 'package:spaktok/models/gift.dart';
 
 class GiftService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

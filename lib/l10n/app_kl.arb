@@ -1,0 +1,23 @@
+{
+  "@@locale": "kl",
+  "appTitle": "Spaktok",
+  "liveStreamTitle": "Spaktok Live Stream",
+  "muteUnmuteAudio": "Mute/Unmute Audio",
+  "stopStartVideo": "Stop/Start Video",
+  "leaveStream": "Leave Stream",
+  "waitingForParticipants": "Waiting for participants to join",
+  "chatWith": "Chat with {receiverName}",
+  "enterMessage": "Enter message",
+  "storiesTitle": "Stories",
+  "noStoriesAvailable": "No stories available.",
+  "uploadStoryNotImplemented": "Upload story functionality not yet implemented.",
+  "reelsTitle": "Reels",
+  "noReelsAvailable": "No reels available.",
+  "videoPlayerPlaceholder": "Video Player Placeholder",
+  "likesCount": "{count} Likes",
+  "commentsCount": "{count} Comments",
+  "uploadReelNotImplemented": "Upload reel functionality not yet implemented.",
+  "explore": "Explore",
+  "noTrendingContent": "No trending content available.",
+  "error": "Error"
+}
