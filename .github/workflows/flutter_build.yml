@@ -21,6 +21,9 @@ jobs:
       - name: 📦 Install dependencies
         run: flutter pub get
 
+      - name: Analyze Flutter code
+        run: flutter analyze || true
+        
       - name: 🏗 Build Flutter Web
         run: flutter build web --release
 
