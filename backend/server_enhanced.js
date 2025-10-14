@@ -25,13 +25,32 @@ const httpServer = createServer(app);
 // ========================================
 // 1. FIREBASE ADMIN SDK INITIALIZATION
 // ========================================
-const serviceAccount = require("../firebase/service-account-key.json");
+// Support both file-based and env-based credentials for secure deployments
+let firebaseInitOptions = {};
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  try {
+    const creds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+    firebaseInitOptions.credential = admin.credential.cert(creds);
+  } catch (e) {
+    console.error("Invalid GOOGLE_APPLICATION_CREDENTIALS_JSON:", e.message);
+  }
+}
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: "spaktok-e7866.appspot.com",
-  databaseURL: "https://spaktok-e7866-default-rtdb.firebaseio.com"
-});
+if (!firebaseInitOptions.credential) {
+  try {
+    // Fallback to local service account file if present
+    const serviceAccount = require("../firebase/service-account-key.json");
+    firebaseInitOptions.credential = admin.credential.cert(serviceAccount);
+  } catch (e) {
+    console.warn("No local Firebase service account file found. Falling back to ADC.");
+    // As a last resort, let Admin SDK use ADC (workload identity or env var path)
+  }
+}
+
+firebaseInitOptions.storageBucket = process.env.FIREBASE_STORAGE_BUCKET || "";
+firebaseInitOptions.databaseURL = process.env.FIREBASE_DATABASE_URL || undefined;
+
+admin.initializeApp(firebaseInitOptions);
 
 const db = admin.firestore();
 const storage = admin.storage();
@@ -355,7 +374,16 @@ app.get("/api/trending", cacheMiddleware(300), async (req, res) => {
 });
 
 // Import additional routes
-const apiRoutes = require("./routes/api");
+let apiRoutes;
+try {
+  apiRoutes = require("./routes/api");
+} catch (_) {
+  console.warn("routes/api.js not found; using built-in router stub");
+  const express = require("express");
+  const stub = express.Router();
+  stub.get("/", (req, res) => res.json({ ok: true }));
+  apiRoutes = stub;
+}
 const paymentRoutes = require("./routes/payment");
 
 app.use("/api", apiRoutes);
