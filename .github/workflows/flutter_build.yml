@@ -9,10 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: frontend
-
     steps:
       - name: 📦 Checkout repository
         uses: actions/checkout@v3
@@ -23,15 +19,19 @@ jobs:
           flutter-version: '3.35.4'
 
       - name: 📥 Install dependencies
+        working-directory: frontend
         run: flutter pub get
 
       - name: 🧠 Analyze Flutter code
+        working-directory: frontend
         run: flutter analyze || true
 
       - name: 🌐 Build Flutter Web
+        working-directory: frontend
         run: flutter build web --release
 
       - name: 🍏 Generate iOS project
+        working-directory: frontend
         run: |
           flutter clean
           flutter create .
