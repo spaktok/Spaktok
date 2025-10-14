@@ -1,0 +1,27 @@
+name: Generate iOS Files
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+
+      - name: Generate missing iOS project
+        run: |
+          flutter clean
+          flutter create .
+          git config user.name "Yanal"
+          git config user.email "Danialmq3@gmail.com"
+          git add .
+          git commit -m "Auto-generate iOS Xcode project"
+          git push
