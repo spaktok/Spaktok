@@ -1,7 +1,10 @@
-name: Generate iOS Files
+name: Auto Generate iOS Project
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -22,6 +25,6 @@ jobs:
           flutter create .
           git config user.name "Yanal"
           git config user.email "Danialmq3@gmail.com"
-          git add .
+          git add ios
           git commit -m "Auto-generate iOS Xcode project"
           git push
