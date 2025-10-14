@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:spaktok/models/trending_content.dart';
 import 'package:spaktok/services/trending_service.dart';
+<<<<<<< HEAD
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+=======
+
+
+>>>>>>> feature/full-implementation
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -14,11 +19,19 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     final appLocalizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(appLocalizations.explore),
+=======
+
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Explore"),
+>>>>>>> feature/full-implementation
       ),
       body: StreamBuilder<List<TrendingContent>>(
         stream: TrendingService().getTrendingContent(),
@@ -26,9 +39,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
+<<<<<<< HEAD
             return Center(child: Text('${appLocalizations.error}: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text(appLocalizations.noTrendingContent));
+=======
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: const Text("No trending content available"));
+>>>>>>> feature/full-implementation
           } else {
             final trendingContent = snapshot.data!;
             return GridView.builder(

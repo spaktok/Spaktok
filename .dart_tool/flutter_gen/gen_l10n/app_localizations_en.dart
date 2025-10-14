@@ -60,4 +60,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadReelNotImplemented => 'Upload reel functionality not yet implemented.';
+<<<<<<< HEAD
+=======
+
+  @override
+  String get explore => 'Explore';
+
+  @override
+  String get noTrendingContent => 'No trending content available.';
+
+  @override
+  String get error => 'Error';
+>>>>>>> feature/full-implementation
 }
