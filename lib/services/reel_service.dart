@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:spaktok/lib/models/reel.dart';
+import 'package:spaktok/models/reel.dart';
 import 'dart:io';
 
 class ReelService {
@@ -96,6 +96,27 @@ class ReelService {
         });
       }
     });
+  }
+
+  // حفظ Reel
+  Future<void> saveReel(String reelId, String userId) async {
+    final DocumentReference userSavedReelsRef = _firestore.collection("users").doc(userId).collection("savedReels").doc(reelId);
+    await userSavedReelsRef.set({
+      "reelId": reelId,
+      "timestamp": FieldValue.serverTimestamp(),
+    });
+  }
+
+  // إلغاء حفظ Reel
+  Future<void> unsaveReel(String reelId, String userId) async {
+    final DocumentReference userSavedReelsRef = _firestore.collection("users").doc(userId).collection("savedReels").doc(reelId);
+    await userSavedReelsRef.delete();
+  }
+
+  // التحقق مما إذا كان Reel محفوظًا
+  Future<bool> isReelSaved(String reelId, String userId) async {
+    final DocumentSnapshot doc = await _firestore.collection("users").doc(userId).collection("savedReels").doc(reelId).get();
+    return doc.exists;
   }
 
   // حذف Reel

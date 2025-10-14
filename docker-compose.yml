@@ -14,6 +14,7 @@ services:
     build: ./backend
     container_name: spaktok-backend
     ports:
+<<<<<<< HEAD
       - "5000:5000"
     restart: always
     environment:
@@ -25,13 +26,28 @@ services:
       - mongo
       - redis
       - postgres
+=======
+      - "5003:5000"
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+>>>>>>> feature/full-implementation
 
   mongo:
     image: mongo:6
     container_name: spaktok-mongo
     restart: always
     ports:
+<<<<<<< HEAD
       - "27017:27017"
+=======
+      - "4000:4000"
+      - "5001:5001"
+      - "5003:5000"
+      - "8080:8080"
+      - "9099:9099"
+      - "9199:9199"
+>>>>>>> feature/full-implementation
     volumes:
       - mongo-data:/data/db
 
