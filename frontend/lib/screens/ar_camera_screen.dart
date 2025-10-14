@@ -152,14 +152,14 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
         },
       ).toList();
 
-      final inputImageData = InputImageData(
+      final metadata = InputImageMetadata(
         size: imageSize,
         imageRotation: imageRotation,
         inputImageFormat: inputImageFormat,
         planeData: planeData,
       );
 
-      return InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+      return InputImage.fromBytes(bytes: bytes, metadata: metadata);
     } catch (e) {
       debugPrint('Error converting image: $e');
       return null;
