@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -152,14 +153,14 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
         },
       ).toList();
 
-      final inputImageData = InputImageData(
+      final metadata = InputImageMetadata(
         size: imageSize,
-        imageRotation: imageRotation,
-        inputImageFormat: inputImageFormat,
+        rotation: imageRotation,
+        format: inputImageFormat,
         planeData: planeData,
       );
 
-      return InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+      return InputImage.fromBytes(bytes: bytes, metadata: metadata);
     } catch (e) {
       debugPrint('Error converting image: $e');
       return null;
