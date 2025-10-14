@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:spaktok_frontend/screens/movie_list_screen.dart';
-import 'package:spaktok_frontend/screens/user_list_screen.dart';
-import 'package:spaktok_frontend/screens/chat_screen.dart';
+import 'theme/app_theme.dart';
+import 'screens/chat_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,17 +20,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int _selectedIndex = 0;
+  ThemeMode _themeMode = ThemeMode.dark;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    MovieListScreen(),
-    UserListScreen(),
-    ChatScreen(),
-  ];
-
-  void _onItemTapped(int index) {
+  void _toggleTheme() {
     setState(() {
-      _selectedIndex = index;
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
     });
   }
 
@@ -40,30 +33,20 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Spaktok',
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: _themeMode,
       home: Scaffold(
-        appBar: AppBar(title: const Text('Spaktok Frontend 🚀')),
-        body: Center(
-          child: _widgetOptions.elementAt(_selectedIndex),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.movie),
-              label: 'Movies',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: 'Users',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
-              label: 'Chat',
+        appBar: AppBar(
+          title: const Text('Spaktok'),
+          actions: [
+            IconButton(
+              icon: Icon(_themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+              onPressed: _toggleTheme,
             ),
           ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.amber[800],
-          onTap: _onItemTapped,
         ),
+        body: const ChatScreen(),
       ),
     );
   }
