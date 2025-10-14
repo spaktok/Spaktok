@@ -6,7 +6,7 @@ services:
     container_name: spaktok-frontend
     ports:
       - "8080:8080"
-    restart: always
+    restart: unless-stopped
     depends_on:
       - backend
 
@@ -14,54 +14,39 @@ services:
     build: ./backend
     container_name: spaktok-backend
     ports:
-<<<<<<< HEAD
       - "5000:5000"
-    restart: always
+    restart: unless-stopped
     environment:
       NODE_ENV: production
-      DB_URI: mongodb://mongo:27017/spaktok
       REDIS_HOST: redis
-      POSTGRES_URI: postgres://spaktok:123dano@postgres:5432/spaktok
+      REDIS_PORT: 6379
+      CORS_ORIGIN: "*"
+      # Optional Firebase settings (use env or ADC in prod)
+      FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET:-}
+      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL:-}
     depends_on:
-      - mongo
       - redis
-      - postgres
-=======
-      - "5003:5000"
-    volumes:
-      - ./backend:/app
-    restart: unless-stopped
->>>>>>> feature/full-implementation
-
-  mongo:
-    image: mongo:6
-    container_name: spaktok-mongo
-    restart: always
-    ports:
-<<<<<<< HEAD
-      - "27017:27017"
-=======
-      - "4000:4000"
-      - "5001:5001"
-      - "5003:5000"
-      - "8080:8080"
-      - "9099:9099"
-      - "9199:9199"
->>>>>>> feature/full-implementation
-    volumes:
-      - mongo-data:/data/db
 
   redis:
     image: redis:7
     container_name: spaktok-redis
-    restart: always
+    restart: unless-stopped
     ports:
       - "6379:6379"
+
+  mongo:
+    image: mongo:6
+    container_name: spaktok-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
 
   postgres:
     image: postgres:15
     container_name: spaktok-postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: spaktok
       POSTGRES_PASSWORD: 123dano
