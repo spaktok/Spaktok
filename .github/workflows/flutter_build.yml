@@ -10,13 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-<<<<<<< HEAD
-      - name: 📦 Checkout repository
-        uses: actions/checkout@v3
-=======
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
->>>>>>> feature/full-implementation
 
       - name: 🛠️ Setup Flutter
         uses: subosito/flutter-action@v2
