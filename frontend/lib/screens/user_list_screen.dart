@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spaktok_frontend/dataconnect_generated/example.dart';
+import '../dataconnect_generated/example.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});

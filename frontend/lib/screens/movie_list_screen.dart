@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:spaktok_frontend/dataconnect_generated/example.dart';
-import 'package:spaktok_frontend/screens/movie_detail_screen.dart'; // Assuming example.dart is the generated file
+import '../dataconnect_generated/example.dart';
+import 'movie_detail_screen.dart';
 
 class MovieListScreen extends StatefulWidget {
   const MovieListScreen({super.key});
@@ -59,12 +59,14 @@ class _MovieListScreenState extends State<MovieListScreen> {
                 : const Icon(Icons.movie),
             title: Text(movie.title),
             subtitle: Text(movie.genre ?? 'Unknown Genre'),
-            onTap: () {              Navigator.push(
+            onTap: () {
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => MovieDetailScreen(movieId: movie.id),
                 ),
-              );            },
+              );
+            },
           ),
         );
       },
