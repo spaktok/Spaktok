@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
-import 'package:spaktok_frontend/models/chat_message.dart';
-import 'package:spaktok_frontend/theme/app_theme.dart';
+import '../models/chat_message.dart';
+import '../theme/app_theme.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 // Placeholder for Agora SDK integration - actual implementation would be more complex
 // import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -86,6 +88,26 @@ class _SmartChatScreenState extends State<SmartChatScreen> {
     // if (_messageController.text.isNotEmpty) {
     //   _generateSmartReplies();
     // }
+  }
+
+  Future<String> _translateIfNeeded(String text) async {
+    if (!_autoTranslateEnabled) return text;
+    try {
+      final uri = Uri.parse('/api/ai/translate');
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'text': text,
+          'targetLang': 'ar',
+        }),
+      );
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        return (data['translatedText'] as String?) ?? text;
+      }
+    } catch (_) {}
+    return text;
   }
 
   Future<void> _sendMessage({
