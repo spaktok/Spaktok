@@ -38,7 +38,8 @@ class AuthWrapper extends StatelessWidget {
   const AuthWrapper({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget
+  build(BuildContext context) {
     final authService = AuthService();
     
     return StreamBuilder(

@@ -1,54 +1,50 @@
+import 'dart:convert';
+
 part of 'example.dart';
 
-class GetMovieByIdVariablesBuilder {
-  String id;
+typedef Serializer<T> = String Function(T value);
+typedef Deserializer<T> = T Function(dynamic json);
 
+class GetMovieByIdVariablesBuilder {
   final FirebaseDataConnect _dataConnect;
-  GetMovieByIdVariablesBuilder(this._dataConnect, {required  this.id,});
-  Deserializer<GetMovieByIdData> dataDeserializer = (dynamic json)  => GetMovieByIdData.fromJson(jsonDecode(json));
-  Serializer<GetMovieByIdVariables> varsSerializer = (GetMovieByIdVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<GetMovieByIdData, GetMovieByIdVariables>> execute() {
+  final String id;
+
+  GetMovieByIdVariablesBuilder(
+      this._dataConnect, {
+        required this.id,
+      });
+
+  // Accept either a JSON string or already-decoded Map
+  final Deserializer<GetMovieByIdData> dataDeserializer =
+      (dynamic json) => json is String
+      ? GetMovieByIdData.fromJson(jsonDecode(json))
+      : GetMovieByIdData.fromJson(json);
+
+  final Serializer<GetMovieByIdVariables> varsSerializer =
+      (GetMovieByIdVariables vars) => jsonEncode(vars.toJson());
+
+  Future<OperationResult<GetMovieByIdData, GetMovieByIdVariables>> execute() {
     return ref().execute();
   }
 
   QueryRef<GetMovieByIdData, GetMovieByIdVariables> ref() {
-    GetMovieByIdVariables vars= GetMovieByIdVariables(id: id,);
-    return _dataConnect.query("GetMovieById", dataDeserializer, varsSerializer, vars);
+    final vars = GetMovieByIdVariables(id: id);
+    return _dataConnect.query(
+      "GetMovieById",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
 class GetMovieByIdMovie {
-  String id;
-  String title;
-  String imageUrl;
-  String? genre;
-  GetMovieByIdMovieMetadata? metadata;
-  List<GetMovieByIdMovieReviews> reviews;
-  GetMovieByIdMovie.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  title = nativeFromJson<String>(json['title']),
-  imageUrl = nativeFromJson<String>(json['imageUrl']),
-  genre = json['genre'] == null ? null : nativeFromJson<String>(json['genre']),
-  metadata = json['metadata'] == null ? null : GetMovieByIdMovieMetadata.fromJson(json['metadata']),
-  reviews = (json['reviews'] as List<dynamic>)
-        .map((e) => GetMovieByIdMovieReviews.fromJson(e))
-        .toList();
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
-    json['title'] = nativeToJson<String>(title);
-    json['imageUrl'] = nativeToJson<String>(imageUrl);
-    if (genre != null) {
-      json['genre'] = nativeToJson<String?>(genre);
-    }
-    if (metadata != null) {
-      json['metadata'] = metadata!.toJson();
-    }
-    json['reviews'] = reviews.map((e) => e.toJson()).toList();
-    return json;
-  }
+  final String id;
+  final String title;
+  final String imageUrl;
+  final String? genre;
+  final GetMovieByIdMovieMetadata? metadata;
+  final List<GetMovieByIdMovieReviews> reviews;
 
   GetMovieByIdMovie({
     required this.id,
@@ -58,63 +54,60 @@ class GetMovieByIdMovie {
     this.metadata,
     required this.reviews,
   });
+
+  factory GetMovieByIdMovie.fromJson(dynamic json) => GetMovieByIdMovie(
+    id: nativeFromJson<String>(json['id']),
+    title: nativeFromJson<String>(json['title']),
+    imageUrl: nativeFromJson<String>(json['imageUrl']),
+    genre: json['genre'] == null ? null : nativeFromJson<String>(json['genre']),
+    metadata: json['metadata'] == null
+        ? null
+        : GetMovieByIdMovieMetadata.fromJson(json['metadata']),
+    reviews: (json['reviews'] as List<dynamic>? ?? <dynamic>[])
+        .map((e) => GetMovieByIdMovieReviews.fromJson(e))
+        .toList(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': nativeToJson<String>(id),
+    'title': nativeToJson<String>(title),
+    'imageUrl': nativeToJson<String>(imageUrl),
+    if (genre != null) 'genre': nativeToJson<String?>(genre),
+    if (metadata != null) 'metadata': metadata!.toJson(),
+    'reviews': reviews.map((e) => e.toJson()).toList(),
+  };
 }
 
 class GetMovieByIdMovieMetadata {
-  double? rating;
-  int? releaseYear;
-  String? description;
-  GetMovieByIdMovieMetadata.fromJson(dynamic json):
-  
-  rating = json['rating'] == null ? null : nativeFromJson<double>(json['rating']),
-  releaseYear = json['releaseYear'] == null ? null : nativeFromJson<int>(json['releaseYear']),
-  description = json['description'] == null ? null : nativeFromJson<String>(json['description']);
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    if (rating != null) {
-      json['rating'] = nativeToJson<double?>(rating);
-    }
-    if (releaseYear != null) {
-      json['releaseYear'] = nativeToJson<int?>(releaseYear);
-    }
-    if (description != null) {
-      json['description'] = nativeToJson<String?>(description);
-    }
-    return json;
-  }
+  final double? rating;
+  final int? releaseYear;
+  final String? description;
 
   GetMovieByIdMovieMetadata({
     this.rating,
     this.releaseYear,
     this.description,
   });
+
+  factory GetMovieByIdMovieMetadata.fromJson(dynamic json) =>
+      GetMovieByIdMovieMetadata(
+        rating: json['rating'] == null ? null : nativeFromJson<double>(json['rating']),
+        releaseYear: json['releaseYear'] == null ? null : nativeFromJson<int>(json['releaseYear']),
+        description: json['description'] == null ? null : nativeFromJson<String>(json['description']),
+      );
+
+  Map<String, dynamic> toJson() => {
+    if (rating != null) 'rating': nativeToJson<double?>(rating),
+    if (releaseYear != null) 'releaseYear': nativeToJson<int?>(releaseYear),
+    if (description != null) 'description': nativeToJson<String?>(description),
+  };
 }
 
 class GetMovieByIdMovieReviews {
-  String? reviewText;
-  DateTime reviewDate;
-  int? rating;
-  GetMovieByIdMovieReviewsUser user;
-  GetMovieByIdMovieReviews.fromJson(dynamic json):
-  
-  reviewText = json['reviewText'] == null ? null : nativeFromJson<String>(json['reviewText']),
-  reviewDate = nativeFromJson<DateTime>(json['reviewDate']),
-  rating = json['rating'] == null ? null : nativeFromJson<int>(json['rating']),
-  user = GetMovieByIdMovieReviewsUser.fromJson(json['user']);
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    if (reviewText != null) {
-      json['reviewText'] = nativeToJson<String?>(reviewText);
-    }
-    json['reviewDate'] = nativeToJson<DateTime>(reviewDate);
-    if (rating != null) {
-      json['rating'] = nativeToJson<int?>(rating);
-    }
-    json['user'] = user.toJson();
-    return json;
-  }
+  final String? reviewText;
+  final DateTime reviewDate;
+  final int? rating;
+  final GetMovieByIdMovieReviewsUser user;
 
   GetMovieByIdMovieReviews({
     this.reviewText,
@@ -122,63 +115,118 @@ class GetMovieByIdMovieReviews {
     this.rating,
     required this.user,
   });
+
+  factory GetMovieByIdMovieReviews.fromJson(dynamic json) {
+    // reviewDate may come as ISO string or epoch millis; handle common cases
+    DateTime parseReviewDate(dynamic value) {
+      if (value == null) {
+        return DateTime.fromMillisecondsSinceEpoch(0);
+      }
+      if (value is int) {
+        // assume epoch millis
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      final s = value.toString();
+      return DateTime.tryParse(s) ?? DateTime.fromMillisecondsSinceEpoch(int.tryParse(s) ?? 0);
+    }
+
+    return GetMovieByIdMovieReviews(
+      reviewText: json['reviewText'] == null ? null : nativeFromJson<String>(json['reviewText']),
+      reviewDate: parseReviewDate(json['reviewDate']),
+      rating: json['rating'] == null ? null : nativeFromJson<int>(json['rating']),
+      user: GetMovieByIdMovieReviewsUser.fromJson(json['user']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    if (reviewText != null) 'reviewText': nativeToJson<String?>(reviewText),
+    'reviewDate': reviewDate.toIso8601String(),
+    if (rating != null) 'rating': nativeToJson<int?>(rating),
+    'user': user.toJson(),
+  };
 }
 
 class GetMovieByIdMovieReviewsUser {
-  String id;
-  String username;
-  GetMovieByIdMovieReviewsUser.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  username = nativeFromJson<String>(json['username']);
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
-    json['username'] = nativeToJson<String>(username);
-    return json;
-  }
+  final String id;
+  final String username;
 
   GetMovieByIdMovieReviewsUser({
     required this.id,
     required this.username,
   });
+
+  factory GetMovieByIdMovieReviewsUser.fromJson(dynamic json) =>
+      GetMovieByIdMovieReviewsUser(
+        id: nativeFromJson<String>(json['id']),
+        username: nativeFromJson<String>(json['username']),
+      );
+
+  Map<String, dynamic> toJson() => {
+    'id': nativeToJson<String>(id),
+    'username': nativeToJson<String>(username),
+  };
 }
 
 class GetMovieByIdData {
-  GetMovieByIdMovie? movie;
-  GetMovieByIdData.fromJson(dynamic json):
-  
-  movie = json['movie'] == null ? null : GetMovieByIdMovie.fromJson(json['movie']);
+  final GetMovieByIdMovie? movie;
 
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    if (movie != null) {
-      json['movie'] = movie!.toJson();
-    }
-    return json;
-  }
+  GetMovieByIdData({this.movie});
 
-  GetMovieByIdData({
-    this.movie,
-  });
+  factory GetMovieByIdData.fromJson(dynamic json) => GetMovieByIdData(
+    movie: json['movie'] == null ? null : GetMovieByIdMovie.fromJson(json['movie']),
+  );
+
+  Map<String, dynamic> toJson() => {
+    if (movie != null) 'movie': movie!.toJson(),
+  };
 }
 
 class GetMovieByIdVariables {
-  String id;
+  final String id;
+
+  GetMovieByIdVariables({required this.id});
+
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  GetMovieByIdVariables.fromJson(Map<String, dynamic> json):
-  
-  id = nativeFromJson<String>(json['id']);
+  factory GetMovieByIdVariables.fromJson(Map<String, dynamic> json) =>
+      GetMovieByIdVariables(id: nativeFromJson<String>(json['id']));
 
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
-    return json;
-  }
-
-  GetMovieByIdVariables({
-    required this.id,
-  });
+  Map<String, dynamic> toJson() => {
+    'id': nativeToJson<String>(id),
+  };
 }
 
+// --- Helpers and placeholders ---
+
+T nativeFromJson<T>(dynamic value) {
+  if (T == DateTime) {
+    // caller should not ask for DateTime via this, but keep safe fallback
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value) as T;
+    if (value is String) return DateTime.parse(value) as T;
+  }
+  return value as T;
+}
+
+dynamic nativeToJson<T>(T value) {
+  if (value is DateTime) return value.toIso8601String();
+  return value;
+}
+
+// Placeholder types to make compilation possible in isolation.
+// Replace with real implementations in your project.
+
+class OperationResult<T, V> {}
+
+class QueryRef<T, V> {
+  Future<OperationResult<T, V>> execute() async => OperationResult<T, V>();
+}
+
+class FirebaseDataConnect {
+  QueryRef<T, V> query<T, V>(
+      String name,
+      Deserializer<T> deserializer,
+      Serializer<V> serializer,
+      V variables,
+      ) {
+    return QueryRef<T, V>();
+  }
+}}

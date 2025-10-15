@@ -416,4 +416,3 @@ class _ReportingScreenState extends State<ReportingScreen> {
     _detailsController.dispose();
     super.dispose();
   }
-}
