@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
+import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
@@ -27,6 +30,7 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
   bool _isProcessing = false;
+  String _translatedOverlay = '';
 
   // ML Kit detectors
   final FaceDetector _faceDetector = FaceDetector(
@@ -42,6 +46,11 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
   final SelfieSegmenter _selfieSegmenter = SelfieSegmenter(
     mode: SegmenterMode.stream,
   );
+
+  // OCR + Language ID + On-device translation
+  final TextRecognizer _textRecognizer = TextRecognizer();
+  final LanguageIdentifier _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.3);
+  OnDeviceTranslator? _translator;
 
   // Face detection results
   List<Face> _faces = [];
@@ -122,6 +131,34 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
       // Detect motion for motion-triggered effects
       _detectMotion(faces);
 
+      // OCR + translate to device locale
+      final recognized = await _textRecognizer.processImage(inputImage);
+      final text = recognized.text.trim();
+      if (text.isNotEmpty) {
+        final deviceLocale = Localizations.localeOf(context).languageCode;
+        String targetLang = deviceLocale;
+        String srcLang = 'und';
+        try {
+          srcLang = await _languageIdentifier.identifyLanguage(text);
+        } catch (_) {}
+        if (srcLang != 'und' && srcLang != targetLang) {
+          _translator ??= OnDeviceTranslator(
+            sourceLanguage: TranslateLanguageValues.createFromRawValue(srcLang) ?? TranslateLanguage.english,
+            targetLanguage: TranslateLanguageValues.createFromRawValue(targetLang) ?? TranslateLanguage.arabic,
+          );
+          try {
+            final translated = await _translator!.translateText(text);
+            setState(() { _translatedOverlay = translated; });
+          } catch (_) {
+            setState(() { _translatedOverlay = text; });
+          }
+        } else {
+          setState(() { _translatedOverlay = text; });
+        }
+      } else {
+        setState(() { _translatedOverlay = ''; });
+      }
+
     } catch (e) {
       debugPrint('Error processing image: $e');
     }
@@ -201,19 +238,38 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
   }
 
   Widget _buildFaceOverlay() {
-    if (_faces.isEmpty || _cameraController == null) {
-      return const SizedBox.shrink();
-    }
-
-    return CustomPaint(
-      painter: FacePainter(
-        faces: _faces,
-        imageSize: Size(
-          _cameraController!.value.previewSize!.height,
-          _cameraController!.value.previewSize!.width,
-        ),
-        selectedMask: _selectedMask,
-      ),
+    if (_cameraController == null) return const SizedBox.shrink();
+    return Stack(
+      children: [
+        if (_faces.isNotEmpty)
+          CustomPaint(
+            painter: FacePainter(
+              faces: _faces,
+              imageSize: Size(
+                _cameraController!.value.previewSize!.height,
+                _cameraController!.value.previewSize!.width,
+              ),
+              selectedMask: _selectedMask,
+            ),
+          ),
+        if (_translatedOverlay.isNotEmpty)
+          Positioned(
+            top: 24,
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                _translatedOverlay,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -374,6 +430,9 @@ class _ARCameraScreenState extends State<ARCameraScreen> {
     _cameraController?.dispose();
     _faceDetector.close();
     _selfieSegmenter.close();
+    _textRecognizer.close();
+    _languageIdentifier.close();
+    _translator?.close();
     _motionTimer?.cancel();
     super.dispose();
   }
