@@ -5,6 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+<<<<<<< HEAD
+import 'app_localizations_ar.dart';
+import 'app_localizations_en.dart';
+=======
 import 'app_localizations_aa.dart';
 import 'app_localizations_ab.dart';
 import 'app_localizations_ae.dart';
@@ -189,6 +193,7 @@ import 'app_localizations_yo.dart';
 import 'app_localizations_za.dart';
 import 'app_localizations_zh.dart';
 import 'app_localizations_zu.dart';
+>>>>>>> feature/full-implementation
 
 /// Callers can lookup localized strings with an instance of AppLocalizations
 /// returned by `AppLocalizations.of(context)`.
@@ -271,6 +276,10 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+<<<<<<< HEAD
+    Locale('ar'),
+    Locale('en')
+=======
     Locale('aa'),
     Locale('ab'),
     Locale('ae'),
@@ -455,6 +464,7 @@ abstract class AppLocalizations {
     Locale('za'),
     Locale('zh'),
     Locale('zu')
+>>>>>>> feature/full-implementation
   ];
 
   /// No description provided for @appTitle.
@@ -558,6 +568,8 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Upload reel functionality not yet implemented.'**
   String get uploadReelNotImplemented;
+<<<<<<< HEAD
+=======
 
   /// No description provided for @explore.
   ///
@@ -576,6 +588,7 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error'**
   String get error;
+>>>>>>> feature/full-implementation
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -587,7 +600,11 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
+<<<<<<< HEAD
+  bool isSupported(Locale locale) => <String>['ar', 'en'].contains(locale.languageCode);
+=======
   bool isSupported(Locale locale) => <String>['aa', 'ab', 'ae', 'af', 'ak', 'am', 'an', 'ar', 'as', 'av', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bm', 'bn', 'bo', 'br', 'bs', 'ca', 'ce', 'ch', 'co', 'cr', 'cs', 'cu', 'cv', 'cy', 'da', 'de', 'dv', 'dz', 'ee', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fj', 'fo', 'fr', 'fy', 'ga', 'gd', 'gl', 'gn', 'gu', 'gv', 'ha', 'he', 'hi', 'ho', 'hr', 'ht', 'hu', 'hy', 'hz', 'ia', 'id', 'ie', 'ig', 'ii', 'ik', 'io', 'is', 'it', 'iu', 'ja', 'jv', 'ka', 'kg', 'ki', 'kj', 'kk', 'kl', 'km', 'kn', 'ko', 'kr', 'ks', 'ku', 'kv', 'kw', 'ky', 'la', 'lb', 'lg', 'li', 'ln', 'lo', 'lt', 'lu', 'lv', 'mg', 'mh', 'mi', 'mk', 'ml', 'mn', 'mr', 'ms', 'mt', 'my', 'na', 'nb', 'nd', 'ne', 'ng', 'nl', 'nn', 'no', 'nr', 'nv', 'ny', 'oc', 'oj', 'om', 'or', 'os', 'pa', 'pi', 'pl', 'ps', 'pt', 'qu', 'rm', 'rn', 'ro', 'ru', 'rw', 'sa', 'sc', 'sd', 'se', 'sg', 'si', 'sk', 'sl', 'sm', 'sn', 'so', 'sq', 'sr', 'ss', 'st', 'su', 'sv', 'sw', 'ta', 'te', 'tg', 'th', 'ti', 'tk', 'tl', 'tn', 'to', 'tr', 'ts', 'tt', 'tw', 'ty', 'ug', 'uk', 'ur', 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'za', 'zh', 'zu'].contains(locale.languageCode);
+>>>>>>> feature/full-implementation
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -598,6 +615,10 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+<<<<<<< HEAD
+    case 'ar': return AppLocalizationsAr();
+    case 'en': return AppLocalizationsEn();
+=======
     case 'aa': return AppLocalizationsAa();
     case 'ab': return AppLocalizationsAb();
     case 'ae': return AppLocalizationsAe();
@@ -782,6 +803,7 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
     case 'za': return AppLocalizationsZa();
     case 'zh': return AppLocalizationsZh();
     case 'zu': return AppLocalizationsZu();
+>>>>>>> feature/full-implementation
   }
 
   throw FlutterError(

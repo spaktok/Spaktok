@@ -8,7 +8,9 @@
       "version": "1.0.0+1",
       "dependencies": [
         "agora_rtc_engine",
+        "ar_flutter_plugin",
         "camera",
+        "chewie",
         "cloud_firestore",
         "cloud_functions",
         "cupertino_icons",
@@ -20,13 +22,18 @@
         "flutter_localizations",
         "flutter_screenshot_detect",
         "flutter_stripe",
+<<<<<<< HEAD
         "geolocator",
+=======
+        "google_maps_flutter",
+>>>>>>> origin/cursor/send-arabic-greeting-070f
         "image",
         "image_picker",
         "path_provider",
         "permission_handler",
         "photo_view",
         "provider",
+        "share_plus",
         "shared_preferences",
         "video_player"
       ],
@@ -78,6 +85,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "name": "geolocator",
       "version": "14.0.2",
       "dependencies": [
@@ -107,6 +115,27 @@
       "dependencies": [
         "flutter",
         "plugin_platform_interface"
+=======
+      "name": "ar_flutter_plugin",
+      "version": "0.7.3",
+      "dependencies": [
+        "flutter",
+        "geolocator",
+        "json_annotation",
+        "permission_handler",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "google_maps_flutter",
+      "version": "2.13.1",
+      "dependencies": [
+        "flutter",
+        "google_maps_flutter_android",
+        "google_maps_flutter_ios",
+        "google_maps_flutter_platform_interface",
+        "google_maps_flutter_web"
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       ]
     },
     {
@@ -129,6 +158,17 @@
         "shared_preferences_platform_interface",
         "shared_preferences_web",
         "shared_preferences_windows"
+      ]
+    },
+    {
+      "name": "chewie",
+      "version": "1.13.0",
+      "dependencies": [
+        "cupertino_icons",
+        "flutter",
+        "provider",
+        "video_player",
+        "wakelock_plus"
       ]
     },
     {
@@ -262,13 +302,16 @@
     },
     {
       "name": "permission_handler",
+<<<<<<< HEAD
       "version": "12.0.1",
+=======
+      "version": "10.4.5",
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "dependencies": [
         "flutter",
         "meta",
         "permission_handler_android",
         "permission_handler_apple",
-        "permission_handler_html",
         "permission_handler_platform_interface",
         "permission_handler_windows"
       ]
@@ -474,6 +517,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "name": "geolocator_linux",
       "version": "0.2.3",
       "dependencies": [
@@ -567,11 +611,130 @@
     {
       "name": "plugin_platform_interface",
       "version": "2.1.8",
+=======
+      "name": "async",
+      "version": "2.11.0",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
+      "name": "leak_tracker_testing",
+      "version": "3.0.2",
+      "dependencies": [
+        "leak_tracker",
+        "matcher",
+        "meta"
+      ]
+    },
+    {
+      "name": "leak_tracker",
+      "version": "11.0.2",
+      "dependencies": [
+        "clock",
+        "collection",
+        "meta",
+        "path",
+        "vm_service"
+      ]
+    },
+    {
+      "name": "term_glyph",
+      "version": "1.2.1",
+      "dependencies": []
+    },
+    {
+      "name": "string_scanner",
+      "version": "1.2.0",
+      "dependencies": [
+        "source_span"
+      ]
+    },
+    {
+      "name": "source_span",
+      "version": "1.10.0",
+      "dependencies": [
+        "collection",
+        "path",
+        "term_glyph"
+      ]
+    },
+    {
+      "name": "boolean_selector",
+      "version": "2.1.1",
+      "dependencies": [
+        "source_span",
+        "string_scanner"
+      ]
+    },
+    {
+      "name": "geolocator",
+      "version": "9.0.2",
+      "dependencies": [
+        "flutter",
+        "geolocator_android",
+        "geolocator_apple",
+        "geolocator_platform_interface",
+        "geolocator_web",
+        "geolocator_windows"
+      ]
+    },
+    {
+      "name": "json_annotation",
+      "version": "4.9.0",
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "dependencies": [
         "meta"
       ]
     },
     {
+<<<<<<< HEAD
+=======
+      "name": "google_maps_flutter_web",
+      "version": "0.5.14+2",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "flutter_web_plugins",
+        "google_maps",
+        "google_maps_flutter_platform_interface",
+        "sanitize_html",
+        "stream_transform",
+        "web"
+      ]
+    },
+    {
+      "name": "google_maps_flutter_platform_interface",
+      "version": "2.14.0",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "plugin_platform_interface",
+        "stream_transform"
+      ]
+    },
+    {
+      "name": "google_maps_flutter_ios",
+      "version": "2.15.5",
+      "dependencies": [
+        "flutter",
+        "google_maps_flutter_platform_interface",
+        "stream_transform"
+      ]
+    },
+    {
+      "name": "google_maps_flutter_android",
+      "version": "2.18.2",
+      "dependencies": [
+        "flutter",
+        "flutter_plugin_android_lifecycle",
+        "google_maps_flutter_platform_interface",
+        "stream_transform"
+      ]
+    },
+    {
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "name": "intl",
       "version": "0.20.2",
       "dependencies": [
@@ -636,6 +799,20 @@
       "dependencies": [
         "flutter",
         "shared_preferences_platform_interface"
+      ]
+    },
+    {
+      "name": "wakelock_plus",
+      "version": "1.4.0",
+      "dependencies": [
+        "dbus",
+        "flutter",
+        "flutter_web_plugins",
+        "meta",
+        "package_info_plus",
+        "wakelock_plus_platform_interface",
+        "web",
+        "win32"
       ]
     },
     {
@@ -974,7 +1151,11 @@
     },
     {
       "name": "permission_handler_platform_interface",
+<<<<<<< HEAD
       "version": "4.3.0",
+=======
+      "version": "3.12.0",
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "dependencies": [
         "flutter",
         "meta",
@@ -983,25 +1164,15 @@
     },
     {
       "name": "permission_handler_windows",
-      "version": "0.2.1",
+      "version": "0.1.3",
       "dependencies": [
         "flutter",
         "permission_handler_platform_interface"
       ]
     },
     {
-      "name": "permission_handler_html",
-      "version": "0.1.3+5",
-      "dependencies": [
-        "flutter",
-        "flutter_web_plugins",
-        "permission_handler_platform_interface",
-        "web"
-      ]
-    },
-    {
       "name": "permission_handler_apple",
-      "version": "9.4.7",
+      "version": "9.1.4",
       "dependencies": [
         "flutter",
         "permission_handler_platform_interface"
@@ -1009,7 +1180,11 @@
     },
     {
       "name": "permission_handler_android",
+<<<<<<< HEAD
       "version": "13.0.1",
+=======
+      "version": "10.3.6",
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "dependencies": [
         "flutter",
         "permission_handler_platform_interface"
@@ -1032,6 +1207,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "name": "async",
       "version": "2.13.0",
       "dependencies": [
@@ -1040,16 +1216,11 @@
       ]
     },
     {
+=======
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "name": "ffi",
       "version": "2.1.4",
       "dependencies": []
-    },
-    {
-      "name": "json_annotation",
-      "version": "4.9.0",
-      "dependencies": [
-        "meta"
-      ]
     },
     {
       "name": "flutter_web_plugins",
@@ -1087,6 +1258,7 @@
       "dependencies": []
     },
     {
+<<<<<<< HEAD
       "name": "term_glyph",
       "version": "1.2.2",
       "dependencies": []
@@ -1116,6 +1288,8 @@
       ]
     },
     {
+=======
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       "name": "yaml",
       "version": "3.1.3",
       "dependencies": [
@@ -1204,23 +1378,86 @@
       ]
     },
     {
-      "name": "leak_tracker_testing",
-      "version": "3.0.2",
+      "name": "vm_service",
+      "version": "14.2.1",
+      "dependencies": []
+    },
+    {
+      "name": "geolocator_windows",
+      "version": "0.1.3",
       "dependencies": [
-        "leak_tracker",
-        "matcher",
+        "flutter",
+        "geolocator_platform_interface"
+      ]
+    },
+    {
+      "name": "geolocator_web",
+      "version": "2.2.1",
+      "dependencies": [
+        "flutter",
+        "flutter_web_plugins",
+        "geolocator_platform_interface"
+      ]
+    },
+    {
+      "name": "geolocator_apple",
+      "version": "2.3.13",
+      "dependencies": [
+        "flutter",
+        "geolocator_platform_interface"
+      ]
+    },
+    {
+      "name": "geolocator_android",
+      "version": "4.6.2",
+      "dependencies": [
+        "flutter",
+        "geolocator_platform_interface",
+        "meta",
+        "uuid"
+      ]
+    },
+    {
+      "name": "geolocator_platform_interface",
+      "version": "4.2.6",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "plugin_platform_interface",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "web",
+      "version": "1.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "stream_transform",
+      "version": "2.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "sanitize_html",
+      "version": "2.1.0",
+      "dependencies": [
+        "html",
         "meta"
       ]
     },
     {
-      "name": "leak_tracker",
-      "version": "11.0.2",
+      "name": "google_maps",
+      "version": "8.2.0",
       "dependencies": [
-        "clock",
-        "collection",
         "meta",
-        "path",
-        "vm_service"
+        "web"
+      ]
+    },
+    {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "dependencies": [
+        "meta"
       ]
     },
     {
@@ -1266,11 +1503,23 @@
       ]
     },
     {
-      "name": "web",
-      "version": "1.1.1",
-      "dependencies": []
+      "name": "package_info_plus",
+      "version": "9.0.0",
+      "dependencies": [
+        "clock",
+        "ffi",
+        "flutter",
+        "flutter_web_plugins",
+        "http",
+        "meta",
+        "package_info_plus_platform_interface",
+        "path",
+        "web",
+        "win32"
+      ]
     },
     {
+<<<<<<< HEAD
       "name": "uuid",
       "version": "4.5.1",
       "dependencies": [
@@ -1286,6 +1535,31 @@
       "dependencies": [
         "meta",
         "path"
+=======
+      "name": "dbus",
+      "version": "0.7.11",
+      "dependencies": [
+        "args",
+        "ffi",
+        "meta",
+        "xml"
+      ]
+    },
+    {
+      "name": "win32",
+      "version": "5.13.0",
+      "dependencies": [
+        "ffi"
+      ]
+    },
+    {
+      "name": "wakelock_plus_platform_interface",
+      "version": "1.3.0",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       ]
     },
     {
@@ -1381,16 +1655,6 @@
       ]
     },
     {
-      "name": "mime",
-      "version": "2.0.0",
-      "dependencies": []
-    },
-    {
-      "name": "stream_transform",
-      "version": "2.1.1",
-      "dependencies": []
-    },
-    {
       "name": "_flutterfire_internals",
       "version": "1.3.62",
       "dependencies": [
@@ -1433,6 +1697,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "name": "vm_service",
       "version": "15.0.2",
       "dependencies": []
@@ -1442,6 +1707,15 @@
       "version": "5.14.0",
       "dependencies": [
         "ffi"
+=======
+      "name": "uuid",
+      "version": "4.5.1",
+      "dependencies": [
+        "crypto",
+        "fixnum",
+        "meta",
+        "sprintf"
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       ]
     },
     {
@@ -1457,6 +1731,77 @@
       "name": "sprintf",
       "version": "7.0.0",
       "dependencies": []
+    },
+    {
+      "name": "mime",
+      "version": "1.0.6",
+      "dependencies": []
+    },
+    {
+      "name": "share_plus",
+      "version": "7.2.2",
+      "dependencies": [
+        "cross_file",
+        "ffi",
+        "file",
+        "flutter",
+        "flutter_web_plugins",
+        "meta",
+        "mime",
+        "share_plus_platform_interface",
+        "url_launcher_linux",
+        "url_launcher_platform_interface",
+        "url_launcher_web",
+        "url_launcher_windows",
+        "win32"
+      ]
+    },
+    {
+      "name": "share_plus_platform_interface",
+      "version": "3.4.0",
+      "dependencies": [
+        "cross_file",
+        "flutter",
+        "meta",
+        "mime",
+        "path_provider",
+        "plugin_platform_interface",
+        "uuid"
+      ]
+    },
+    {
+      "name": "url_launcher_linux",
+      "version": "3.2.1",
+      "dependencies": [
+        "flutter",
+        "url_launcher_platform_interface"
+      ]
+    },
+    {
+      "name": "url_launcher_platform_interface",
+      "version": "2.3.2",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "url_launcher_windows",
+      "version": "3.1.4",
+      "dependencies": [
+        "flutter",
+        "url_launcher_platform_interface"
+      ]
+    },
+    {
+      "name": "url_launcher_web",
+      "version": "2.4.1",
+      "dependencies": [
+        "flutter",
+        "flutter_web_plugins",
+        "url_launcher_platform_interface",
+        "web"
+      ]
     }
   ],
   "configVersion": 1

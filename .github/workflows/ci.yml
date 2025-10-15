@@ -1,3 +1,106 @@
+<<<<<<< HEAD
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_test_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.6'
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+        working-directory: frontend
+
+      - name: Generate Data Connector Files
+        run: dart run build_runner build --delete-conflicting-outputs
+        working-directory: frontend
+
+      - name: Analyze Flutter code
+        run: flutter analyze
+        working-directory: frontend
+
+      - name: Run Flutter tests
+        run: flutter test
+        working-directory: frontend
+
+      - name: Build Flutter Web
+        run: flutter build web --release
+        working-directory: frontend
+
+  build_and_test_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: backend
+
+      - name: Run backend tests (if any)
+        run: echo "No backend tests configured yet."
+        working-directory: backend
+
+  docker_build_and_push:
+    runs-on: ubuntu-latest
+    needs: [build_and_test_frontend, build_and_test_backend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PAT }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./spaktok
+          push: true
+          tags: ${{ secrets.DOCKER_USER }}/spaktok:latest
+
+  firebase_deploy:
+    runs-on: ubuntu-latest
+    needs: [build_and_test_frontend, build_and_test_backend]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}'
+          projectId: spaktok-e7866
+          channelId: live
+          target: spaktok
+
+=======
 name: Spaktok CI/CD
 
 on:
@@ -124,3 +227,4 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
       continue-on-error: true
+>>>>>>> feature/full-implementation

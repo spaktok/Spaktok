@@ -5,9 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spaktok/models/chat_message.dart';
 import 'package:spaktok/services/enhanced_chat_service.dart';
+<<<<<<< HEAD
 import 'package:spaktok/services/location_service.dart'; // New import
 import 'package:flutter_screenshot_detect/flutter_screenshot_detect.dart';
 import 'package:spaktok/widgets/location_sharing_bottom_sheet.dart'; // New import
+=======
+import 'package:spaktok/services/disappearing_messages_service.dart';
+>>>>>>> origin/cursor/send-arabic-greeting-070f
 
 class ChatScreen extends StatefulWidget {
   final String receiverId; // معرف المستلم
@@ -22,6 +26,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final EnhancedChatService _chatService = EnhancedChatService.instance;
+<<<<<<< HEAD
   final LocationService _locationService = LocationService.instance; // New instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser; // المستخدم الحالي
@@ -29,6 +34,13 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isDisappearingEnabled = false;
   final FlutterScreenshotDetect _screenshotDetect = FlutterScreenshotDetect();
   final ImagePicker _picker = ImagePicker();
+=======
+  final DisappearingMessagesService _disappearingMessagesService = DisappearingMessagesService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _currentUser; // المستخدم الحالي
+  String? _chatRoomId;
+  bool _isDisappearingModeEnabled = false;
+>>>>>>> origin/cursor/send-arabic-greeting-070f
 
   @override
   void initState() {
@@ -81,22 +93,68 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _createChatRoom() async {
     if (_currentUser != null && widget.receiverId != 'default') {
+<<<<<<< HEAD
       _chatRoomId = await _chatService.createChatRoom(
         _currentUser!.uid,
         widget.receiverId,
       );
+=======
+      _chatRoomId = await _chatService.createChatRoom(widget.receiverId);
+      if (_chatRoomId != null) {
+        _loadDisappearingModeStatus();
+      }
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       setState(() {});
+    }
+  }
+
+  Future<void> _loadDisappearingModeStatus() async {
+    if (_chatRoomId != null) {
+      final bool enabled = await _disappearingMessagesService.isDisappearingMessagesEnabled(_chatRoomId!);
+      setState(() {
+        _isDisappearingModeEnabled = enabled;
+      });
+    }
+  }
+
+  Future<void> _toggleDisappearingMode(bool value) async {
+    if (_chatRoomId != null) {
+      await _disappearingMessagesService.toggleDisappearingMessages(
+        chatId: _chatRoomId!,
+        enabled: value,
+      );
+      setState(() {
+        _isDisappearingModeEnabled = value;
+      });
     }
   }
 
   void _sendMessage() async {
     if (_messageController.text.isNotEmpty && _currentUser != null && _chatRoomId != null) {
+<<<<<<< HEAD
       await _chatService.sendMessage(
         chatRoomId: _chatRoomId!,
         senderId: _currentUser!.uid,
         text: _messageController.text,
         isEphemeral: _isDisappearingEnabled,
       );
+=======
+      if (_isDisappearingModeEnabled) {
+        await _disappearingMessagesService.sendDisappearingMessage(
+          chatId: _chatRoomId!,
+          senderId: _currentUser!.uid,
+          receiverId: widget.receiverId,
+          content: _messageController.text,
+          type: 'text',
+          disappearAfterSeconds: 10, // Example: messages disappear after 10 seconds
+        );
+      } else {
+        await _chatService.sendMessage(
+          chatRoomId: _chatRoomId!,
+          message: _messageController.text,
+        );
+      }
+>>>>>>> origin/cursor/send-arabic-greeting-070f
       _messageController.clear();
     }
   }
@@ -154,6 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Text('Chat with ${widget.receiverName}'),
         actions: [
+<<<<<<< HEAD
           IconButton(
             icon: Icon(_isDisappearingEnabled ? Icons.visibility_off : Icons.visibility),
             onPressed: () {
@@ -168,6 +227,16 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.location_on),
             onPressed: _showLocationSharingBottomSheet,
+=======
+          Row(
+            children: [
+              const Text('Disappearing Mode'),
+              Switch(
+                value: _isDisappearingModeEnabled,
+                onChanged: _toggleDisappearingMode,
+              ),
+            ],
+>>>>>>> origin/cursor/send-arabic-greeting-070f
           ),
         ],
       ),
@@ -190,6 +259,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   itemBuilder: (context, index) {
                     final message = messages[index];
                     final isMe = message.senderId == _currentUser!.uid;
+                    
+                    // Mark message as read if it's a disappearing message and not sent by current user
+                    if (message.isDisappearing && !isMe && !message.isRead) {
+                      _disappearingMessagesService.markAsRead(_chatRoomId!, message.id);
+                    }
+
                     return Align(
                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
@@ -200,6 +275,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Column(
+<<<<<<< HEAD
                           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                           children: [
                             if (message.text != null) Text(
@@ -220,6 +296,19 @@ class _ChatScreenState extends State<ChatScreen> {
                               'Disappearing message',
                               style: TextStyle(fontSize: 10, color: Colors.redAccent),
                             ),
+=======
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              message.content,
+                              style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                            ),
+                            if (message.isDisappearing) 
+                              Text(
+                                'Disappearing message' + (message.disappearsAt != null ? ' until ${message.disappearsAt!.toDate().toLocal().hour}:${message.disappearsAt!.toDate().toLocal().minute}' : ''),
+                                style: TextStyle(fontSize: 10, color: isMe ? Colors.white70 : Colors.black54),
+                              ),
+>>>>>>> origin/cursor/send-arabic-greeting-070f
                           ],
                         ),
                       ),

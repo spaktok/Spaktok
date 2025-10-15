@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'package:spaktok/services/friend_service.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -15,12 +16,38 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
+  final FriendService _friendService = FriendService();
+
+
   late TabController _tabController;
   bool _isFollowing = false;
   int _followersCount = 0;
   int _followingCount = 0;
   int _postsCount = 0;
   bool _isPremiumAccount = false;
+
+  Future<void> _sendFriendRequest() async {
+    final currentUserId = _authService.currentUser?.uid;
+    final targetUserId = widget.userId;
+
+    if (currentUserId == null || targetUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Authentication error or target user not found.")),
+      );
+      return;
+    }
+
+    try {
+      await _friendService.sendFriendRequest(targetUserId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Friend request sent!")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error sending friend request: ${e.toString()}")),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -276,6 +303,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   });
                 },
                 isPrimary: !_isFollowing,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildButton(
+                context,
+                'Send Request',
+                Icons.person_add_alt_1,
+                _sendFriendRequest,
               ),
             ),
             const SizedBox(width: 10),

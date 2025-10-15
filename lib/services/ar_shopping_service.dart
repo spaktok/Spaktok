@@ -1,11 +1,22 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin/datatypes/config_datatypes.dart';
+import 'package:ar_flutter_plugin/datatypes/node_bottom_type.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:flutter/material.dart'; // Needed for Vector3 and Vector4
+import 'package:vector_math/vector_math_64.dart';
 
 /// AR Shopping Service
 /// Handles e-commerce integration with AR product try-on functionality
 class ARShoppingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  ARSessionManager? arSessionManager;
+  ARObjectManager? arObjectManager;
+  ARNode? localObject;
 
   /// Product model for AR Shopping
   static class Product {
@@ -73,6 +84,37 @@ class ARShoppingService {
         'arConfig': arConfig,
       };
     }
+  }
+
+  void onARViewCreated(ARSessionManager arSessionManager, ARObjectManager arObjectManager) {
+    this.arSessionManager = arSessionManager;
+    this.arObjectManager = arObjectManager;
+
+    this.arSessionManager?.onInitialize(showFeaturePoints: false, showPlanes: true, customPlaneTexturePath: "Images/triangle.png", showWorldOrigin: true);
+    this.arObjectManager?.onInitialize();
+  }
+
+  Future<void> addProductToAR(String modelPath) async {
+    if (arObjectManager != null) {
+      // Remove existing object if any
+      if (localObject != null) {
+        arObjectManager?.removeNode(localObject!);
+      }
+
+      // Add new object
+      localObject = ARNode(
+        type: ARNodeType.webGLB,
+        uri: modelPath,
+        scale: Vector3(0.2, 0.2, 0.2),
+        position: Vector3(0.0, -0.5, -1.0),
+        rotation: Vector4(1.0, 0.0, 0.0, 0.0),
+      );
+      arObjectManager?.addNode(localObject!);
+    }
+  }
+
+  void disposeAR() {
+    arSessionManager?.dispose();
   }
 
   /// Get all products
@@ -262,3 +304,4 @@ class ARShoppingService {
     await _firestore.collection('ar_products').doc(productId).delete();
   }
 }
+

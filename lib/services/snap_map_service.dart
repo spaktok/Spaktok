@@ -1,6 +1,8 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:spaktok/config/api_config.dart'; // Import ApiConfig
 
 /// Snap Map Service
 /// Handles location-based map integration and friend location sharing
@@ -305,3 +307,4 @@ class SnapMapService {
     }
   }
 }
+

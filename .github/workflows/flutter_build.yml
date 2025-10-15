@@ -1,4 +1,4 @@
-name: 🚀 Flutter Web CI/CD to Firebase Hosting
+name: 🚀 Flutter Web + iOS CI/CD
 
 on:
   push:
@@ -10,19 +10,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧾 Checkout repository
+<<<<<<< HEAD
+      - name: 📦 Checkout repository
         uses: actions/checkout@v3
+=======
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
+>>>>>>> feature/full-implementation
 
-      - name: 🛠 Setup Flutter
+      - name: 🛠️ Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.4'
+          flutter-version: '3.35.6'
 
-      - name: 📦 Install dependencies
+      - name: 📥 Install dependencies
+        working-directory: frontend
         run: flutter pub get
 
-      - name: 🏗 Build Flutter Web
+      - name: 🧠 Analyze Flutter code
+        working-directory: frontend
+        run: flutter analyze || true
+
+      - name: 🌐 Build Flutter Web
+        working-directory: frontend
         run: flutter build web --release
+
+      - name: 🍏 Generate iOS project
+        working-directory: frontend
+        run: |
+          flutter clean
+          flutter create .
+          git config user.name "Yanal"
+          git config user.email "Danialmq3@gmail.com"
+          git add ios
+          git commit -m "Auto-generate iOS project" || echo "No changes to commit"
 
       - name: 🚀 Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
