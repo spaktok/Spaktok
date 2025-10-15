@@ -257,6 +257,37 @@ io.on("connection", (socket) => {
 });
 
 // ========================================
+// Stripe Webhook (MUST be before JSON parser)
+// ========================================
+const stripe = process.env.STRIPE_SECRET_KEY ? require("stripe")(process.env.STRIPE_SECRET_KEY) : null;
+app.post("/webhooks/stripe", express.raw({ type: "application/json" }), (req, res) => {
+  if (!stripe) return res.status(501).send("Stripe not configured");
+  const sig = req.headers["stripe-signature"];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error("Stripe webhook signature verification failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  try {
+    switch (event.type) {
+      case "payment_intent.succeeded":
+      case "checkout.session.completed":
+        // TODO: handle fulfillment, credit balances, etc.
+        break;
+      default:
+        break;
+    }
+    return res.json({ received: true });
+  } catch (e) {
+    console.error("Stripe webhook handler error:", e);
+    return res.status(500).send("Handler error");
+  }
+});
+
+// ========================================
 // 4. MIDDLEWARE & SECURITY
 // ========================================
 app.use(helmet()); // Security headers
