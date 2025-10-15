@@ -1,0 +1,12 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Spaktok API", "version": "v0.1" },
+  "paths": {
+    "/api/ai/translate": {"post": {"summary": "Translate text","requestBody": {"required": true},"responses": {"200": {"description": "OK"}}}},
+    "/api/ai/transcribe": {"post": {"summary": "Transcribe audio","requestBody": {"required": true},"responses": {"200": {"description": "OK"}}}},
+    "/api/recs/feed": {"get": {"summary": "Recommended feed","responses": {"200": {"description": "OK"}}}},
+    "/api/recs/next": {"get": {"summary": "Next items","responses": {"200": {"description": "OK"}}}},
+    "/api/analytics/event": {"post": {"summary": "Track event","responses": {"200": {"description": "OK"}}}},
+    "/api/privacy/ghost": {"post": {"summary": "Toggle Ghost Mode","responses": {"200": {"description": "OK"}}}}
+  }
+}

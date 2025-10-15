@@ -303,6 +303,16 @@ app.get("/health", (req, res) => {
   });
 });
 
+// OpenAPI spec
+app.get("/api/openapi.json", (req, res) => {
+  try {
+    const spec = require("./openapi.json");
+    res.json(spec);
+  } catch (e) {
+    res.status(404).json({ error: "OpenAPI spec not found" });
+  }
+});
+
 // User routes
 app.get("/api/users/:userId", cacheMiddleware(300), async (req, res) => {
   try {
