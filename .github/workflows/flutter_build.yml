@@ -30,15 +30,20 @@ jobs:
         working-directory: frontend
         run: flutter build web --release
 
-      - name: 🍏 Generate iOS project
-        working-directory: frontend
+      - name: 🍏 Generate iOS project (ensure ios/ exists)
         run: |
+          set -e
+          cd frontend
           flutter clean
           flutter create .
-          git config user.name "Yanal"
-          git config user.email "Danialmq3@gmail.com"
-          git add ios
-          git commit -m "Auto-generate iOS project" || echo "No changes to commit"
+          if [ -d ios ]; then
+            cd ..
+            git add frontend/ios
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "[skip ci] Auto-generate iOS project"
+            git push || true
+          fi
 
       - name: 🚀 Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
