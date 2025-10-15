@@ -80,12 +80,24 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PAT }}
 
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/spaktok-backend:latest
+          tags: ${{ secrets.DOCKER_USER }}/spaktok-backend:latest
+
+      - name: Export runtime env (secrets)
+        run: |
+          echo "AGORA_APP_ID=${{ secrets.AGORA_APP_ID }}" >> $GITHUB_ENV
+          echo "AGORA_APP_CERT=${{ secrets.AGORA_APP_CERT }}" >> $GITHUB_ENV
+          echo "AGORA_APP_NAME=${{ secrets.AGORA_APP_NAME }}" >> $GITHUB_ENV
+          echo "AGORA_CHAT_APP_KEY=${{ secrets.AGORA_CHAT_APP_KEY }}" >> $GITHUB_ENV
+          echo "AGORA_ORG_NAME=${{ secrets.AGORA_ORG_NAME }}" >> $GITHUB_ENV
+          echo "AGORA_TEMP_TOKEN=${{ secrets.AGORA_TEMP_TOKEN }}" >> $GITHUB_ENV
+          echo "GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" >> $GITHUB_ENV
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}" >> $GITHUB_ENV
