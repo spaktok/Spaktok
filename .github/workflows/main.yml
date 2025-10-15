@@ -1,4 +1,4 @@
-name: Auto Generate iOS Project
+name: 🛠️ Auto Generate iOS Project
 
 on:
   workflow_dispatch:
@@ -11,20 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      - name: 🛠️ Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
 
-      - name: Generate missing iOS project
+      - name: 🍏 Generate missing iOS project
         run: |
+          set -e
           flutter clean
           flutter create .
-          git config user.name "Yanal"
-          git config user.email "Danialmq3@gmail.com"
-          git add ios
-          git commit -m "Auto-generate iOS Xcode project"
-          git push
+          if [ -d ios ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add ios
+            git commit -m "[skip ci] Auto-generate iOS Xcode project" || echo "No changes to commit"
+            git push || echo "Nothing to push"
+          fi
