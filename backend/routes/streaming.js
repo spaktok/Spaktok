@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
-const crypto = require('crypto');
+const { RtcRole, RtcTokenBuilder } = require('agora-access-token');
 
 // Basic video streaming endpoint
 router.get('/video', (req, res) => {
@@ -54,10 +54,17 @@ router.get('/agora/token', (req, res) => {
       return res.status(400).json({ error: 'channel is required' });
     }
 
-    // Minimal placeholder: return a dummy signed token shape for wiring.
-    // TODO: Replace with official Agora RTCTokenBuilder for production.
-    const payload = `${appId}:${channelName}:${uid}:${Date.now() + expireSeconds * 1000}`;
-    const token = crypto.createHmac('sha256', appCertificate).update(payload).digest('hex');
+    const currentTs = Math.floor(Date.now() / 1000);
+    const privilegeExpiredTs = currentTs + expireSeconds;
+    const role = RtcRole.PUBLISHER;
+    const token = RtcTokenBuilder.buildTokenWithUid(
+      appId,
+      appCertificate,
+      channelName,
+      parseInt(uid, 10),
+      role,
+      privilegeExpiredTs
+    );
     return res.json({ appId, channel: channelName, uid, token, expiresIn: expireSeconds });
   } catch (e) {
     console.error('/agora/token error:', e);

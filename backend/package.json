@@ -9,6 +9,7 @@
     "start:legacy": "node server.js"
   },
   "dependencies": {
+    "agora-access-token": "^2.0.2",
     "@google-cloud/firestore": "^7.11.6",
     "@google-cloud/storage": "^7.17.2",
     "compression": "^1.8.1",
