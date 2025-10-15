@@ -287,9 +287,7 @@ class _CreatorEconomyScreenState extends State<CreatorEconomyScreen>
         'giftName': gift.name,
         'amount': creatorEarnings,
         'senderId': widget.userId,
-        'timestamp': FieldValue.server
-
-Timestamp(),
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
       // Update leaderboard
