@@ -1,5 +1,17 @@
 const express = require("express");
 const router = express.Router();
+let gTranslate = null;
+let gSpeech = null;
+try {
+  const { v2: TranslateV2 } = require('@google-cloud/translate');
+  gTranslate = new TranslateV2.Translate({
+    key: process.env.GOOGLE_CLOUD_API_KEY || undefined,
+  });
+} catch (_) {}
+try {
+  const speech = require('@google-cloud/speech');
+  gSpeech = new speech.SpeechClient();
+} catch (_) {}
 
 // Translation endpoint
 // POST /api/ai/translate { text, targetLang, sourceLang? }
@@ -16,13 +28,12 @@ router.post("/translate", async (req, res) => {
       });
     }
 
-    const provider = process.env.TRANSLATION_PROVIDER;
-    if (!provider) {
-      return res.status(501).json({ error: "No translation provider configured" });
+    const provider = process.env.TRANSLATION_PROVIDER || 'gcp-translate-v2';
+    if (provider === 'gcp-translate-v2' && gTranslate) {
+      const [translated] = await gTranslate.translate(text, targetLang);
+      return res.json({ translatedText: translated, provider });
     }
-
-    // Providers can be implemented here (OpenAI, GCP Translate, etc.)
-    return res.status(501).json({ error: `Provider '${provider}' not implemented` });
+    return res.status(501).json({ error: `Provider '${provider}' not available` });
   } catch (e) {
     console.error("/ai/translate error:", e);
     return res.status(500).json({ error: e.message });
@@ -40,12 +51,24 @@ router.post("/transcribe", async (req, res) => {
       return res.json({ text: "[stub transcription] hello world", provider: "dev-fake" });
     }
 
-    const provider = process.env.TRANSCRIBE_PROVIDER;
-    if (!provider) {
-      return res.status(501).json({ error: "No transcription provider configured" });
+    const provider = process.env.TRANSCRIBE_PROVIDER || 'gcp-speech';
+    if (provider === 'gcp-speech' && gSpeech) {
+      const audio = { content: audioBase64 };
+      const request = {
+        audio,
+        config: {
+          languageCode: 'auto',
+          enableAutomaticPunctuation: true,
+        },
+      };
+      const [response] = await gSpeech.recognize(request);
+      const transcription = (response.results || [])
+        .map(r => r.alternatives && r.alternatives[0] && r.alternatives[0].transcript)
+        .filter(Boolean)
+        .join(' ');
+      return res.json({ text: transcription || '', provider });
     }
-
-    return res.status(501).json({ error: `Provider '${provider}' not implemented` });
+    return res.status(501).json({ error: `Provider '${provider}' not available` });
   } catch (e) {
     console.error("/ai/transcribe error:", e);
     return res.status(500).json({ error: e.message });
