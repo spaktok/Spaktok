@@ -6,6 +6,8 @@ import '../models/chat_message.dart';
 import '../theme/app_theme.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:camera/camera.dart';
 
 // Placeholder for Agora SDK integration - actual implementation would be more complex
 // import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -44,6 +46,9 @@ class _SmartChatScreenState extends State<SmartChatScreen> {
   bool _autoTranslateEnabled = false;
   bool _disappearingMessagesEnabled = false;
   Duration _disappearingDuration = const Duration(seconds: 10);
+  bool _cameraBgEnabled = false;
+  CameraController? _bgCameraController;
+  List<CameraDescription>? _cameras;
 
   @override
   void initState() {
@@ -61,6 +66,7 @@ class _SmartChatScreenState extends State<SmartChatScreen> {
     _messageController.removeListener(_onMessageChanged);
     _messageController.dispose();
     _scrollController.dispose();
+    _bgCameraController?.dispose();
     // _agoraEngine?.release();
     super.dispose();
   }
@@ -148,8 +154,54 @@ class _SmartChatScreenState extends State<SmartChatScreen> {
         .doc(messageId)
         .set(message.toFirestore());
 
+    if (_disappearingMessagesEnabled) {
+      await _expirePreviousMessage(currentUser.uid);
+    }
+
     _messageController.clear();
     _scrollToBottom();
+  }
+
+  Future<void> _expirePreviousMessage(String senderId) async {
+    try {
+      final snap = await _firestore
+          .collection('chats')
+          .doc(widget.chatId)
+          .collection('messages')
+          .where('senderId', isEqualTo: senderId)
+          .orderBy('timestamp', descending: true)
+          .limit(2)
+          .get();
+      if (snap.docs.length == 2) {
+        final prevDoc = snap.docs[1];
+        await prevDoc.reference.update({'expired': true});
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _toggleCameraBackground() async {
+    if (_cameraBgEnabled) {
+      setState(() => _cameraBgEnabled = false);
+      await _bgCameraController?.dispose();
+      _bgCameraController = null;
+      return;
+    }
+    try {
+      final statuses = await [Permission.camera].request();
+      if (statuses[Permission.camera] != PermissionStatus.granted) return;
+      _cameras ??= await availableCameras();
+      if (_cameras == null || _cameras!.isEmpty) return;
+      final back = _cameras!.firstWhere(
+        (c) => c.lensDirection == CameraLensDirection.back,
+        orElse: () => _cameras!.first,
+      );
+      final ctrl = CameraController(back, ResolutionPreset.high, enableAudio: false);
+      await ctrl.initialize();
+      setState(() {
+        _bgCameraController = ctrl;
+        _cameraBgEnabled = true;
+      });
+    } catch (_) {}
   }
 
   void _scrollToBottom() {
