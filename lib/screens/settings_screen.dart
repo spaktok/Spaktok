@@ -540,8 +540,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
     );
   }
- 
 
+  void _showLanguageDialog(BuildContext context) {
+    final languages = [
+      'English',
+      'العربية',
+      'Español',
+      'Français',
+      'Deutsch',
+      '中文',
+      '日本語',
+      'Português',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: const Text(
+            'Select Language',
             style: TextStyle(color: Colors.white),
           ),
           content: SizedBox(

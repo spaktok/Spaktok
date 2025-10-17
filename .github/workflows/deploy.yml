@@ -1,4 +1,4 @@
-name: 🚀 Flutter Web CI/CD to Firebase Hosting
+name: Deploy Flutter Web to Firebase Hosting
 
 on:
   push:
@@ -6,30 +6,38 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 🧾 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🛠 Setup Flutter
+      # إلغاء أي Proxy على بيئة الـ runner (تحسباً)
+      - name: Clear proxies on runner
+        shell: bash
+        run: |
+          git config --global --unset http.proxy || true
+          git config --global --unset https.proxy || true
+          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY || true
+          echo "Proxies cleared on runner."
+
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6'
+          flutter-version: '3.24.0'
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
+        working-directory: ./frontend
         run: flutter pub get
-        working-directory: ./webapp
 
-      - name: 🏗 Build Flutter Web
+      - name: Build Flutter Web
+        working-directory: ./frontend
         run: flutter build web --release
-        working-directory: ./webapp  
 
-      - name: 🚀 Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}"
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPAKTOK_E7866 }}'
           channelId: live
-          target: spaktok
+          projectId: spaktok-e7866

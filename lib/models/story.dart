@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Story {
@@ -8,7 +7,6 @@ class Story {
   final String mediaType; // 'image' or 'video'
   final Timestamp timestamp;
   final int duration; // in seconds
-  final String privacy; // 'public', 'friends', 'private'
 
   Story({
     required this.id,
@@ -17,7 +15,6 @@ class Story {
     required this.mediaType,
     required this.timestamp,
     required this.duration,
-    this.privacy = 'public',
   });
 
   factory Story.fromJson(Map<String, dynamic> json) {
@@ -28,7 +25,6 @@ class Story {
       mediaType: json['mediaType'],
       timestamp: json['timestamp'] as Timestamp,
       duration: json['duration'],
-      privacy: json['privacy'] ?? 'public',
     );
   }
 
@@ -40,7 +36,6 @@ class Story {
       'mediaType': mediaType,
       'timestamp': timestamp,
       'duration': duration,
-      'privacy': privacy,
     };
   }
 }

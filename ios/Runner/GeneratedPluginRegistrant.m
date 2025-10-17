@@ -12,21 +12,12 @@
 @import agora_rtc_engine;
 #endif
 
-<<<<<<< HEAD
-=======
-#if __has_include(<ar_flutter_plugin/ArFlutterPlugin.h>)
-#import <ar_flutter_plugin/ArFlutterPlugin.h>
-#else
-@import ar_flutter_plugin;
-#endif
-
 #if __has_include(<camera_avfoundation/CameraPlugin.h>)
 #import <camera_avfoundation/CameraPlugin.h>
 #else
 @import camera_avfoundation;
 #endif
 
->>>>>>> feature/full-implementation
 #if __has_include(<cloud_firestore/FLTFirebaseFirestorePlugin.h>)
 #import <cloud_firestore/FLTFirebaseFirestorePlugin.h>
 #else
@@ -57,33 +48,18 @@
 @import firebase_storage;
 #endif
 
-<<<<<<< HEAD
 #if __has_include(<flutter_screenshot_detect/FlutterScreenshotDetectPlugin.h>)
 #import <flutter_screenshot_detect/FlutterScreenshotDetectPlugin.h>
 #else
 @import flutter_screenshot_detect;
 #endif
 
-=======
-<<<<<<< HEAD
-=======
->>>>>>> origin/cursor/send-arabic-greeting-070f
 #if __has_include(<geolocator_apple/GeolocatorPlugin.h>)
 #import <geolocator_apple/GeolocatorPlugin.h>
 #else
 @import geolocator_apple;
 #endif
 
-<<<<<<< HEAD
-=======
-#if __has_include(<google_maps_flutter_ios/FLTGoogleMapsPlugin.h>)
-#import <google_maps_flutter_ios/FLTGoogleMapsPlugin.h>
-#else
-@import google_maps_flutter_ios;
-#endif
-
->>>>>>> feature/full-implementation
->>>>>>> origin/cursor/send-arabic-greeting-070f
 #if __has_include(<image_picker_ios/FLTImagePickerPlugin.h>)
 #import <image_picker_ios/FLTImagePickerPlugin.h>
 #else
@@ -114,80 +90,44 @@
 @import permission_handler_apple;
 #endif
 
-<<<<<<< HEAD
-=======
-#if __has_include(<share_plus/FPPSharePlusPlugin.h>)
-#import <share_plus/FPPSharePlusPlugin.h>
-#else
-@import share_plus;
-#endif
-
 #if __has_include(<shared_preferences_foundation/SharedPreferencesPlugin.h>)
 #import <shared_preferences_foundation/SharedPreferencesPlugin.h>
 #else
 @import shared_preferences_foundation;
 #endif
 
->>>>>>> feature/full-implementation
 #if __has_include(<stripe_ios/StripeIosPlugin.h>)
 #import <stripe_ios/StripeIosPlugin.h>
 #else
 @import stripe_ios;
 #endif
 
-<<<<<<< HEAD
-=======
 #if __has_include(<video_player_avfoundation/FVPVideoPlayerPlugin.h>)
 #import <video_player_avfoundation/FVPVideoPlayerPlugin.h>
 #else
 @import video_player_avfoundation;
 #endif
 
-#if __has_include(<wakelock_plus/WakelockPlusPlugin.h>)
-#import <wakelock_plus/WakelockPlusPlugin.h>
-#else
-@import wakelock_plus;
-#endif
-
->>>>>>> feature/full-implementation
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
   [AgoraRtcNgPlugin registerWithRegistrar:[registry registrarForPlugin:@"AgoraRtcNgPlugin"]];
-<<<<<<< HEAD
-=======
-  [ArFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"ArFlutterPlugin"]];
   [CameraPlugin registerWithRegistrar:[registry registrarForPlugin:@"CameraPlugin"]];
->>>>>>> feature/full-implementation
   [FLTFirebaseFirestorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseFirestorePlugin"]];
   [FirebaseFunctionsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FirebaseFunctionsPlugin"]];
   [FLTFirebaseAuthPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseAuthPlugin"]];
   [FLTFirebaseCorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCorePlugin"]];
   [FLTFirebaseStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseStoragePlugin"]];
-<<<<<<< HEAD
   [FlutterScreenshotDetectPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterScreenshotDetectPlugin"]];
   [GeolocatorPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeolocatorPlugin"]];
-=======
-<<<<<<< HEAD
-=======
-  [GeolocatorPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeolocatorPlugin"]];
-  [FLTGoogleMapsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleMapsPlugin"]];
->>>>>>> feature/full-implementation
->>>>>>> origin/cursor/send-arabic-greeting-070f
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [IrisMethodChannelPlugin registerWithRegistrar:[registry registrarForPlugin:@"IrisMethodChannelPlugin"]];
   [FPPPackageInfoPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPPackageInfoPlusPlugin"]];
   [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
   [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
-<<<<<<< HEAD
-  [StripeIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"StripeIosPlugin"]];
-=======
-  [FPPSharePlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPSharePlusPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];
   [StripeIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"StripeIosPlugin"]];
   [FVPVideoPlayerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FVPVideoPlayerPlugin"]];
-  [WakelockPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"WakelockPlusPlugin"]];
->>>>>>> feature/full-implementation
 }
 
 @end

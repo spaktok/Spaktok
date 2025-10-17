@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
+
+
 
 const appId = "a41807bba5c144b5b8e1fd5ee711707b"; // استبدل بمعرف تطبيق Agora الخاص بك
 const token = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5klJiabJhiYmSaZJFqmGaSmmqanmhobmQIn09HsZDYGMDGn7c5gYGSAQxGdl8E3MKy1mYAAAut8gzQ=="; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
@@ -186,26 +186,11 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         // تبديل إيقاف/تشغيل الفيديو
+                        // Toggle video on/off
                         await _engine.muteLocalVideoStream(!_localUserJoined);
                         setState(() {}); // لتحديث حالة الزر
                       },
                       child: const Text("Stop/Start Video"),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () async {
-                        // Flip Camera
-                        await _engine.switchCamera();
-                      },
-                      child: const Text("Flip Camera"),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () async {
-                        // Share Stream
-                        await Share.share("Join my live stream on Spaktok! Channel: $channel");
-                      },
-                      child: const Text("Share Stream"),
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(

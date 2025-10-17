@@ -8,7 +8,6 @@ class Reel {
   final Timestamp timestamp;
   final int likesCount;
   final int commentsCount;
-  bool isSaved;
 
   Reel({
     required this.id,
@@ -18,7 +17,6 @@ class Reel {
     required this.timestamp,
     this.likesCount = 0,
     this.commentsCount = 0,
-    this.isSaved = false,
   });
 
   factory Reel.fromJson(Map<String, dynamic> json) {
@@ -29,8 +27,7 @@ class Reel {
       description: json['description'] ?? '',
       timestamp: json['timestamp'] as Timestamp,
       likesCount: json['likesCount'] ?? 0,
-      commentsCount: json["commentsCount"] ?? 0,
-      isSaved: json["isSaved"] ?? false,
+      commentsCount: json['commentsCount'] ?? 0,
     );
   }
 
@@ -43,7 +40,6 @@ class Reel {
       'timestamp': timestamp,
       'likesCount': likesCount,
       'commentsCount': commentsCount,
-      'isSaved': isSaved,
     };
   }
 }

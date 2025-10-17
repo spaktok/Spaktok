@@ -1,4 +1,3 @@
-'''
 # 🔧 Spaktok Configuration Guide
 
 This guide will help you configure all the necessary services for Spaktok to work properly.
@@ -11,7 +10,6 @@ Before you begin, make sure you have accounts for:
 - [Firebase](https://console.firebase.google.com/)
 - [Agora](https://www.agora.io/)
 - [Stripe](https://stripe.com/)
-- [Google Cloud Platform](https://console.cloud.google.com/) (for Google Maps and Translation APIs)
 
 ---
 
@@ -69,68 +67,36 @@ This will automatically generate `lib/firebase_options.dart`.
 Go to Firestore Database → Rules and add:
 
 ```javascript
-rules_version = "2";
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write for authenticated users only
-    match /{document=**} {
+    // Users collection
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId;
+    }
+    
+    // Messages collection
+    match /messages/{messageId} {
       allow read, write: if request.auth != null;
     }
-
-    // Public read for reels and stories (for unauthenticated viewing)
-    match /reels/{reelId} {
+    
+    // Posts collection
+    match /posts/{postId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null;
     }
-
-    match /stories/{storyId} {
-      allow read: if resource.data.privacy == 'public' || (request.auth != null && request.auth.uid == resource.data.userId);
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-
-    // Comments: authenticated users can read and write to comments on reels
-    match /reels/{reelId}/comments/{commentId} {
+    
+    // Gifts collection
+    match /gifts/{giftId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow write: if request.auth != null;
     }
-
-    // Disappearing Messages: only participants can read/write
-    match /chats/{chatId} {
-      allow read, write: if request.auth != null && resource.data.participants.contains(request.auth.uid);
-    }
-
-    // Friend Requests: authenticated users can send and manage their own requests
-    match /friendRequests/{requestId} {
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
-    }
-
-    // AR Shopping Products: public read, only authenticated sellers can write
-    match /ar_products/{productId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.sellerId;
-    }
-
-    // AR Shopping Carts: only the user can read/write their own cart
-    match /carts/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // AR Shopping Orders: only the user can read/write their own orders
-    match /orders/{orderId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-
-    // AR Try-on History: only the user can read/write their own history
-    match /ar_tryons/{tryOnId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // User profiles: public read, users can write their own profile
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    
+    // Reports collection
+    match /reports/{reportId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
   }
 }
@@ -172,14 +138,11 @@ service firebase.storage {
 
 ### Step 3: Configure in Code
 
-Open `lib/config/api_config.dart` and update:
+Open `lib/screens/live_stream_screen.dart` and update:
 
 ```dart
-class ApiConfig {
-  static const String agoraAppId = "YOUR_AGORA_APP_ID";
-  static const String agoraToken = "YOUR_AGORA_TOKEN";
-  // ... other keys
-}
+const appId = "YOUR_AGORA_APP_ID"; // Replace with your Agora App ID
+const token = "YOUR_AGORA_TOKEN"; // Replace with your token (for testing)
 ```
 
 ### Step 4: Token Server (Production)
@@ -189,6 +152,39 @@ For production, you should set up a token server:
 1. Create a Cloud Function in Firebase
 2. Use Agora's token generation library
 3. Return tokens dynamically based on user authentication
+
+Example Cloud Function:
+
+```javascript
+const functions = require('firebase-functions');
+const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
+
+exports.generateAgoraToken = functions.https.onCall((data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const appId = 'YOUR_AGORA_APP_ID';
+  const appCertificate = 'YOUR_AGORA_APP_CERTIFICATE';
+  const channelName = data.channelName;
+  const uid = data.uid || 0;
+  const role = RtcRole.PUBLISHER;
+  const expirationTimeInSeconds = 3600;
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+  const token = RtcTokenBuilder.buildTokenWithUid(
+    appId,
+    appCertificate,
+    channelName,
+    uid,
+    role,
+    privilegeExpiredTs
+  );
+
+  return { token };
+});
+```
 
 ---
 
@@ -208,114 +204,155 @@ For production, you should set up a token server:
 
 ### Step 3: Configure in Code
 
-Open `lib/config/api_config.dart` and update:
+Create a `.env` file in the project root:
+
+```env
+STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY
+STRIPE_SECRET_KEY=sk_test_YOUR_SECRET_KEY
+```
+
+### Step 4: Update Payment Service
+
+Open `lib/services/enhanced_payment_service.dart` and update:
 
 ```dart
-class ApiConfig {
-  // ... other keys
-  static const String stripePublishableKey = "YOUR_STRIPE_PUBLISHABLE_KEY";
-  static const String stripeSecretKey = "YOUR_STRIPE_SECRET_KEY";
+class EnhancedPaymentService {
+  static const String _publishableKey = 'YOUR_STRIPE_PUBLISHABLE_KEY';
+  
+  // ... rest of the code
 }
 ```
 
----
+### Step 5: Set Up Webhooks (Production)
 
-## 🗺️ Google Maps & Translation Configuration
+1. In Stripe Dashboard, go to "Developers" → "Webhooks"
+2. Add endpoint: `https://your-domain.com/webhook`
+3. Select events to listen to:
+   - `payment_intent.succeeded`
+   - `payment_intent.payment_failed`
+   - `charge.succeeded`
 
-### Step 1: Create Google Cloud Project
+### Step 6: Create Products and Prices
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project
-
-### Step 2: Enable APIs
-
-1. In the Google Cloud Console, go to "APIs & Services" → "Library"
-2. Enable the following APIs:
-   - **Maps SDK for Android**
-   - **Maps SDK for iOS**
-   - **Cloud Translation API**
-
-### Step 3: Get API Keys
-
-1. In the Google Cloud Console, go to "APIs & Services" → "Credentials"
-2. Create a new API key
-3. Restrict the key to the enabled APIs
-
-### Step 4: Configure in Code
-
-Open `lib/config/api_config.dart` and update:
-
-```dart
-class ApiConfig {
-  // ... other keys
-  static const String googleMapsApiKey = "YOUR_GOOGLE_MAPS_API_KEY";
-  static const String translationApiKey = "YOUR_TRANSLATION_API_KEY";
-}
-```
-
----
-
-## 🤖 AR SDK Configuration
-
-### Step 1: Choose an AR SDK
-
-Spaktok uses `ar_flutter_plugin`. You can find more information [here](https://pub.dev/packages/ar_flutter_plugin).
-
-### Step 2: Configure for Android
-
-1.  Add the following to `android/app/src/main/AndroidManifest.xml`:
-
-    ```xml
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera.ar" android:required="true" />
-    ```
-
-2.  Add the following to `android/build.gradle`:
-
-    ```gradle
-    dependencies {
-        classpath 'com.google.ar.sceneform:plugin:1.15.0'
-    }
-    ```
-
-3.  Add the following to `android/app/build.gradle`:
-
-    ```gradle
-    apply plugin: 'com.google.ar.sceneform.plugin'
-
-    dependencies {
-        implementation "com.google.ar.sceneform.ux:sceneform-ux:1.15.0"
-        implementation "com.google.ar:core:1.15.0"
-    }
-    ```
-
-### Step 3: Configure for iOS
-
-1.  Add the following to `ios/Runner/Info.plist`:
-
-    ```xml
-    <key>NSCameraUsageDescription</key>
-    <string>This app needs camera access to show AR content</string>
-    ```
-
-### Step 4: Configure in Code
-
-Open `lib/config/api_config.dart` and update:
-
-```dart
-class ApiConfig {
-  // ... other keys
-  static const String arSdkKey = "YOUR_AR_SDK_KEY"; // If applicable
-}
-```
+1. In Stripe Dashboard, go to "Products"
+2. Create products for your virtual currency packages:
+   - 100 Coins - $0.99
+   - 500 Coins - $4.99
+   - 1000 Coins - $9.99
+   - 5000 Coins - $49.99
+   - 10000 Coins - $99.99
 
 ---
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the project root or manage keys in `lib/config/api_config.dart`.
+Create a `.env` file in the project root:
 
-**⚠️ Important:** Add `lib/config/api_config.dart` to `.gitignore` to keep your secrets safe!
+```env
+# Firebase
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_app_id
+
+# Agora
+AGORA_APP_ID=your_agora_app_id
+AGORA_APP_CERTIFICATE=your_agora_certificate
+
+# Stripe
+STRIPE_PUBLISHABLE_KEY=pk_test_your_key
+STRIPE_SECRET_KEY=sk_test_your_secret_key
+
+# Other
+APP_ENV=development
+API_BASE_URL=https://api.spaktok.com
+```
+
+**⚠️ Important:** Add `.env` to `.gitignore` to keep your secrets safe!
+
+---
+
+## 🔒 Security Best Practices
+
+### 1. Never Commit Secrets
+Add to `.gitignore`:
+```
+.env
+*.key
+*.pem
+google-services.json
+GoogleService-Info.plist
+```
+
+### 2. Use Environment Variables
+Use `flutter_dotenv` package to load environment variables:
+
+```yaml
+dependencies:
+  flutter_dotenv: ^5.1.0
+```
+
+```dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+  runApp(MyApp());
+}
+```
+
+### 3. Implement Token Refresh
+For Agora tokens, implement automatic refresh before expiration.
+
+### 4. Validate Payments Server-Side
+Always validate Stripe payments on your backend, never trust client-side validation alone.
+
+### 5. Enable App Check (Firebase)
+1. Go to Firebase Console → App Check
+2. Enable App Check for all platforms
+3. This prevents unauthorized access to your Firebase resources
+
+---
+
+## 📱 Platform-Specific Configuration
+
+### Android
+
+1. Update `android/app/build.gradle`:
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 33
+    }
+}
+```
+
+2. Add permissions in `android/app/src/main/AndroidManifest.xml`:
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+```
+
+### iOS
+
+1. Update `ios/Runner/Info.plist`:
+```xml
+<key>NSCameraUsageDescription</key>
+<string>We need camera access for video calls and content creation</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need microphone access for audio in videos and calls</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need photo library access to let you share photos</string>
+```
+
+2. Update `ios/Podfile`:
+```ruby
+platform :ios, '12.0'
+```
 
 ---
 
@@ -332,11 +369,50 @@ Before running the app, verify:
 - [ ] Agora token generation set up
 - [ ] Stripe account activated
 - [ ] Stripe API keys obtained
-- [ ] Google Maps and Translation API keys obtained
-- [ ] AR SDK configured
-- [ ] All keys are stored securely
+- [ ] `.env` file created with all keys
+- [ ] `.env` added to `.gitignore`
+- [ ] Permissions added to AndroidManifest.xml
+- [ ] Permissions added to Info.plist
 
 ---
 
-**Last Updated:** October 3, 2025
-'''
+## 🚀 Testing
+
+After configuration, test each feature:
+
+1. **Authentication:** Sign up and log in
+2. **Live Streaming:** Start a live stream
+3. **Chat:** Send messages
+4. **Payments:** Purchase virtual currency (use test mode)
+5. **Camera:** Take photos/videos with filters
+6. **Notifications:** Receive push notifications
+
+---
+
+## 🆘 Troubleshooting
+
+### Firebase Issues
+- **Error:** "Default FirebaseApp is not initialized"
+  - **Solution:** Make sure `Firebase.initializeApp()` is called in `main()`
+
+### Agora Issues
+- **Error:** "Join channel failed"
+  - **Solution:** Check App ID and token, ensure token is not expired
+
+### Stripe Issues
+- **Error:** "Invalid API key"
+  - **Solution:** Verify you're using the correct publishable key
+
+---
+
+## 📞 Support
+
+If you encounter issues:
+1. Check the [Firebase documentation](https://firebase.google.com/docs)
+2. Check the [Agora documentation](https://docs.agora.io/)
+3. Check the [Stripe documentation](https://stripe.com/docs)
+4. Open an issue on [GitHub](https://github.com/spaktok/Spaktok/issues)
+
+---
+
+**Last Updated:** October 2, 2025

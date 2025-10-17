@@ -4,6 +4,7 @@
       <settings>
         <option name="envFilePath" value="" />
         <option name="removeOrphansOnComposeDown" value="false" />
+        <option name="sourceFilePath" value="flutter-docker/Dockerfile" />
       </settings>
     </deployment>
     <method v="2" />
