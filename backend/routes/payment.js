@@ -1,11 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // تأكد من تعيين مفتاحك السري في متغيرات البيئة
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+if (!stripeSecret) {
+  console.warn("STRIPE_SECRET_KEY is not set. Payment endpoints will return 503.");
+}
+const stripe = require("stripe")(stripeSecret || "");
 
 router.post("/create-payment-intent", async (req, res) => {
   const { amount, currency } = req.body;
 
   try {
+    if (!stripeSecret) {
+      return res.status(503).json({ error: "Stripe is not configured" });
+    }
     // إنشاء Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount, // يجب أن يكون المبلغ بالوحدات الأصغر للعملة (مثلاً، سنتات للدولار)

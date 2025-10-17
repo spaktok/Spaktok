@@ -50,20 +50,26 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAxG4sI_RO6IN8kItCTeXJkFb9zFeEnQ_M',
-    appId: '1:603021639103:web:5f39bf723c3d33365ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    authDomain: 'spaktok-e7866.firebaseapp.com',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
-    measurementId: 'G-GYLXK1H2VF',
+    apiKey: String.fromEnvironment('FIREBASE_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    authDomain:
+        String.fromEnvironment('FIREBASE_AUTH_DOMAIN', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
+    measurementId:
+        String.fromEnvironment('FIREBASE_MEASUREMENT_ID', defaultValue: ''),
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M',
-    appId: '1:603021639103:android:7d4c621adc13bedf5ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
+    apiKey: String.fromEnvironment('FIREBASE_ANDROID_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_ANDROID_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
   );
 }

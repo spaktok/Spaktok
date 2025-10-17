@@ -29,8 +29,8 @@
         const messageInput = document.getElementById("messageInput");
         const sendButton = document.getElementById("sendButton");
 
-        // WebSocket connection
-        const ws = new WebSocket(`ws://${window.location.hostname}:5000`); // Assuming backend is on port 5000
+        // WebSocket connection (backend exposed on 5000 in compose)
+        const ws = new WebSocket(`ws://${window.location.hostname}:5000`);
 
         ws.onopen = () => {
             console.log("Connected to WebSocket server");
