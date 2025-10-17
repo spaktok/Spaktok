@@ -41,48 +41,62 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAxG4sI_RO6IN8kItCTeXJkFb9zFeEnQ_M',
-    appId: '1:603021639103:web:c18ace07125da11a5ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    authDomain: 'spaktok-e7866.firebaseapp.com',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
-    measurementId: 'G-1DTF6R1ZBB',
+    apiKey: String.fromEnvironment('FIREBASE_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    authDomain:
+        String.fromEnvironment('FIREBASE_AUTH_DOMAIN', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
+    measurementId:
+        String.fromEnvironment('FIREBASE_MEASUREMENT_ID', defaultValue: ''),
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M',
-    appId: '1:603021639103:android:3423fed07bbea9825ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
+    apiKey: String.fromEnvironment('FIREBASE_ANDROID_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_ANDROID_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCYMXwdpXPOYqby7aEUq6-yIGdSt7jAz_c',
-    appId: '1:603021639103:ios:5d66dae17f8f1cc55ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
-    iosBundleId: 'com.spaktok.platform',
+    apiKey: String.fromEnvironment('FIREBASE_IOS_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_IOS_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
+    iosBundleId: String.fromEnvironment('FIREBASE_IOS_BUNDLE_ID', defaultValue: ''),
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCYMXwdpXPOYqby7aEUq6-yIGdSt7jAz_c',
-    appId: '1:603021639103:ios:48f59ca3f60b59435ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
-    iosBundleId: 'com.spaktok.desktop',
+    apiKey: String.fromEnvironment('FIREBASE_MAC_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_MAC_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
+    iosBundleId: String.fromEnvironment('FIREBASE_MAC_BUNDLE_ID', defaultValue: ''),
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAxG4sI_RO6IN8kItCTeXJkFb9zFeEnQ_M',
-    appId: '1:603021639103:web:5f39bf723c3d33365ab50a',
-    messagingSenderId: '603021639103',
-    projectId: 'spaktok-e7866',
-    authDomain: 'spaktok-e7866.firebaseapp.com',
-    storageBucket: 'spaktok-e7866.firebasestorage.app',
-    measurementId: 'G-GYLXK1H2VF',
+    apiKey: String.fromEnvironment('FIREBASE_API_KEY', defaultValue: ''),
+    appId: String.fromEnvironment('FIREBASE_APP_ID', defaultValue: ''),
+    messagingSenderId:
+        String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: ''),
+    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: ''),
+    authDomain:
+        String.fromEnvironment('FIREBASE_AUTH_DOMAIN', defaultValue: ''),
+    storageBucket:
+        String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: ''),
+    measurementId:
+        String.fromEnvironment('FIREBASE_MEASUREMENT_ID', defaultValue: ''),
   );
 }

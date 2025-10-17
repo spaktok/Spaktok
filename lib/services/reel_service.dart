@@ -8,17 +8,24 @@ class ReelService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // رفع Reel جديد
-  Future<void> uploadReel({
-    required String userId,
-    required File videoFile,
-    String description = '',
-  }) async {
+  Future<void> uploadReel(
+    String userId,
+    String videoUrlOrPath,
+    String description,
+  ) async {
     try {
       final String reelId = _firestore.collection('reels').doc().id;
-      final String filePath = 'reels/$userId/$reelId-${DateTime.now().millisecondsSinceEpoch}.mp4';
-      final UploadTask uploadTask = _storage.ref().child(filePath).putFile(videoFile);
-      final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-      final String videoUrl = await snapshot.ref.getDownloadURL();
+      String videoUrl;
+      final file = File(videoUrlOrPath);
+      if (await file.exists()) {
+        final String filePath = 'reels/$userId/$reelId-${DateTime.now().millisecondsSinceEpoch}.mp4';
+        final UploadTask uploadTask = _storage.ref().child(filePath).putFile(file);
+        final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+        videoUrl = await snapshot.ref.getDownloadURL();
+      } else {
+        // assume it's already a URL
+        videoUrl = videoUrlOrPath;
+      }
 
       final Reel reel = Reel(
         id: reelId,

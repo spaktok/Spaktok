@@ -8,7 +8,7 @@ class ARShoppingService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   /// Product model for AR Shopping
-  static class Product {
+  class Product {
     final String id;
     final String name;
     final String description;

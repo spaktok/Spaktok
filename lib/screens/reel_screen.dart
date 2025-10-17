@@ -92,11 +92,31 @@ class _ReelScreenState extends State<ReelScreen> {
                           const SizedBox(width: 20),
                           IconButton(
                             icon: const Icon(Icons.comment),
-                            onPressed: () {
-                              // TODO: Implement comment functionality
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Comments: 0")), // Placeholder for comment functionality
+                            onPressed: () async {
+                              final controller = TextEditingController();
+                              final text = await showDialog<String>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Add Comment'),
+                                  content: TextField(
+                                    controller: controller,
+                                    decoration: const InputDecoration(hintText: 'Write a comment'),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.pop(context, controller.text.trim()),
+                                      child: const Text('Post'),
+                                    ),
+                                  ],
+                                ),
                               );
+                              if (text != null && text.isNotEmpty) {
+                                await _reelService.addComment(reel.id, _currentUser!.uid, text);
+                              }
                             },
                           ),
                           Text("Comments: ${reel.commentsCount}"),
@@ -112,11 +132,49 @@ class _ReelScreenState extends State<ReelScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement reel upload functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: const Text("Upload reel not implemented")),
+        onPressed: () async {
+          final descriptionController = TextEditingController();
+          final urlController = TextEditingController();
+          final result = await showDialog<Map<String, String>>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Upload Reel'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: urlController,
+                    decoration: const InputDecoration(hintText: 'Video URL'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(hintText: 'Description'),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, {
+                    'url': urlController.text.trim(),
+                    'desc': descriptionController.text.trim(),
+                  }),
+                  child: const Text('Upload'),
+                ),
+              ],
+            ),
           );
+          if (result != null && result['url']!.isNotEmpty) {
+            await _reelService.uploadReel(
+              _currentUser!.uid,
+              result['url']!,
+              result['desc'] ?? '',
+            );
+          }
         },
         child: const Icon(Icons.video_call),
       ),

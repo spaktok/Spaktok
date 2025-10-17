@@ -32,7 +32,7 @@ class AITranslationService {
   };
 
   /// Translation cache model
-  static class TranslationCache {
+  class TranslationCache {
     final String originalText;
     final String translatedText;
     final String sourceLang;

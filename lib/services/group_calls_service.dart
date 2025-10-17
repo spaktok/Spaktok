@@ -2,6 +2,68 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 
+/// Call types
+enum CallType {
+  audio,
+  video,
+}
+
+/// Call model
+class Call {
+  final String id;
+  final String channelName;
+  final String initiatorId;
+  final List<String> participantIds;
+  final CallType type;
+  final DateTime startTime;
+  final DateTime? endTime;
+  final String status; // 'active', 'ended'
+  final int maxParticipants;
+
+  Call({
+    required this.id,
+    required this.channelName,
+    required this.initiatorId,
+    required this.participantIds,
+    required this.type,
+    required this.startTime,
+    this.endTime,
+    required this.status,
+    this.maxParticipants = 10,
+  });
+
+  factory Call.fromMap(Map<String, dynamic> map, String id) {
+    return Call(
+      id: id,
+      channelName: map['channelName'] ?? '',
+      initiatorId: map['initiatorId'] ?? '',
+      participantIds: List<String>.from(map['participantIds'] ?? []),
+      type: CallType.values.firstWhere(
+        (e) => e.toString() == 'CallType.${map['type']}',
+        orElse: () => CallType.video,
+      ),
+      startTime: (map['startTime'] as Timestamp).toDate(),
+      endTime:
+          map['endTime'] != null ? (map['endTime'] as Timestamp).toDate() : null,
+      status: map['status'] ?? 'active',
+      maxParticipants: map['maxParticipants'] ?? 10,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'channelName': channelName,
+      'initiatorId': initiatorId,
+      'participantIds': participantIds,
+      'type': type.toString().split('.').last,
+      'startTime': Timestamp.fromDate(startTime),
+      'endTime': endTime != null ? Timestamp.fromDate(endTime!) : null,
+      'status': status,
+      'maxParticipants': maxParticipants,
+    };
+  }
+}
+
 /// Group Calls Service
 /// Handles multi-participant voice/video calls using Agora
 class GroupCallsService {
@@ -10,69 +72,6 @@ class GroupCallsService {
 
   static const String agoraAppId = "a41807bba5c144b5b8e1fd5ee711707b";
   static const String agoraToken = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5klJiabJhiYmSaZJFqmGaSmmqanmhobmQIn09HsZDYGMDGn7c5gYGSAQxGdl8E3MKy1mYAAAut8gzQ==";
-
-  /// Call types
-  enum CallType {
-    audio,
-    video,
-  }
-
-  /// Call model
-  static class Call {
-    final String id;
-    final String channelName;
-    final String initiatorId;
-    final List<String> participantIds;
-    final CallType type;
-    final DateTime startTime;
-    final DateTime? endTime;
-    final String status; // 'active', 'ended'
-    final int maxParticipants;
-
-    Call({
-      required this.id,
-      required this.channelName,
-      required this.initiatorId,
-      required this.participantIds,
-      required this.type,
-      required this.startTime,
-      this.endTime,
-      required this.status,
-      this.maxParticipants = 10,
-    });
-
-    factory Call.fromMap(Map<String, dynamic> map, String id) {
-      return Call(
-        id: id,
-        channelName: map['channelName'] ?? '',
-        initiatorId: map['initiatorId'] ?? '',
-        participantIds: List<String>.from(map['participantIds'] ?? []),
-        type: CallType.values.firstWhere(
-          (e) => e.toString() == 'CallType.${map['type']}',
-          orElse: () => CallType.video,
-        ),
-        startTime: (map['startTime'] as Timestamp).toDate(),
-        endTime: map['endTime'] != null
-            ? (map['endTime'] as Timestamp).toDate()
-            : null,
-        status: map['status'] ?? 'active',
-        maxParticipants: map['maxParticipants'] ?? 10,
-      );
-    }
-
-    Map<String, dynamic> toMap() {
-      return {
-        'channelName': channelName,
-        'initiatorId': initiatorId,
-        'participantIds': participantIds,
-        'type': type.toString().split('.').last,
-        'startTime': Timestamp.fromDate(startTime),
-        'endTime': endTime != null ? Timestamp.fromDate(endTime!) : null,
-        'status': status,
-        'maxParticipants': maxParticipants,
-      };
-    }
-  }
 
   /// Start a group call
   Future<String> startGroupCall(

@@ -94,7 +94,9 @@ This guide will help you set up and run the Spaktok project on your local machin
     STRIPE_SECRET_KEY=your_stripe_secret_key_here
     ```
 
-6.  **Build the application** (e.g., for web):
+6.  **Environment variables**: Copy `.env.example` to `.env` and fill values (Stripe/Firebase/DB URLs). Never commit real secrets.
+
+7.  **Build the application** (e.g., for web):
 
     ```bash
     flutter build web
@@ -111,7 +113,7 @@ flutter run
 To run the application on the web:
 
 ```bash
-flutter run -d web
+flutter run -d web --dart-define=FIREBASE_API_KEY=... --dart-define=FIREBASE_PROJECT_ID=...
 ```
 
 To run the application on Linux desktop (after installing prerequisites like `cmake`, `ninja-build`, `clang`, `libgtk-3-dev`):

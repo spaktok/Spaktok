@@ -26,7 +26,7 @@ class MiniAppsService {
   }
 
   /// Mini app model
-  static class MiniApp {
+  class MiniApp {
     final String id;
     final String name;
     final String description;
@@ -85,7 +85,7 @@ class MiniAppsService {
   }
 
   /// Game session model
-  static class GameSession {
+  class GameSession {
     final String id;
     final String appId;
     final String chatId;

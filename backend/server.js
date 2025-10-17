@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const { Pool } = require("pg");
@@ -5,10 +6,9 @@ const redis = require("redis");
 const cors = require("cors");
 const http = require("http");
 const WebSocket = require("ws");
-const path = require("path");
 const streamingRoutes = require("./routes/streaming");
 const battleGiftingRoutes = require("./routes/battle_gifting");
-const paymentRoutes = require("./routes/payment"); // إضافة مسارات الدفع
+const paymentRoutes = require("./routes/payment");
 
 const app = express();
 const server = http.createServer(app);
@@ -17,11 +17,9 @@ const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(cors());
 
-// Serve static files from the 'frontend' directory
-app.use(express.static(path.join(__dirname, "../frontend")));
-
 // ✅ MongoDB
-mongoose.connect("mongodb://spaktok-mongo:27017/spaktok", {
+const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/spaktok";
+mongoose.connect(MONGO_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -30,11 +28,11 @@ mongoose.connect("mongodb://spaktok-mongo:27017/spaktok", {
 
 // ✅ PostgreSQL
 const pool = new Pool({
-  host: "spaktok-postgres",
-  port: 5432,
-  user: "spaktok",
-  password: "123dano",
-  database: "spaktok_db"
+  host: process.env.POSTGRES_HOST || "localhost",
+  port: Number(process.env.POSTGRES_PORT || 5432),
+  user: process.env.POSTGRES_USER || "spaktok",
+  password: process.env.POSTGRES_PASSWORD || "password",
+  database: process.env.POSTGRES_DB || "spaktok_db"
 });
 
 pool.connect()
@@ -43,7 +41,7 @@ pool.connect()
 
 // ✅ Redis
 const redisClient = redis.createClient({
-  url: "redis://spaktok-redis:6379"
+  url: process.env.REDIS_URL || "redis://localhost:6379"
 });
 
 redisClient.connect()
@@ -83,8 +81,8 @@ wss.on("connection", (ws) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT || 5000);
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running at http://0.0.0.0:${PORT}`);
 });
 
