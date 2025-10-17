@@ -67,8 +67,28 @@ class _ChallengesScreenState extends State<ChallengesScreen>
           ),
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // TODO: Implement search
+            onPressed: () async {
+              final controller = TextEditingController();
+              final query = await showDialog<String>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  backgroundColor: Colors.grey[900],
+                  title: const Text('Search challenges', style: TextStyle(color: Colors.white)),
+                  content: TextField(
+                    controller: controller,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(hintText: 'Search by hashtag or title'),
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                    ElevatedButton(onPressed: () => Navigator.pop(context, controller.text.trim()), child: const Text('Search')),
+                  ],
+                ),
+              );
+              if (query != null && query.isNotEmpty) {
+                final results = await _challengeService.searchChallenges(query);
+                setState(() => _trendingChallenges = results);
+              }
             },
           ),
         ],
@@ -169,7 +189,17 @@ class _ChallengesScreenState extends State<ChallengesScreen>
       ),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to challenge details
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              backgroundColor: Colors.grey[900],
+              title: Text(challenge['title'] ?? '', style: const TextStyle(color: Colors.white)),
+              content: Text(challenge['description'] ?? '', style: const TextStyle(color: Colors.white70)),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+              ],
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -247,8 +277,18 @@ class _ChallengesScreenState extends State<ChallengesScreen>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Join challenge
+                  onPressed: () async {
+                    // For demo: join with placeholder user and post id
+                    await _challengeService.joinChallenge(
+                      challenge['id'],
+                      'demo_user',
+                      'demo_post',
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Joined challenge!')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,

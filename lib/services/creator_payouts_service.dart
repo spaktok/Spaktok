@@ -12,7 +12,7 @@ class CreatorPayoutsService {
   static const double minimumPayoutAmount = 50.0; // Minimum $50 for payout
 
   /// Earnings model
-  static class Earnings {
+  class Earnings {
     final String userId;
     final double totalEarnings;
     final double availableBalance;
@@ -53,7 +53,7 @@ class CreatorPayoutsService {
   }
 
   /// Payout request model
-  static class PayoutRequest {
+  class PayoutRequest {
     final String id;
     final String userId;
     final double amount;
@@ -112,7 +112,7 @@ class CreatorPayoutsService {
   }
 
   /// Transaction model
-  static class Transaction {
+  class Transaction {
     final String id;
     final String userId;
     final String type; // 'gift', 'tip', 'subscription', 'ad_revenue'

@@ -57,12 +57,38 @@ class _UserListScreenState extends State<UserListScreen> {
             title: Text(user.username),
             subtitle: Text('ID: ${user.id}'),
             onTap: () {
-              // TODO: Navigate to user detail screen
-              print('Tapped on ${user.username}');
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => _UserDetailPage(user: user),
+                ),
+              );
             },
           ),
         );
       },
+    );
+  }
+}
+
+class _UserDetailPage extends StatelessWidget {
+  final ListUsersUsers user;
+  const _UserDetailPage({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(user.username)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('ID: ${user.id}'),
+            const SizedBox(height: 8),
+            Text('Email: ${user.email ?? 'N/A'}'),
+          ],
+        ),
+      ),
     );
   }
 }

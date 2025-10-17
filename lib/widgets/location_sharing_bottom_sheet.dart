@@ -76,11 +76,52 @@ class _LocationSharingBottomSheetState extends State<LocationSharingBottomSheet>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement friend selection logic
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Friend selection not yet implemented.")),
+                onPressed: () async {
+                  final selected = await showDialog<List<String>>(
+                    context: context,
+                    builder: (context) {
+                      final friends = <String>["friend_1","friend_2","friend_3"]; // placeholder list
+                      final tempSelected = Set<String>.from(_selectedFriends);
+                      return AlertDialog(
+                        title: const Text('Select Friends'),
+                        content: SizedBox(
+                          width: 400,
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              for (final f in friends)
+                                CheckboxListTile(
+                                  value: tempSelected.contains(f),
+                                  onChanged: (v) {
+                                    if (v == true) {
+                                      tempSelected.add(f);
+                                    } else {
+                                      tempSelected.remove(f);
+                                    }
+                                    // force rebuild
+                                    (context as Element).markNeedsBuild();
+                                  },
+                                  title: Text(f),
+                                ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(_selectedFriends),
+                            child: const Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(tempSelected.toList()),
+                            child: const Text('Done'),
+                          ),
+                        ],
+                      );
+                    },
                   );
+                  if (selected != null) {
+                    setState(() => _selectedFriends = selected);
+                  }
                 },
                 child: const Text('Select Friends'),
               ),

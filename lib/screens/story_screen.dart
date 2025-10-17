@@ -87,11 +87,64 @@ class _StoryScreenState extends State<StoryScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement story upload functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: const Text("Upload story not implemented")),
+        onPressed: () async {
+          final urlController = TextEditingController();
+          final durationController = TextEditingController(text: '10');
+          final mediaType = ValueNotifier<String>('image');
+          final result = await showDialog<Map<String, String>>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Upload Story'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButton<String>(
+                    value: mediaType.value,
+                    items: const [
+                      DropdownMenuItem(value: 'image', child: Text('Image URL')),
+                      DropdownMenuItem(value: 'video', child: Text('Video URL')),
+                    ],
+                    onChanged: (v) { mediaType.value = v ?? 'image'; (context as Element).markNeedsBuild(); },
+                  ),
+                  TextField(
+                    controller: urlController,
+                    decoration: const InputDecoration(hintText: 'Media URL'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: durationController,
+                    decoration: const InputDecoration(hintText: 'Duration seconds'),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, {
+                    'url': urlController.text.trim(),
+                    'type': mediaType.value,
+                    'duration': durationController.text.trim(),
+                  }),
+                  child: const Text('Upload'),
+                ),
+              ],
+            ),
           );
+          if (result != null && result['url']!.isNotEmpty) {
+            // استخدم واجهة أبسط: بما أن خدمة الرفع الحالية تتوقع ملفاً، سنحفظ فقط البيانات في Firestore للتجربة السريعة
+            final story = Story(
+              id: '',
+              userId: _currentUser!.uid,
+              mediaUrl: result['url']!,
+              mediaType: result['type'] ?? 'image',
+              timestamp: Timestamp.now(),
+              duration: int.tryParse(result['duration'] ?? '10') ?? 10,
+            );
+            await FirebaseFirestore.instance.collection('stories').add(story.toJson());
+          }
         },
         child: const Icon(Icons.add_a_photo),
       ),
