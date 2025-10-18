@@ -49,7 +49,7 @@ The following features have been implemented and integrated into the application
 
 *   **Firebase**: Configured for Web, Android, and iOS platforms. This includes Firebase Authentication, Firestore, and other related services. (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist` are present).
 *   **Agora**: Integrated for real-time communication, specifically for live streaming and group calls. The Agora App ID (`a41807bba5c144b5b8e1fd5ee711707b`) and a temporary token have been set in `lib/screens/live_stream_screen.dart`.
-*   **Stripe**: Integrated for payment processing, particularly for creator payouts and virtual gifts. The Stripe Secret Key (`sk_test_51SDYFHRumpu3fxskjQggMnl7yLzUENBm41WWH0S8vuRgZj3Quu3C1agEyZyhCpCDT9W1FSLfzQLTKt6842b7UU3s00dPzlzgxd`) has been configured as an environment variable in `backend/.env`.
+*   **Stripe**: Integrated for payment processing, particularly for creator payouts and virtual gifts. The Stripe Secret Key (`YOUR_STRIPE_SECRET_KEY_HERE`) has been configured as an environment variable in `backend/.env`.
 
 ### Known Issues
 
