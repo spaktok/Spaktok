@@ -1,0 +1,28 @@
+📊 تقرير المشروع - Fri Sep  5 13:01:52     2025
+===============================
+
+📂 ملفات ومجلدات المشروع
+-------------------------------
+
+🐳 الحاويات (Containers)
+-------------------------------
+NAMES              IMAGE              STATUS                       PORTS
+spaktok-backend    spaktok-backend    Up 3 minutes                 0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp
+spaktok-frontend   spaktok-frontend   Exited (127) 2 minutes ago   
+spaktok-nginx      nginx:alpine       Exited (1) 22 minutes ago    
+spaktok-redis      redis:7            Up About an hour             0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+spaktok-postgres   postgres:15        Up About an hour             0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+spaktok-mongo      mongo:6            Up About an hour             0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
+goofy_chaum        postgres:14        Exited (1) 3 days ago        
+
+📦 الصور (Images)
+-------------------------------
+REPOSITORY         TAG       IMAGE ID       SIZE
+spaktok-backend    latest    3c39da02ebee   1.77GB
+spaktok-frontend   latest    fe57d0944bdf   110MB
+mongo              6         95ec2fde0ea4   1.05GB
+mongo              6.0       95ec2fde0ea4   1.05GB
+postgres           15        bc51cf4f1fe0   629MB
+postgres           14        445df84770a5   624MB
+nginx              alpine    42a516af16b8   79.3MB
+redis              7         4421962706d7   173MB

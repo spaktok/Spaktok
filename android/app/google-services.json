@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "603021639103",
+    "project_id": "spaktok-e7866",
+    "storage_bucket": "spaktok-e7866.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:603021639103:android:6fd86d902d359c475ab50a",
+        "android_client_info": {
+          "package_name": "Spaktok.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

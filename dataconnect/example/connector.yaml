@@ -1,0 +1,11 @@
+connectorId: example
+generate:
+  javascriptSdk:
+    - outputDir: ../../frontend/src/dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ../../frontend
+      react: false
+      angular: false
+  dartSdk:
+    - outputDir: ../../frontend/lib/dataconnect_generated
+      package: dataconnect_generated
