@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:ffmpeg_kit_flutter_min/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_min/return_code.dart';
 
 class VideoEditorScreen extends StatefulWidget {
   final String videoPath;
@@ -11,40 +11,54 @@ class VideoEditorScreen extends StatefulWidget {
 }
 
 class _VideoEditorScreenState extends State<VideoEditorScreen> {
-  late final Player player = Player();
-  late final VideoController controller = VideoController(player);
-  bool isPlaying = false;
+  // Player is removed, we'll use a simple VideoPlayer for playback
+  // For actual editing, we use FFmpegKit
+  double _trimStart = 0.0;
+  double _trimEnd = 10.0; // Placeholder for video duration
+  bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize media_kit
-    MediaKit.ensureInitialized();
-    // Load the video file
-    player.open(Media(widget.videoPath));
-    player.play();
-    player.stream.playing.listen((playing) {
-      if(mounted) {
-        setState(() {
-          isPlaying = playing;
-        });
-      }
-    });
+    // In a real app, you would initialize a VideoPlayerController here
+    // and get the video duration to set _trimEnd.
   }
 
   @override
   void dispose() {
-    player.dispose();
+    // Dispose VideoPlayerController here
     super.dispose();
   }
 
-  // Placeholder for video editing logic (e.g., trimming, applying filters)
-  void _applyFilter() {
-    // This is where you would integrate FFmpeg or a custom GLSL shader
-    // For now, it's just a placeholder button.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Applying a placeholder filter... (Requires FFmpeg integration)')),
-    );
+  Future<void> _trimAndConvertVideo() async {
+    setState(() {
+      _isProcessing = true;
+    });
+
+    final inputPath = widget.videoPath;
+    final outputPath = inputPath.replaceAll('.mp4', '_trimmed.mp4');
+    
+    // FFmpeg command to trim the video: -ss (start time) -to (end time)
+    final command = '-i $inputPath -ss $_trimStart -to $_trimEnd -c copy $outputPath';
+
+    final session = await FFmpegKit.execute(command);
+    final returnCode = await session.getReturnCode();
+
+    if (ReturnCode.isSuccess(returnCode)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تم قص الفيديو بنجاح! المسار: $outputPath')),
+      );
+      // يمكنك الآن استخدام outputPath للمعاينة أو الرفع
+    } else {
+      final output = await session.getOutput();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('فشل قص الفيديو: $output')),
+      );
+    }
+
+    setState(() {
+      _isProcessing = false;
+    });
   }
 
   @override
@@ -65,12 +79,17 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
       body: Center(
         child: Column(
           children: [
+            // Placeholder for Video Player (replace with actual VideoPlayer widget)
             Expanded(
-              child: Video(
-                controller: controller,
-                // Placeholder for custom video filters/shaders
-                filterQuality: FilterQuality.high,
-                fit: BoxFit.contain,
+              child: Container(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Video Player Placeholder\nPath: ${widget.videoPath}',
+                    style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             ),
             Padding(
@@ -78,17 +97,37 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  IconButton(
-                    icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                    onPressed: () {
-                      player.playOrPause();
-                    },
+                  // Placeholder for Trim Slider
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('${_trimStart.toStringAsFixed(1)}s'),
+                        Expanded(
+                          child: RangeSlider(
+                            values: RangeValues(_trimStart, _trimEnd),
+                            min: 0.0,
+                            max: 30.0, // Should be video duration
+                            onChanged: (RangeValues values) {
+                              setState(() {
+                                _trimStart = values.start;
+                                _trimEnd = values.end;
+                              });
+                            },
+                          ),
+                        ),
+                        Text('${_trimEnd.toStringAsFixed(1)}s'),
+                      ],
+                    ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: _applyFilter,
-                    icon: const Icon(Icons.filter_vintage),
-                    label: const Text('Apply Filter'),
-                  ),
+                  _isProcessing
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton.icon(
+                          onPressed: _trimAndConvertVideo,
+                          icon: const Icon(Icons.cut),
+                          label: const Text('Trim Video'),
+                        ),
                   // Add more editing tools here (trim, text, music)
                 ],
               ),
