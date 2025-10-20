@@ -1,19 +1,21 @@
-
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/location_service.dart';
 
 class LocationSharingBottomSheet extends StatefulWidget {
-  final Function(LocationPrivacy privacy, List<String>? sharedWithFriends, bool isLive, DateTime? liveExpiresAt) onShareLocation;
+  final Function(LocationPrivacy privacy, List<String>? sharedWithFriends,
+      bool isLive, DateTime? liveExpiresAt) onShareLocation;
 
-  const LocationSharingBottomSheet({Key? key, required this.onShareLocation}) : super(key: key);
+  const LocationSharingBottomSheet({super.key, required this.onShareLocation});
 
   @override
-  State<LocationSharingBottomSheet> createState() => _LocationSharingBottomSheetState();
+  State<LocationSharingBottomSheet> createState() =>
+      _LocationSharingBottomSheetState();
 }
 
-class _LocationSharingBottomSheetState extends State<LocationSharingBottomSheet> {
+class _LocationSharingBottomSheetState
+    extends State<LocationSharingBottomSheet> {
   LocationPrivacy _selectedPrivacy = LocationPrivacy.off;
-  List<String> _selectedFriends = []; // Placeholder for selected friends
+  final List<String> _selectedFriends = []; // Placeholder for selected friends
   bool _isLiveLocationSharing = false;
   DateTime? _liveLocationExpiresAt;
 
@@ -79,7 +81,8 @@ class _LocationSharingBottomSheetState extends State<LocationSharingBottomSheet>
                 onPressed: () {
                   // TODO: Implement friend selection logic
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Friend selection not yet implemented.")),
+                    const SnackBar(
+                        content: Text("Friend selection not yet implemented.")),
                   );
                 },
                 child: const Text('Select Friends'),
@@ -95,7 +98,8 @@ class _LocationSharingBottomSheetState extends State<LocationSharingBottomSheet>
                   _selectedPrivacy = value!;
                   _isLiveLocationSharing = true;
                   // Set a default expiry, e.g., 1 hour from now
-                  _liveLocationExpiresAt = DateTime.now().add(const Duration(hours: 1));
+                  _liveLocationExpiresAt =
+                      DateTime.now().add(const Duration(hours: 1));
                 });
               },
             ),
@@ -119,4 +123,3 @@ class _LocationSharingBottomSheetState extends State<LocationSharingBottomSheet>
     );
   }
 }
-

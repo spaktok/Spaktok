@@ -4,7 +4,7 @@ import 'package:spaktok/services/auth_service.dart';
 
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -352,7 +352,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
-                  activeColor: Theme.of(context).primaryColor,
+                  activeThumbColor: Theme.of(context).primaryColor,
                 ),
               ),
               ListTile(
@@ -361,7 +361,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
-                  activeColor: Theme.of(context).primaryColor,
+                  activeThumbColor: Theme.of(context).primaryColor,
                 ),
               ),
               ListTile(
@@ -370,7 +370,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
-                  activeColor: Theme.of(context).primaryColor,
+                  activeThumbColor: Theme.of(context).primaryColor,
                 ),
               ),
               ListTile(
@@ -379,7 +379,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
-                  activeColor: Theme.of(context).primaryColor,
+                  activeThumbColor: Theme.of(context).primaryColor,
                 ),
               ),
               ListTile(
@@ -388,7 +388,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
-                  activeColor: Theme.of(context).primaryColor,
+                  activeThumbColor: Theme.of(context).primaryColor,
                 ),
               ),
               const SizedBox(height: 20),

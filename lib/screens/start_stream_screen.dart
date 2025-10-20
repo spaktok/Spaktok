@@ -3,7 +3,7 @@ import 'package:spaktok/services/stream_service.dart';
 import 'package:spaktok/screens/enhanced_live_stream_screen.dart';
 
 class StartStreamScreen extends StatefulWidget {
-  const StartStreamScreen({Key? key}) : super(key: key);
+  const StartStreamScreen({super.key});
 
   @override
   State<StartStreamScreen> createState() => _StartStreamScreenState();

@@ -9,11 +9,11 @@ class ReportingScreen extends StatefulWidget {
   final String? reportedUserId;
 
   const ReportingScreen({
-    Key? key,
+    super.key,
     this.contentId,
     this.contentType,
     this.reportedUserId,
-  }) : super(key: key);
+  });
 
   @override
   State<ReportingScreen> createState() => _ReportingScreenState();
@@ -160,7 +160,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
           ),
         ),
         const SizedBox(height: 15),
-        ..._reportReasons.map((reason) => _buildReasonItem(reason)).toList(),
+        ..._reportReasons.map((reason) => _buildReasonItem(reason)),
       ],
     );
   }

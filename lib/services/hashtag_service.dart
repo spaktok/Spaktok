@@ -82,7 +82,7 @@ class HashtagService {
       final querySnapshot = await _firestore
           .collection('hashtags')
           .where('name', isGreaterThanOrEqualTo: query.toLowerCase())
-          .where('name', isLessThanOrEqualTo: query.toLowerCase() + '\uf8ff')
+          .where('name', isLessThanOrEqualTo: '${query.toLowerCase()}\uf8ff')
           .limit(10)
           .get();
 

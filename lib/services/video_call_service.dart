@@ -29,7 +29,7 @@ class VideoCallService {
   bool _isVideoOff = false;
   bool _isSpeakerOn = true;
   int? _localUid;
-  List<int> _remoteUids = [];
+  final List<int> _remoteUids = [];
 
   // Getters
   bool get isInitialized => _isInitialized;

@@ -9,7 +9,7 @@ const token = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5k
 const channel = "test_channel";
 
 class LiveStreamScreen extends StatefulWidget {
-  const LiveStreamScreen({Key? key}) : super(key: key);
+  const LiveStreamScreen({super.key});
 
   @override
   State<LiveStreamScreen> createState() => _LiveStreamScreenState();
@@ -17,7 +17,7 @@ class LiveStreamScreen extends StatefulWidget {
 
 class _LiveStreamScreenState extends State<LiveStreamScreen> {
   int? _localUid = 0; // معرف المستخدم المحلي (يمكن أن يكون أي رقم غير صفري)
-  List<int> _remoteUids = []; // قائمة بمعرفات المستخدمين البعيدين
+  final List<int> _remoteUids = []; // قائمة بمعرفات المستخدمين البعيدين
   bool _localUserJoined = false; // ما إذا كان المستخدم المحلي قد انضم
   bool _isAudioMuted = false; // حالة كتم الصوت المحلية
   late RtcEngine _engine; // محرك RTC

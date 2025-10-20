@@ -6,7 +6,7 @@ import 'dart:typed_data';
 class FiltersScreen extends StatefulWidget {
   final CameraController? cameraController;
 
-  const FiltersScreen({Key? key, this.cameraController}) : super(key: key);
+  const FiltersScreen({super.key, this.cameraController});
 
   @override
   State<FiltersScreen> createState() => _FiltersScreenState();

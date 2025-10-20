@@ -16,9 +16,7 @@ class CameraService {
 
   // Get available cameras
   Future<List<CameraDescription>> getAvailableCameras() async {
-    if (_cameras == null) {
-      _cameras = await availableCameras();
-    }
+    _cameras ??= await availableCameras();
     return _cameras!;
   }
 

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({Key? key}) : super(key: key);
+  const CameraScreen({super.key});
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -234,7 +234,7 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
           ),
           if (_image != null || (_isCameraInitialized && cameraController != null && cameraController!.value.isInitialized)) ...[
-            Container(
+            SizedBox(
               height: 60,
               child: ListView(
                 scrollDirection: Axis.horizontal,

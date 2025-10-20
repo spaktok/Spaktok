@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 
 class StoryScreen extends StatefulWidget {
-  const StoryScreen({Key? key}) : super(key: key);
+  const StoryScreen({super.key});
 
   @override
   State<StoryScreen> createState() => _StoryScreenState();

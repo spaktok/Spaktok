@@ -26,7 +26,7 @@ class PaymentService {
         'amount': amount,
         'paymentMethodToken': paymentMethodToken,
       });
-      return result.data!;
+      return result.data;
     } on FirebaseFunctionsException catch (e) {
       print('FirebaseFunctionsException: ${e.code} - ${e.message}');
       throw Exception(e.message);
@@ -45,7 +45,7 @@ class PaymentService {
         'payoutMethod': payoutMethod,
         'payoutDetails': payoutDetails,
       });
-      return result.data!;
+      return result.data;
     } on FirebaseFunctionsException catch (e) {
       print('FirebaseFunctionsException: ${e.code} - ${e.message}');
       throw Exception(e.message);
@@ -63,7 +63,7 @@ class PaymentService {
         'requestId': requestId,
         'action': action,
       });
-      return result.data!;
+      return result.data;
     } on FirebaseFunctionsException catch (e) {
       print('FirebaseFunctionsException: ${e.code} - ${e.message}');
       throw Exception(e.message);

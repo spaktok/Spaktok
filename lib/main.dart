@@ -8,40 +8,37 @@ import 'package:spaktok/config/theme_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Spaktok',
-
       theme: ThemeConfig.lightTheme,
       darkTheme: ThemeConfig.darkTheme,
       themeMode: ThemeMode.dark,
-
       home: const AuthWrapper(),
     );
   }
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
-  Widget
-  build(BuildContext context) {
+  Widget build(BuildContext context) {
     final authService = AuthService();
-    
+
     return StreamBuilder(
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
@@ -53,12 +50,12 @@ class AuthWrapper extends StatelessWidget {
             ),
           );
         }
-        
+
         // Show main navigation if user is logged in
         if (snapshot.hasData && snapshot.data != null) {
           return const MainNavigationScreen();
         }
-        
+
         // Show login screen if user is not logged in
         return const LoginScreen();
       },

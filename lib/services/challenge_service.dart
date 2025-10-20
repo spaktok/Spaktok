@@ -160,7 +160,7 @@ class ChallengeService {
           .collection('challenges')
           .where('isActive', isEqualTo: true)
           .where('title', isGreaterThanOrEqualTo: query)
-          .where('title', isLessThanOrEqualTo: query + '\uf8ff')
+          .where('title', isLessThanOrEqualTo: '$query\uf8ff')
           .limit(10)
           .get();
 

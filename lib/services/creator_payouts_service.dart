@@ -1,126 +1,44 @@
-import 'dart:convert';
+import 'dart:async';
 
-part of 'example.dart';
+/// Gift event model representing a gift sent during a live stream.
+class GiftEvent {
+  final String senderId;
+  final String giftType; // e.g., rose, crown, car
+  final int value; // value in in-app coins/points
+  final DateTime timestamp;
 
-class AddReviewVariablesBuilder {
-  final dynamic _dataConnect; // Must have a `mutation` method
-  final String movieId;
-  final int rating;
-  final String reviewText;
+  const GiftEvent({
+    required this.senderId,
+    required this.giftType,
+    required this.value,
+    required this.timestamp,
+  });
+}
 
-  AddReviewVariablesBuilder(
-      this._dataConnect, {
-        required this.movieId,
-        required this.rating,
-        required this.reviewText,
-      });
+/// Service to compute creator payouts based on received gifts.
+/// This replaces any legacy movie-related logic and aligns with the app's
+/// live streaming + gifting economy.
+class CreatorPayoutsService {
+  const CreatorPayoutsService();
 
-  // Deserializer for API response
-  AddReviewData Function(dynamic) get dataDeserializer =>
-          (dynamic json) => AddReviewData.fromJson(jsonDecode(json));
-
-  // Serializer for sending variables to API
-  String Function(AddReviewVariables) get varsSerializer =>
-          (AddReviewVariables vars) => jsonEncode(vars.toJson());
-
-  // Execute the mutation
-  Future<OperationResult> execute() {
-    return ref().execute();
+  /// Calculates the creator's share from a list of gift events.
+  /// - [platformShare] is the platform's commission rate (0.0 to 1.0).
+  /// Returns the creator's share in coins/points.
+  Future<int> calculatePayout(
+    List<GiftEvent> events, {
+    double platformShare = 0.3,
+  }) async {
+    final totalValue = events.fold<int>(0, (sum, e) => sum + e.value);
+    final creatorShare = (totalValue * (1 - platformShare)).floor();
+    return creatorShare;
   }
 
-  // Create the mutation reference
-  MutationRef<AddReviewData, AddReviewVariables> ref() {
-    AddReviewVariables vars = AddReviewVariables(
-      movieId: movieId,
-      rating: rating,
-      reviewText: reviewText,
-    );
-    return _dataConnect.mutation(
-      "AddReview",
-      dataDeserializer,
-      varsSerializer,
-      vars,
-    );
+  /// Aggregates gift totals by gift type to support analytics/leaderboards.
+  Future<Map<String, int>> aggregateByGiftType(List<GiftEvent> events) async {
+    final Map<String, int> totals = {};
+    for (final e in events) {
+      totals.update(e.giftType, (v) => v + e.value, ifAbsent: () => e.value);
+    }
+    return totals;
   }
 }
-
-// Operation result placeholder
-class OperationResult {}
-
-// Mutation reference placeholder
-class MutationRef<T, V> {
-  Future<OperationResult> execute() async {
-    return OperationResult();
-  }
-}
-
-// Review data model for the response
-class AddReviewReviewUpsert {
-  final String userId;
-  final String movieId;
-
-  AddReviewReviewUpsert({
-    required this.userId,
-    required this.movieId,
-  });
-
-  factory AddReviewReviewUpsert.fromJson(dynamic json) => AddReviewReviewUpsert(
-    userId: nativeFromJson<String>(json['userId']),
-    movieId: nativeFromJson<String>(json['movieId']),
-  );
-
-  Map<String, dynamic> toJson() => {
-    'userId': nativeToJson<String>(userId),
-    'movieId': nativeToJson<String>(movieId),
-  };
-}
-
-// Main response data
-class AddReviewData {
-  final AddReviewReviewUpsert reviewUpsert;
-
-  AddReviewData({
-    required this.reviewUpsert,
-  });
-
-  factory AddReviewData.fromJson(dynamic json) => AddReviewData(
-    reviewUpsert: AddReviewReviewUpsert.fromJson(json['review_upsert']),
-  );
-
-  Map<String, dynamic> toJson() => {
-    'review_upsert': reviewUpsert.toJson(),
-  };
-}
-
-// Variables sent to the mutation
-class AddReviewVariables {
-  final String movieId;
-  final int rating;
-  final String reviewText;
-
-  AddReviewVariables({
-    required this.movieId,
-    required this.rating,
-    required this.reviewText,
-  });
-
-  @Deprecated(
-      'fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  factory AddReviewVariables.fromJson(Map<String, dynamic> json) =>
-      AddReviewVariables(
-        movieId: nativeFromJson<String>(json['movieId']),
-        rating: nativeFromJson<int>(json['rating']),
-        reviewText: nativeFromJson<String>(json['reviewText']),
-      );
-
-  Map<String, dynamic> toJson() => {
-    'movieId': nativeToJson<String>(movieId),
-    'rating': nativeToJson<int>(rating),
-    'reviewText': nativeToJson<String>(reviewText),
-  };
-}
-
-// Helper functions for JSON serialization
-T nativeFromJson<T>(dynamic value) => value as T;
-
-dynamic nativeToJson<T>(T value) => value;

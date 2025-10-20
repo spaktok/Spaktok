@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,7 +12,8 @@ class ChatScreen extends StatefulWidget {
   final String receiverId; // معرف المستلم
   final String receiverName; // اسم المستلم
 
-  const ChatScreen({Key? key, required this.receiverId, required this.receiverName}) : super(key: key);
+  const ChatScreen(
+      {super.key, required this.receiverId, required this.receiverName});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -22,7 +22,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final EnhancedChatService _chatService = EnhancedChatService.instance;
-  final LocationService _locationService = LocationService.instance; // New instance
+  final LocationService _locationService =
+      LocationService.instance; // New instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser; // المستخدم الحالي
   String? _chatRoomId;
@@ -58,10 +59,12 @@ class _ChatScreenState extends State<ChatScreen> {
       _chatService.sendScreenshotNotification(
         chatId: _chatRoomId!,
         userId: _currentUser!.uid,
-        messageId: 'unknown_message_id', // This would ideally be the ID of the message being screenshotted
+        messageId:
+            'unknown_message_id', // This would ideally be the ID of the message being screenshotted
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Screenshot detected! Notification sent.")),
+        const SnackBar(
+            content: Text("Screenshot detected! Notification sent.")),
       );
     }
   }
@@ -90,7 +93,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _sendMessage() async {
-    if (_messageController.text.isNotEmpty && _currentUser != null && _chatRoomId != null) {
+    if (_messageController.text.isNotEmpty &&
+        _currentUser != null &&
+        _chatRoomId != null) {
       await _chatService.sendMessage(
         chatRoomId: _chatRoomId!,
         senderId: _currentUser!.uid,
@@ -105,13 +110,16 @@ class _ChatScreenState extends State<ChatScreen> {
     final XFile? file = await _picker.pickImage(source: source);
     if (file != null && _currentUser != null && _chatRoomId != null) {
       // Upload media to Firebase Storage and get URL
-      final String? mediaUrl = await _chatService.uploadChatMedia(file.path, _currentUser!.uid);
+      final String? mediaUrl =
+          await _chatService.uploadChatMedia(file.path, _currentUser!.uid);
       if (mediaUrl != null) {
         await _chatService.sendMessage(
           chatRoomId: _chatRoomId!,
           senderId: _currentUser!.uid,
           mediaUrl: mediaUrl,
-          mediaType: file.mimeType?.startsWith('image') == true ? 'image' : 'video', // Basic type detection
+          mediaType: file.mimeType?.startsWith('image') == true
+              ? 'image'
+              : 'video', // Basic type detection
           isEphemeral: _isDisappearingEnabled,
         );
       }
@@ -145,9 +153,9 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     if (_currentUser == null || _chatRoomId == null) {
       return Scaffold(
-        appBar: AppBar(title: Text('Chat with ${widget.receiverName}')), 
+        appBar: AppBar(title: Text('Chat with ${widget.receiverName}')),
         body: const Center(child: CircularProgressIndicator()),
-      ); 
+      );
     }
 
     return Scaffold(
@@ -155,13 +163,17 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text('Chat with ${widget.receiverName}'),
         actions: [
           IconButton(
-            icon: Icon(_isDisappearingEnabled ? Icons.visibility_off : Icons.visibility),
+            icon: Icon(_isDisappearingEnabled
+                ? Icons.visibility_off
+                : Icons.visibility),
             onPressed: () {
               setState(() {
                 _isDisappearingEnabled = !_isDisappearingEnabled;
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Disappearing messages: ${_isDisappearingEnabled ? 'ON' : 'OFF'}")),
+                SnackBar(
+                    content: Text(
+                        "Disappearing messages: ${_isDisappearingEnabled ? 'ON' : 'OFF'}")),
               );
             },
           ),
@@ -183,7 +195,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final messages = snapshot.data!.docs.map((doc) => ChatMessage.fromJson(doc.data() as Map<String, dynamic>)).toList();
+                final messages = snapshot.data!.docs
+                    .map((doc) => ChatMessage.fromJson(
+                        doc.data() as Map<String, dynamic>))
+                    .toList();
                 return ListView.builder(
                   reverse: true,
                   itemCount: messages.length,
@@ -191,35 +206,47 @@ class _ChatScreenState extends State<ChatScreen> {
                     final message = messages[index];
                     final isMe = message.senderId == _currentUser!.uid;
                     return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment:
+                          isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: isMe ? Colors.blueAccent : Colors.grey[300],
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Column(
-                          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          crossAxisAlignment: isMe
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
                           children: [
-                            if (message.text != null) Text(
-                              message.text!,
-                              style: TextStyle(color: isMe ? Colors.white : Colors.black),
-                            ),
-                            if (message.mediaUrl != null) Image.network(
-                              message.mediaUrl!,
-                              width: 150,
-                              height: 150,
-                              fit: BoxFit.cover,
-                            ),
+                            if (message.text != null)
+                              Text(
+                                message.text!,
+                                style: TextStyle(
+                                    color: isMe ? Colors.white : Colors.black),
+                              ),
+                            if (message.mediaUrl != null)
+                              Image.network(
+                                message.mediaUrl!,
+                                width: 150,
+                                height: 150,
+                                fit: BoxFit.cover,
+                              ),
                             Text(
-                              '${message.timestamp?.toDate().toLocal().hour}:${message.timestamp?.toDate().toLocal().minute}',
-                              style: TextStyle(fontSize: 10, color: isMe ? Colors.white70 : Colors.black54),
+                              '${message.timestamp.toDate().toLocal().hour}:${message.timestamp.toDate().toLocal().minute}',
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color:
+                                      isMe ? Colors.white70 : Colors.black54),
                             ),
-                            if (message.isEphemeral == true) const Text(
-                              'Disappearing message',
-                              style: TextStyle(fontSize: 10, color: Colors.redAccent),
-                            ),
+                            if (message.isEphemeral == true)
+                              const Text(
+                                'Disappearing message',
+                                style: TextStyle(
+                                    fontSize: 10, color: Colors.redAccent),
+                              ),
                           ],
                         ),
                       ),
@@ -262,4 +289,3 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 }
-

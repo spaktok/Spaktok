@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lottie/lottie.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:vibration/vibration.dart';
+import 'package:torch_light/torch_light.dart';
 import 'package:spaktok/services/stream_service.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/widgets/gift_bottom_sheet.dart';
@@ -31,6 +35,12 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
   final TextEditingController _messageController = TextEditingController();
 
   late RtcEngine _engine;
+  // Gift effect controllers
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _showLottie = false;
+  String? _lottieAsset;
+  bool _torchOn = false;
+  bool _isHandlingSpecialGift = false;
   bool _localUserJoined = false;
   bool _isMuted = false;
   bool _isCameraOff = false;
@@ -46,6 +56,16 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
     if (!widget.isHost) {
       _streamService.joinStream(widget.streamId);
     }
+    // Listen for incoming messages to trigger gift effects
+    _streamService.getStreamMessages(widget.streamId).listen((snapshot) {
+      for (final doc in snapshot.docChanges) {
+        final data = doc.doc.data() as Map<String, dynamic>?;
+        if (data == null) continue;
+        if (data.containsKey('giftName') && data.containsKey('giftImageUrl')) {
+          _handleIncomingGift(data);
+        }
+      }
+    });
   }
 
   Future<void> _initAgora() async {
@@ -115,8 +135,117 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
     if (!widget.isHost) {
       await _streamService.leaveStream(widget.streamId);
     }
+    // cleanup audio and torch
+    try {
+      await _audioPlayer.stop();
+    } catch (_) {}
+    if (_torchOn) {
+      try {
+        await TorchLight.disableTorch();
+      } catch (_) {}
+    }
     await _engine.leaveChannel();
     await _engine.release();
+  }
+
+  Future<void> _handleIncomingGift(Map<String, dynamic> data) async {
+    final giftName = data['giftName'] as String? ?? '';
+
+    // Play gift sound (map giftName -> asset)
+    try {
+      final soundAsset = _soundForGift(giftName);
+      if (soundAsset != null) {
+        await _audioPlayer.play(AssetSource(soundAsset));
+      }
+    } catch (e) {
+      debugPrint('Error playing gift sound: $e');
+    }
+
+    // Trigger a small vibration for everyone
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 400);
+      }
+    } catch (e) {
+      debugPrint('Vibration error: $e');
+    }
+
+    // Special handling for Nuclear Explosion gift
+    if (giftName.toLowerCase().contains('nuke') || giftName.toLowerCase().contains('nuclear') || giftName.contains('انفجار')) {
+      if (_isHandlingSpecialGift) return;
+      _isHandlingSpecialGift = true;
+
+      // Turn on torch if available
+      try {
+        await TorchLight.enableTorch();
+        _torchOn = true;
+        setState(() {});
+      } catch (e) {
+        debugPrint('Torch error: $e');
+      }
+
+      // Show large Lottie explosion animation
+      setState(() {
+        _lottieAsset = 'assets/animations/nuclear_explosion.json';
+        _showLottie = true;
+      });
+
+      // Keep animation for 3 seconds then cleanup
+      await Future.delayed(const Duration(seconds: 3));
+
+      setState(() {
+        _showLottie = false;
+      });
+
+      // turn off torch
+      try {
+        await TorchLight.disableTorch();
+        _torchOn = false;
+        setState(() {});
+      } catch (e) {
+        debugPrint('Torch disable error: $e');
+      }
+
+      _isHandlingSpecialGift = false;
+    } else {
+      // For other gifts show small Lottie briefly
+      final asset = _lottieForGift(giftName);
+      if (asset != null) {
+        setState(() {
+          _lottieAsset = asset;
+          _showLottie = true;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+        setState(() {
+          _showLottie = false;
+        });
+      }
+    }
+  }
+
+  String? _soundForGift(String giftName) {
+    final name = giftName.toLowerCase();
+    if (name.contains('rose') || name.contains('وردة')) return 'sounds/rose.mp3';
+    if (name.contains('car') || name.contains('سيارة')) return 'sounds/car.mp3';
+    if (name.contains('mansion') || name.contains('قصر') || name.contains('منزل')) return 'sounds/mansion.mp3';
+    if (name.contains('heart') || name.contains('قلب')) return 'sounds/heart.mp3';
+    if (name.contains('crown') || name.contains('تاج')) return 'sounds/crown.mp3';
+    if (name.contains('money') || name.contains('مال') || name.contains('أموال')) return 'sounds/money.mp3';
+    if (name.contains('party') || name.contains('احتفال')) return 'sounds/party.mp3';
+    if (name.contains('nuke') || name.contains('nuclear') || name.contains('انفجار')) return 'sounds/nuke.mp3';
+    return null;
+  }
+
+  String? _lottieForGift(String giftName) {
+    final name = giftName.toLowerCase();
+    if (name.contains('rose') || name.contains('وردة')) return 'assets/animations/rose.json';
+    if (name.contains('car') || name.contains('سيارة')) return 'assets/animations/car.json';
+    if (name.contains('mansion') || name.contains('قصر') || name.contains('منزل')) return 'assets/animations/mansion.json';
+    if (name.contains('heart') || name.contains('قلب')) return 'assets/animations/heart.json';
+    if (name.contains('crown') || name.contains('تاج')) return 'assets/animations/crown.json';
+    if (name.contains('money') || name.contains('مال') || name.contains('أموال')) return 'assets/animations/money.json';
+    if (name.contains('party') || name.contains('احتفال')) return 'assets/animations/party.json';
+    return null;
   }
 
   Future<void> _toggleMute() async {

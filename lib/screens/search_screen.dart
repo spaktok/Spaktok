@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -141,7 +141,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       children: [
         if (_selectedFilter == 'All' || _selectedFilter == 'Users') ...[
           _buildSectionHeader(context, 'Users'),
-          ..._suggestedUsers.map((user) => _buildUserItem(context, user)).toList(),
+          ..._suggestedUsers.map((user) => _buildUserItem(context, user)),
         ],
         if (_selectedFilter == 'All' || _selectedFilter == 'Videos') ...[
           const SizedBox(height: 20),
@@ -151,7 +151,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         if (_selectedFilter == 'All' || _selectedFilter == 'Hashtags') ...[
           const SizedBox(height: 20),
           _buildSectionHeader(context, 'Hashtags'),
-          ..._trendingHashtags.map((tag) => _buildHashtagItem(context, tag)).toList(),
+          ..._trendingHashtags.map((tag) => _buildHashtagItem(context, tag)),
         ],
       ],
     );
@@ -167,7 +167,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         const SizedBox(height: 30),
         _buildSectionHeader(context, 'Suggested Users'),
         const SizedBox(height: 10),
-        ..._suggestedUsers.map((user) => _buildUserItem(context, user)).toList(),
+        ..._suggestedUsers.map((user) => _buildUserItem(context, user)),
         const SizedBox(height: 30),
         _buildSectionHeader(context, 'Popular Videos'),
         const SizedBox(height: 10),

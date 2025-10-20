@@ -43,7 +43,7 @@ class ReelService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Reel.fromJson(doc.data() as Map<String, dynamic>))
+            .map((doc) => Reel.fromJson(doc.data()))
             .toList());
   }
 

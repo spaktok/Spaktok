@@ -1,11 +1,8 @@
-
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:spaktok/services/auth_service.dart';
 
-enum LocationPrivacy {
-  off, friends, selectedFriends, live
-}
+enum LocationPrivacy { off, friends, selectedFriends, live }
 
 class LocationService {
   static LocationService? _instance;
@@ -108,4 +105,3 @@ class LocationService {
     return Stream.value([]);
   }
 }
-

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/challenge_service.dart';
 
 class ChallengesScreen extends StatefulWidget {
-  const ChallengesScreen({Key? key}) : super(key: key);
+  const ChallengesScreen({super.key});
 
   @override
   State<ChallengesScreen> createState() => _ChallengesScreenState();

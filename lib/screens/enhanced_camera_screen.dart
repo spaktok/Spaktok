@@ -6,7 +6,7 @@ import 'package:spaktok/screens/filters_screen.dart';
 
 
 class EnhancedCameraScreen extends StatefulWidget {
-  const EnhancedCameraScreen({Key? key}) : super(key: key);
+  const EnhancedCameraScreen({super.key});
 
   @override
   State<EnhancedCameraScreen> createState() => _EnhancedCameraScreenState();

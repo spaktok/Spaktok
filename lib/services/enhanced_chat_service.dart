@@ -93,7 +93,7 @@ class EnhancedChatService {
   Future<String?> uploadChatMedia(String filePath, String userId) async {
     try {
       File file = File(filePath);
-      String fileName = 'chat_media/${userId}/${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+      String fileName = 'chat_media/$userId/${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
       UploadTask uploadTask = _storage.ref().child(fileName).putFile(file);
       TaskSnapshot snapshot = await uploadTask;
       return await snapshot.ref.getDownloadURL();

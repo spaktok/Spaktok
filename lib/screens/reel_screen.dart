@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 
 class ReelScreen extends StatefulWidget {
-  const ReelScreen({Key? key}) : super(key: key);
+  const ReelScreen({super.key});
 
   @override
   State<ReelScreen> createState() => _ReelScreenState();

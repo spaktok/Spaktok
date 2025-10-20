@@ -1,16 +1,17 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
 class AdminPremiumAccountsScreen extends StatefulWidget {
-  const AdminPremiumAccountsScreen({Key? key}) : super(key: key);
+  const AdminPremiumAccountsScreen({super.key});
 
   @override
-  State<AdminPremiumAccountsScreen> createState() => _AdminPremiumAccountsScreenState();
+  State<AdminPremiumAccountsScreen> createState() =>
+      _AdminPremiumAccountsScreenState();
 }
 
-class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen> {
+class _AdminPremiumAccountsScreenState
+    extends State<AdminPremiumAccountsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late final HttpsCallable _managePremiumAccount;
   late final HttpsCallable _initializePremiumSettings;
@@ -18,8 +19,10 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
   @override
   void initState() {
     super.initState();
-    _managePremiumAccount = FirebaseFunctions.instance.httpsCallable('managePremiumAccount');
-    _initializePremiumSettings = FirebaseFunctions.instance.httpsCallable('initializePremiumSettings');
+    _managePremiumAccount =
+        FirebaseFunctions.instance.httpsCallable('managePremiumAccount');
+    _initializePremiumSettings =
+        FirebaseFunctions.instance.httpsCallable('initializePremiumSettings');
     _loadData();
   }
 
@@ -33,22 +36,28 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
     });
     try {
       // Load premium settings
-      final settingsDoc = await _firestore.collection('settings').doc('premium_settings').get();
+      final settingsDoc =
+          await _firestore.collection('settings').doc('premium_settings').get();
       if (settingsDoc.exists) {
         _premiumSettings = settingsDoc.data()!;
       } else {
         // Initialize settings if they don't exist
         await _initializePremiumSettings.call();
-        final newSettingsDoc = await _firestore.collection('settings').doc('premium_settings').get();
+        final newSettingsDoc = await _firestore
+            .collection('settings')
+            .doc('premium_settings')
+            .get();
         _premiumSettings = newSettingsDoc.data()!;
       }
 
       // Load users
       final usersSnapshot = await _firestore.collection('users').get();
-      _users = usersSnapshot.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data(),
-      }).toList();
+      _users = usersSnapshot.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+          .toList();
     } catch (e) {
       print('Error loading data: $e');
       // Handle error
@@ -90,7 +99,7 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Manage Premium Accounts')),
+        appBar: AppBar(title: Text('Manage Premium Accounts')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -99,7 +108,8 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
     final Map<String, String> occupiedSlots = {};
 
     if (_premiumSettings['premiumSlots'] != null) {
-      (_premiumSettings['premiumSlots'] as Map<String, dynamic>).forEach((slotId, userId) {
+      (_premiumSettings['premiumSlots'] as Map<String, dynamic>)
+          .forEach((slotId, userId) {
         if (userId == null) {
           availableSlots.add(slotId);
         } else {
@@ -119,7 +129,10 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
             padding: const EdgeInsets.all(8.0),
             child: Text(
               'Available Premium Slots: ${availableSlots.length} / ${_premiumSettings['maxPremiumSlots'] ?? 20}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
           ),
           Expanded(
@@ -132,24 +145,35 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
 
                 return Card(
                   color: Colors.grey[900],
-                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   child: ListTile(
-                    title: Text(user['displayName'] ?? user['username'] ?? user['email'], style: const TextStyle(color: Colors.white)),
-                    subtitle: Text('ID: ${user['id']}\nPremium: ${isPremium ? 'Yes' : 'No'}${isPremium && currentSlot != null ? ' (Slot: $currentSlot)' : ''}', style: TextStyle(color: Colors.grey[400])),
+                    title: Text(
+                        user['displayName'] ??
+                            user['username'] ??
+                            user['email'],
+                        style: const TextStyle(color: Colors.white)),
+                    subtitle: Text(
+                        'ID: ${user['id']}\nPremium: ${isPremium ? 'Yes' : 'No'}${isPremium && currentSlot != null ? ' (Slot: $currentSlot)' : ''}',
+                        style: TextStyle(color: Colors.grey[400])),
                     trailing: isPremium
                         ? ElevatedButton(
                             onPressed: () => _unassignPremium(user['id']),
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent),
                             child: const Text('Unassign Premium'),
                           )
                         : (availableSlots.isNotEmpty
                             ? DropdownButton<String>(
-                                hint: const Text('Assign Slot', style: TextStyle(color: Colors.white)),
+                                hint: const Text('Assign Slot',
+                                    style: TextStyle(color: Colors.white)),
                                 value: null,
                                 items: availableSlots.map((slot) {
                                   return DropdownMenuItem<String>(
                                     value: slot,
-                                    child: Text(slot, style: const TextStyle(color: Colors.black)),
+                                    child: Text(slot,
+                                        style: const TextStyle(
+                                            color: Colors.black)),
                                   );
                                 }).toList(),
                                 onChanged: (slot) {
@@ -158,7 +182,8 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
                                   }
                                 },
                               )
-                            : const Text('No Slots Available', style: TextStyle(color: Colors.grey))),
+                            : const Text('No Slots Available',
+                                style: TextStyle(color: Colors.grey))),
                   ),
                 );
               },
@@ -169,4 +194,3 @@ class _AdminPremiumAccountsScreenState extends State<AdminPremiumAccountsScreen>
     );
   }
 }
-

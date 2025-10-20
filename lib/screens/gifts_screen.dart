@@ -6,7 +6,7 @@ import 'package:spaktok/services/gift_service.dart';
 class GiftsScreen extends StatefulWidget {
   final String? receiverId;
 
-  const GiftsScreen({Key? key, this.receiverId}) : super(key: key);
+  const GiftsScreen({super.key, this.receiverId});
 
   @override
   State<GiftsScreen> createState() => _GiftsScreenState();

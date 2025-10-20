@@ -15,7 +15,7 @@ import 'package:spaktok/screens/admin_premium_accounts_screen.dart';
 import 'package:spaktok/screens/friend_list_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({Key? key}) : super(key: key);
+  const MainNavigationScreen({super.key});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();

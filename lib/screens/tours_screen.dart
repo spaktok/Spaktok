@@ -3,7 +3,7 @@ import 'package:spaktok/services/tours_service.dart';
 
 
 class ToursScreen extends StatefulWidget {
-  const ToursScreen({Key? key}) : super(key: key);
+  const ToursScreen({super.key});
 
   @override
   State<ToursScreen> createState() => _ToursScreenState();

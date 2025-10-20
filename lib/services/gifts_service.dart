@@ -306,7 +306,7 @@ class GiftsService {
 
       int total = 0;
       for (var doc in gifts.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         total += (data['giftCost'] as int?) ?? 0;
       }
 
@@ -332,7 +332,7 @@ class GiftsService {
 
       int total = 0;
       for (var doc in gifts.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         total += (data['giftCost'] as int?) ?? 0;
       }
 
