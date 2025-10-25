@@ -137,5 +137,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-**Author**: Manus AI
-**Date**: Oct 02, 2025
+**Author**: M
