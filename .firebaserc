@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "spaktok-e7866"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

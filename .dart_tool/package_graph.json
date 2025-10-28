@@ -32,7 +32,8 @@
         "shared_preferences",
         "torch_light",
         "vibration",
-        "video_player"
+        "video_player",
+        "visibility_detector"
       ],
       "devDependencies": [
         "flutter_lints",
@@ -79,6 +80,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "visibility_detector",
+      "version": "0.4.0+2",
+      "dependencies": [
+        "flutter"
       ]
     },
     {
