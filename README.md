@@ -32,29 +32,15 @@ Spaktok is a modern, feature-rich social media application built with Flutter, o
 
 The primary goal of this project is to develop and implement all features for the Spaktok application, complete Firebase, Agora, and Stripe configurations, and finalize documentation. Android SDK setup has been temporarily deferred.
 
-## Current Status
+## Project Status
 
-### Implemented Features
+This project is under active development. The architecture is complex and contains numerous features and systems.
 
-The following features have been implemented and integrated into the application:
+For a detailed and authoritative overview of the project's architecture, feature list, and the implementation status of each system, please refer to the following document:
 
-*   **AR Shopping**: E-commerce integration with Augmented Reality (AR) product try-on capabilities.
-*   **Snap Map**: Location-based map integration for user interaction and content discovery.
-*   **Mini-apps**: A framework for integrating in-chat games and small applications.
-*   **AI Translation**: Automatic translation for comments and messages to facilitate global communication.
-*   **Group Calls**: Multi-participant voice and video call functionality, powered by Agora.
-*   **Creator Payouts**: A system for managing creator earnings and facilitating payouts.
+**[Backend Implementation Summary V2](BACKEND_IMPLEMENTATION_SUMMARY_V2.md)**
 
-### Configurations
-
-*   **Firebase**: Configured for Web, Android, and iOS platforms. This includes Firebase Authentication, Firestore, and other related services. (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist` are present).
-*   **Agora**: Integrated for real-time communication, specifically for live streaming and group calls. The Agora App ID (`a41807bba5c144b5b8e1fd5ee711707b`) and a temporary token have been set in `lib/screens/live_stream_screen.dart`.
-*   **Stripe**: Integrated for payment processing, particularly for creator payouts and virtual gifts. The Stripe Secret Key (`sk_test_51SDYFHRumpu3fxskjQggMnl7yLzUENBm41WWH0S8vuRgZj3Quu3C1agEyZyhCpCDT9W1FSLfzQLTKt6842b7UU3s00dPzlzgxd`) has been configured as an environment variable in `backend/.env`.
-
-### Known Issues
-
-*   **Android SDK Setup**: The Android SDK setup is currently deferred due to persistent configuration issues. This will be addressed in a later phase, potentially in a different environment.
-*   **AppLocalizations**: All direct references to `AppLocalizations` have been removed from the project to resolve compilation errors. This means the application currently lacks internationalization support. This will need to be re-implemented or properly configured if multi-language support is desired.
+This summary serves as the single source of truth for the project's progress.
 
 ## 🚀 Getting Started
 

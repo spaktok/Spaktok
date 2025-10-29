@@ -7,12 +7,12 @@ class StoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // رفع قصة جديدة (صورة أو فيديو)
+  // Upload a new story (image or video)
   Future<void> uploadStory({
     required String userId,
     required File mediaFile,
     required String mediaType,
-    required int duration, // مدة القصة بالثواني
+    required int duration, // Story duration in seconds
   }) async {
     try {
       final String storyId = _firestore.collection('stories').doc().id;
@@ -38,35 +38,35 @@ class StoryService {
     }
   }
 
-  // جلب قصص المستخدمين (يمكن تصفيتها لاحقًا للقصص الحديثة فقط)
-  Stream<List<Story>> getUserStories(String userId) {
+  // Get stories grouped by user for the main story feed
+  Stream<Map<String, List<Story>>> getGroupedStories() {
+    // Fetch stories from the last 24 hours
+    final twentyFourHoursAgo = Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 24)));
+
     return _firestore
         .collection('stories')
-        .where('userId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
+        .where('timestamp', isGreaterThan: twentyFourHoursAgo)
+        .orderBy('timestamp', descending: false) // Fetch in chronological order
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Story.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) {
+      final Map<String, List<Story>> grouped = {};
+      for (var doc in snapshot.docs) {
+        final story = Story.fromJson(doc.data());
+        if (grouped.containsKey(story.userId)) {
+          grouped[story.userId]!.add(story);
+        } else {
+          grouped[story.userId] = [story];
+        }
+      }
+      return grouped;
+    });
   }
 
-  // جلب جميع القصص (لصفحة القصص الرئيسية)
-  Stream<List<Story>> getAllStories() {
-    // يمكن إضافة منطق لتصفية القصص المنتهية الصلاحية هنا
-    return _firestore
-        .collection('stories')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Story.fromJson(doc.data()))
-            .toList());
-  }
-
-  // حذف قصة
+  // Delete a story
   Future<void> deleteStory(String storyId) async {
     try {
+      // You might want to get the story data first to delete the file from storage
       await _firestore.collection('stories').doc(storyId).delete();
-      // يمكن إضافة منطق لحذف الملف من Firebase Storage هنا أيضًا
       print('Story deleted successfully: $storyId');
     } catch (e) {
       print('Error deleting story: $e');
@@ -74,4 +74,3 @@ class StoryService {
     }
   }
 }
-

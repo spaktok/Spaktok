@@ -1,8 +1,92 @@
 {
+    "version": "0.2.0",
     "configurations": [
-        
         {
-            "name": "Containers: Python - Django",
+            "name": "Flutter: Web",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "-d",
+                "chrome"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Flutter: Android",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "-d",
+                "android"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Flutter: iOS",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "-d",
+                "ios"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Node.js Backend",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/server.js",
+            "restart": true,
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "cwd": "${workspaceFolder}/backend"
+        },
+        {
+            "name": "Backend: Debug",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/server.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "cwd": "${workspaceFolder}/backend"
+        },
+        {
+            "name": "Flutter Tests",
+            "type": "dart",
+            "request": "launch",
+            "program": "test/widget_test.dart",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Docker: Backend",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-build-backend",
+            "platform": "node",
+            "node": {
+                "useDocker": true,
+                "pathMapping": {
+                    "${workspaceFolder}/backend": "/app"
+                },
+                "inspectPort": 9229
+            }
+        },
+        {
+            "name": "Docker: Python Django",
             "type": "docker",
             "request": "launch",
             "preLaunchTask": "docker-run: debug",
@@ -15,6 +99,23 @@
                 ],
                 "projectType": "django"
             }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack (Backend + Web)",
+            "configurations": [
+                "Node.js Backend",
+                "Flutter: Web"
+            ]
+        },
+        {
+            "name": "Full Stack with Tests",
+            "configurations": [
+                "Node.js Backend",
+                "Flutter: Web",
+                "Flutter Tests"
+            ]
         }
     ]
 }

@@ -1,75 +1,79 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/wallet.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:spaktok/models/coin_package.dart';
+import 'package:spaktok/config/app_config.dart';
 
 class PaymentService {
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
-  // Fetch user's wallet data
-  Stream<Wallet> getUserWallet(String userId) {
-    return _firestore.collection('users').doc(userId).snapshots().map((snapshot) {
+  PaymentService() {
+    Stripe.publishableKey = AppConfig.stripePublishableKey;
+  }
+
+  /// Get coin packages from Firestore
+  Stream<List<CoinPackage>> getCoinPackages() {
+    return _firestore
+        .collection('coinPackages')
+        .orderBy('price', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => CoinPackage.fromFirestore(doc))
+            .toList());
+  }
+
+  /// Get user's coin balance stream
+  Stream<int> getCoinBalanceStream(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .map((snapshot) {
       if (snapshot.exists) {
-        return Wallet.fromFirestore(snapshot);
-      } else {
-        // Return a default wallet if user document doesn't exist yet
-        return Wallet(userId: userId);
+        return (snapshot.data() as Map<String, dynamic>)['coins'] ?? 0;
       }
+      return 0;
     });
   }
 
-  // Call Cloud Function to purchase coins
-  Future<Map<String, dynamic>> purchaseCoins(double amount, String paymentMethodToken) async {
+  /// Initiate and process a coin purchase
+  Future<void> purchaseCoins(CoinPackage package, String userId) async {
     try {
-      final HttpsCallable callable = _functions.httpsCallable('purchaseCoins');
-      final result = await callable.call<Map<String, dynamic>>({
-        'amount': amount,
-        'paymentMethodToken': paymentMethodToken,
+      // 1. Create a payment intent on the server
+      final callable = _functions.httpsCallable('createPaymentIntent');
+      final response = await callable.call<Map<String, dynamic>>({
+        'amount': (package.price * 100).toInt(), // Stripe expects amount in cents
+        'currency': 'usd',
+        'userId': userId,
+        'packageId': package.id,
       });
-      return result.data;
-    } on FirebaseFunctionsException catch (e) {
-      print('FirebaseFunctionsException: ${e.code} - ${e.message}');
-      throw Exception(e.message);
-    } catch (e) {
-      print('Error purchasing coins: $e');
-      throw Exception('Failed to purchase coins.');
-    }
-  }
 
-  // Call Cloud Function to request a payout
-  Future<Map<String, dynamic>> requestPayout(double amount, String payoutMethod, Map<String, dynamic> payoutDetails) async {
-    try {
-      final HttpsCallable callable = _functions.httpsCallable('requestPayout');
-      final result = await callable.call<Map<String, dynamic>>({
-        'amount': amount,
-        'payoutMethod': payoutMethod,
-        'payoutDetails': payoutDetails,
-      });
-      return result.data;
-    } on FirebaseFunctionsException catch (e) {
-      print('FirebaseFunctionsException: ${e.code} - ${e.message}');
-      throw Exception(e.message);
-    } catch (e) {
-      print('Error requesting payout: $e');
-      throw Exception('Failed to request payout.');
-    }
-  }
+      final clientSecret = response.data['clientSecret'];
+      if (clientSecret == null) {
+        throw Exception('Failed to create payment intent.');
+      }
 
-  // Call Cloud Function for administrators to process a payout (approve/reject)
-  Future<Map<String, dynamic>> processPayout(String requestId, String action) async {
-    try {
-      final HttpsCallable callable = _functions.httpsCallable('processPayout');
-      final result = await callable.call<Map<String, dynamic>>({
-        'requestId': requestId,
-        'action': action,
-      });
-      return result.data;
-    } on FirebaseFunctionsException catch (e) {
-      print('FirebaseFunctionsException: ${e.code} - ${e.message}');
-      throw Exception(e.message);
+      // 2. Initialize the payment sheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'Spaktok',
+        ),
+      );
+
+      // 3. Present the payment sheet
+      await Stripe.instance.presentPaymentSheet();
+
+      // At this point, a webhook on your server should handle the successful 
+      // payment and credit the coins to the user's account.
+
+    } on StripeException catch (e) {
+      if (e.error.code != FailureCode.Canceled) {
+        rethrow;
+      }
     } catch (e) {
-      print('Error processing payout: $e');
-      throw Exception('Failed to process payout.');
+      rethrow;
     }
   }
 }

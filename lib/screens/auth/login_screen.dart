@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/screens/auth/signup_screen.dart';
 import 'package:spaktok/screens/auth/forgot_password_screen.dart';
 import 'package:spaktok/screens/main_navigation_screen.dart';
+import 'package:spaktok/widgets/social_login_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -67,6 +69,39 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleSocialLogin(Future<void> Function() loginMethod) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await loginMethod();
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const MainNavigationScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,13 +116,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo
-                  Icon(
+                  const Icon(
                     Icons.video_library_rounded,
                     size: 80,
-                    color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // App Name
                   Text(
                     'Spaktok',
@@ -97,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  
+
                   Text(
                     'Welcome back!',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -106,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
-                  
+
                   // Email Field
                   TextFormField(
                     controller: _emailController,
@@ -130,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Password Field
                   TextFormField(
                     controller: _passwordController,
@@ -166,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Forgot Password
                   Align(
                     alignment: Alignment.centerRight,
@@ -182,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Login Button
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
@@ -204,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Sign Up Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -221,6 +255,45 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text('Sign Up'),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Divider
+                  const Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text('OR'),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Social Logins
+                  SocialLoginButton(
+                    icon: FontAwesomeIcons.google,
+                    text: 'Continue with Google',
+                    onPressed: () => _handleSocialLogin(_authService.signInWithGoogle),
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                  ),
+                  const SizedBox(height: 12),
+                  SocialLoginButton(
+                    icon: FontAwesomeIcons.snapchat,
+                    text: 'Continue with Snapchat',
+                    onPressed: () => _handleSocialLogin(_authService.signInWithFacebook), // Using Facebook for now
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                  ),
+                  const SizedBox(height: 12),
+                  SocialLoginButton(
+                    icon: FontAwesomeIcons.tiktok,
+                    text: 'Continue with TikTok',
+                    onPressed: () => _handleSocialLogin(_authService.signInWithFacebook), // Using Facebook for now
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
                   ),
                 ],
               ),

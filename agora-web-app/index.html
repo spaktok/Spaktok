@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora Web App - Stories, Calls, Chat, Live Tours</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Agora Web App</h1>
+        <nav>
+            <button id="stories-btn">Stories & Filters</button>
+            <button id="calls-btn">Video/Voice Calls</button>
+            <button id="chat-btn">Chat</button>
+            <button id="live-btn">Live Tours</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="stories-section" class="section">
+            <h2>Stories & Filters</h2>
+            <video id="story-video" autoplay muted></video>
+            <canvas id="story-canvas"></canvas>
+            <button id="capture-btn">Capture Story</button>
+            <button id="filter-btn">Apply Filter</button>
+            <div id="filters">
+                <button class="filter" data-filter="none">None</button>
+                <button class="filter" data-filter="sepia">Sepia</button>
+                <button class="filter" data-filter="grayscale">Grayscale</button>
+                <button class="filter" data-filter="blur">Blur</button>
+            </div>
+        </section>
+
+        <section id="calls-section" class="section hidden">
+            <h2>Video/Voice Calls</h2>
+            <div id="call-controls">
+                <input type="text" id="channel-name" placeholder="Channel Name">
+                <button id="join-call-btn">Join Call</button>
+                <button id="leave-call-btn" disabled>Leave Call</button>
+                <button id="mute-audio-btn">Mute Audio</button>
+                <button id="mute-video-btn">Mute Video</button>
+            </div>
+            <div id="video-container">
+                <div id="local-player"></div>
+                <div id="remote-player"></div>
+            </div>
+        </section>
+
+        <section id="chat-section" class="section hidden">
+            <h2>Chat</h2>
+            <div id="chat-controls">
+                <input type="text" id="chat-channel-name" placeholder="Channel Name">
+                <button id="join-chat-btn">Join Chat</button>
+                <button id="leave-chat-btn" disabled>Leave Chat</button>
+            </div>
+            <div id="chat-messages"></div>
+            <div id="chat-input">
+                <input type="text" id="message-input" placeholder="Type a message">
+                <button id="send-btn">Send</button>
+            </div>
+        </section>
+
+        <section id="live-section" class="section hidden">
+            <h2>Live Tours</h2>
+            <div id="live-controls">
+                <input type="text" id="live-channel-name" placeholder="Channel Name">
+                <button id="start-live-btn">Start Live Stream</button>
+                <button id="stop-live-btn" disabled>Stop Live Stream</button>
+            </div>
+            <div id="live-container">
+                <div id="live-local-player"></div>
+                <div id="live-remote-player"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <script src="https://cdn.agora.io/sdk/release/AgoraRTM_N.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,316 +1,84 @@
 import 'package:flutter/material.dart';
 
 class ThemeConfig {
-  static const Color primaryColor = Color(0xFF6C63FF);
-  static const Color secondaryColor = Color(0xFF03DAC6);
-  static const Color accentColor = Color(0xFFFF6B6B);
-  static const Color backgroundColor = Color(0xFF121212);
-  static const Color surfaceColor = Color(0xFF1E1E1E);
-  static const Color errorColor = Color(0xFFCF6679);
-  
-  // Gradient colors
-  static const List<Color> primaryGradient = [
-    Color(0xFF6C63FF),
-    Color(0xFF9C88FF),
-  ];
-  
-  static const List<Color> secondaryGradient = [
-    Color(0xFF03DAC6),
-    Color(0xFF00BCD4),
-  ];
-  
-  static const List<Color> accentGradient = [
-    Color(0xFFFF6B6B),
-    Color(0xFFFF8E53),
-  ];
-  
-  static const List<Color> darkGradient = [
-    Color(0xFF121212),
-    Color(0xFF1E1E1E),
-  ];
+  // Define the new color palette
+  static const Color vantablack = Color(0xFF000000);
+  static const Color pureWhite = Color(0xFFFFFFFF);
+  static const Color electricBlue = Color(0xFF0052D4);
 
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      primaryColor: primaryColor,
-      colorScheme: const ColorScheme.dark(
-        primary: primaryColor,
-        secondary: secondaryColor,
-        tertiary: accentColor,
-        surface: surfaceColor,
-        error: errorColor,
-        onPrimary: Colors.white,
-        onSecondary: Colors.black,
-        onSurface: Colors.white,
-        onError: Colors.white,
-      ),
-      scaffoldBackgroundColor: backgroundColor,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.transparent,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
-      cardTheme: const CardThemeData(
-        color: ThemeConfig.surfaceColor,
-        elevation: 8,
-        shadowColor: Colors.black38,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 8,
-          shadowColor: primaryColor.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 12,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        hintStyle: TextStyle(color: Colors.grey[400]),
-        labelStyle: const TextStyle(color: primaryColor),
-      ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          color: Colors.white,
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-        ),
-        displayMedium: TextStyle(
-          color: Colors.white,
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-        ),
-        displaySmall: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineLarge: TextStyle(
-          color: Colors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineMedium: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineSmall: TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-        titleLarge: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-        titleMedium: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        titleSmall: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyLarge: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
-        bodyMedium: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-        ),
-        bodySmall: TextStyle(
-          color: Colors.grey,
-          fontSize: 12,
-        ),
-      ),
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 24,
-      ),
-      dividerTheme: DividerThemeData(
-        color: Colors.grey[800],
-        thickness: 1,
-      ),
-      chipTheme: ChipThemeData(
-        backgroundColor: surfaceColor,
-        selectedColor: primaryColor,
-        labelStyle: const TextStyle(color: Colors.white),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-    );
-  }
+  // The main dark theme for the app
+  static final ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: electricBlue,
+    scaffoldBackgroundColor: vantablack, // Vantablack background
+    colorScheme: const ColorScheme.dark(
+      primary: electricBlue,      // For buttons, FABs, etc.
+      secondary: electricBlue,    // For other interactive elements
+      background: vantablack,     // Background
+      surface: vantablack,        // Surface of cards, dialogs
+      onPrimary: pureWhite,       // Text on primary color
+      onSecondary: pureWhite,     // Text on secondary color
+      onBackground: pureWhite,    // Main text color
+      onSurface: pureWhite,       // Text on cards
+    ),
 
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      primaryColor: primaryColor,
-      colorScheme: const ColorScheme.light(
-        primary: primaryColor,
-        secondary: secondaryColor,
-        tertiary: accentColor,
-        surface: Color(0xFFF5F5F5),
-        error: errorColor,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: Colors.black,
-        onError: Colors.white,
+    // App Bar Theme
+    appBarTheme: const AppBarTheme(
+      backgroundColor: vantablack, // Black app bars
+      elevation: 0, // No shadow for a modern look
+      iconTheme: IconThemeData(color: pureWhite),
+      titleTextStyle: TextStyle(color: pureWhite, fontSize: 20, fontWeight: FontWeight.bold),
+    ),
+
+    // Bottom Navigation Bar Theme
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: vantablack,
+      selectedItemColor: electricBlue,
+      unselectedItemColor: Colors.grey[600],
+    ),
+
+    // Text Theme
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: pureWhite),
+      bodyMedium: TextStyle(color: pureWhite),
+      titleLarge: TextStyle(color: pureWhite, fontWeight: FontWeight.bold),
+      headlineSmall: TextStyle(color: pureWhite, fontWeight: FontWeight.bold),
+    ),
+
+    // Icon Theme
+    iconTheme: const IconThemeData(
+      color: pureWhite,
+    ),
+
+    // Elevated Button Theme
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: electricBlue, // Blue buttons
+        foregroundColor: pureWhite,      // White text on buttons
       ),
-      scaffoldBackgroundColor: Colors.white,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Colors.black,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(color: Colors.black),
-      ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-      ),
-      cardTheme: const CardThemeData(
-        color: Colors.white,
-        elevation: 4,
-        shadowColor: Colors.black12,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shadowColor: primaryColor.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 8,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: const Color(0xFFF5F5F5),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        hintStyle: TextStyle(color: Colors.grey[600]),
-        labelStyle: const TextStyle(color: primaryColor),
-      ),
-    );
-  }
+    ),
+  );
 
-  // Custom gradients
-  static LinearGradient get primaryGradientLinear {
-    return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: primaryGradient,
-    );
-  }
-
-  static LinearGradient get secondaryGradientLinear {
-    return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: secondaryGradient,
-    );
-  }
-
-  static LinearGradient get accentGradientLinear {
-    return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: accentGradient,
-    );
-  }
-
-  static LinearGradient get darkGradientLinear {
-    return const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: darkGradient,
-    );
-  }
-
-  // Animation durations
-  static const Duration fastAnimation = Duration(milliseconds: 200);
-  static const Duration normalAnimation = Duration(milliseconds: 300);
-  static const Duration slowAnimation = Duration(milliseconds: 500);
-
-  // Border radius
-  static const double smallRadius = 8.0;
-  static const double mediumRadius = 12.0;
-  static const double largeRadius = 16.0;
-  static const double extraLargeRadius = 24.0;
-
-  // Spacing
-  static const double smallSpacing = 8.0;
-  static const double mediumSpacing = 16.0;
-  static const double largeSpacing = 24.0;
-  static const double extraLargeSpacing = 32.0;
-
-  // Elevation
-  static const double lowElevation = 2.0;
-  static const double mediumElevation = 4.0;
-  static const double highElevation = 8.0;
-  static const double extraHighElevation = 16.0;
+  // A consistent light theme (not currently used but good practice)
+  static final ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    primaryColor: electricBlue,
+    scaffoldBackgroundColor: pureWhite,
+    colorScheme: const ColorScheme.light(
+      primary: electricBlue,
+      secondary: electricBlue,
+      background: pureWhite,
+      surface: pureWhite,
+      onPrimary: pureWhite,
+      onSecondary: vantablack,
+      onBackground: vantablack,
+      onSurface: vantablack,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: pureWhite,
+      elevation: 0,
+      iconTheme: IconThemeData(color: vantablack),
+      titleTextStyle: TextStyle(color: vantablack, fontSize: 20, fontWeight: FontWeight.bold),
+    ),
+  );
 }

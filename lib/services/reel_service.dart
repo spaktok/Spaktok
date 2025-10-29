@@ -12,8 +12,8 @@ class ReelService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // رفع Reel جديد
-  Future<void> uploadReel({
+  // ... (other methods remain the same)
+    Future<void> uploadReel({
     required String userId,
     required File videoFile,
     String description = '',
@@ -92,7 +92,57 @@ class ReelService {
             snapshot.docs.map((doc) => Reel.fromJson(doc.data())).toList());
   }
 
-  // جلب Reels للصفحة الرئيسية (For You) مع التوصيات
+  // New method to check if a user has liked a reel
+  Future<bool> hasUserLikedReel(String reelId, String userId) async {
+    final DocumentSnapshot likeSnapshot = await _firestore
+        .collection('reels')
+        .doc(reelId)
+        .collection('likes')
+        .doc(userId)
+        .get();
+    return likeSnapshot.exists;
+  }
+
+  // Updated likeReel method for robustness
+  Future<void> likeReel(String reelId, String userId) async {
+    final DocumentReference reelRef = _firestore.collection('reels').doc(reelId);
+    final DocumentReference likeRef = reelRef.collection('likes').doc(userId);
+
+    await _firestore.runTransaction((transaction) async {
+      final DocumentSnapshot likeSnapshot = await transaction.get(likeRef);
+      if (!likeSnapshot.exists) {
+        final DocumentSnapshot reelSnapshot = await transaction.get(reelRef);
+        if (reelSnapshot.exists) {
+          final int currentLikes = (reelSnapshot.data() as Map<String, dynamic>)['likesCount'] ?? 0;
+          transaction.update(reelRef, {'likesCount': currentLikes + 1});
+          transaction.set(likeRef, {'userId': userId, 'timestamp': FieldValue.serverTimestamp()});
+        }
+      }
+    });
+  }
+
+  // Updated unlikeReel method for robustness
+  Future<void> unlikeReel(String reelId, String userId) async {
+    final DocumentReference reelRef = _firestore.collection('reels').doc(reelId);
+    final DocumentReference likeRef = reelRef.collection('likes').doc(userId);
+
+    await _firestore.runTransaction((transaction) async {
+      final DocumentSnapshot likeSnapshot = await transaction.get(likeRef);
+      if (likeSnapshot.exists) {
+        final DocumentSnapshot reelSnapshot = await transaction.get(reelRef);
+        if (reelSnapshot.exists) {
+          final int currentLikes = (reelSnapshot.data() as Map<String, dynamic>)['likesCount'] ?? 0;
+          if (currentLikes > 0) {
+            transaction.update(reelRef, {'likesCount': currentLikes - 1});
+          }
+          transaction.delete(likeRef);
+        }
+      }
+    });
+  }
+
+  // ... (other methods remain the same)
+    // جلب Reels للصفحة الرئيسية (For You) مع التوصيات
   Stream<List<Reel>> getForYouReels(String userId) async* {
     final aiService = AIRecommendationService();
     final recommendedIds =
@@ -272,45 +322,8 @@ class ReelService {
       completionRate: completionRate,
     );
   }
-
-  // إضافة إعجاب لـ Reel
-  Future<void> likeReel(String reelId, String userId) async {
-    final DocumentReference reelRef =
-        _firestore.collection('reels').doc(reelId);
-    final DocumentReference likeRef = reelRef.collection('likes').doc(userId);
-
-    await _firestore.runTransaction((transaction) async {
-      final DocumentSnapshot reelSnapshot = await transaction.get(reelRef);
-      if (reelSnapshot.exists) {
-        final int currentLikes =
-            (reelSnapshot.data() as Map<String, dynamic>)['likesCount'] ?? 0;
-        transaction.update(reelRef, {'likesCount': currentLikes + 1});
-        transaction.set(likeRef,
-            {'userId': userId, 'timestamp': FieldValue.serverTimestamp()});
-      }
-    });
-  }
-
-  // إزالة إعجاب من Reel
-  Future<void> unlikeReel(String reelId, String userId) async {
-    final DocumentReference reelRef =
-        _firestore.collection('reels').doc(reelId);
-    final DocumentReference likeRef = reelRef.collection('likes').doc(userId);
-
-    await _firestore.runTransaction((transaction) async {
-      final DocumentSnapshot reelSnapshot = await transaction.get(reelRef);
-      if (reelSnapshot.exists) {
-        final int currentLikes =
-            (reelSnapshot.data() as Map<String, dynamic>)['likesCount'] ?? 0;
-        if (currentLikes > 0) {
-          transaction.update(reelRef, {'likesCount': currentLikes - 1});
-        }
-        transaction.delete(likeRef);
-      }
-    });
-  }
-
-  // إضافة تعليق لـ Reel
+  
+    // إضافة تعليق لـ Reel
   Future<void> addComment(
       String reelId, String userId, String commentText) async {
     final DocumentReference reelRef =
