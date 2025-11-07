@@ -1,6 +1,16 @@
 ﻿import 'package:cloud_functions/cloud_functions.dart';
 
 class AgoraTokenService {
+  // Singleton pattern
+  static final AgoraTokenService _instance = AgoraTokenService._internal();
+  static AgoraTokenService get instance => _instance;
+  
+  AgoraTokenService._internal();
+  
+  factory AgoraTokenService() {
+    return _instance;
+  }
+
   final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   /// Fetch an Agora token from the server (Cloud Function)

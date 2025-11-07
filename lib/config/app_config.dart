@@ -1,10 +1,22 @@
 ﻿class AppConfig {
-  // Agora Configuration
-  static const String agoraAppId = '007eJxTYFDx3C3TVrhPsibRdnrAq6tHq3jSNzCkpz+Ua3qk6r1+TrcCQ6KJoYWBeVJSommyoYlJkmmSRaphWoppaqq5oaE5UKIk/ntGQyAjwxzO/8yMDBAI4rMzBBckZpfkZzMwAABmBiA1';
+  // Backend configuration
+  static const String backendBaseUrl = 'http://localhost:5000';
+  static const String agoraTokenEndpoint = '$backendBaseUrl/api/agora/token';
+  // Agora App ID (do NOT hardcode secrets). Prefer passing via --dart-define=AGORA_APP_ID=...
+  static const String agoraAppId = String.fromEnvironment(
+    'AGORA_APP_ID',
+    defaultValue: '',
+  );
 
-  // Stripe Configuration
-  static const String stripePublishableKey = 'sk_test_51SDYFHRumpu3fxskjQggMnl7yLzUENBm41WWH0S8vuRgZj3Quu3C1agEyZyhCpCDT9W1FSLfzQLTKt6842b7UU3s00dPzlzgxd';
-  
-  // Firebase/Other backend endpoints (placeholders)
-  static const String functionsUrl = 'https://your-cloud-functions-url.com';
+  // Agora token configuration
+  static const int agoraTokenExpiryBufferSeconds = 600; // 10 minutes
+  static const Duration tokenRequestTimeout = Duration(seconds: 30);
+  static const int maxTokensPerUserPerDay = 100;
+
+  // Debug configuration
+  static const bool enableDebugLogging = true;
+  static const bool debugAgoraTokenRequests = true;
 }
+
+// Backward compatibility alias
+typedef Config = AppConfig;

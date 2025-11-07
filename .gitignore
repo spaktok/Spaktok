@@ -68,3 +68,7 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 backend/.env
+
+# Ignore nested accidental full-repo copy
+Spaktok/
+Spaktok/**

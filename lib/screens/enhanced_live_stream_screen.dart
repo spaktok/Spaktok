@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
 import 'package:torch_light/torch_light.dart';
 import 'package:spaktok/services/stream_service.dart';
-import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/widgets/gift_bottom_sheet.dart';
-
-const appId = "a41807bba5c144b5b8e1fd5ee711707b";
+import 'package:spaktok/config/app_config.dart';
 
 class EnhancedLiveStreamScreen extends StatefulWidget {
   final String streamId;
@@ -31,14 +28,11 @@ class EnhancedLiveStreamScreen extends StatefulWidget {
 
 class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
   final StreamService _streamService = StreamService();
-  final AuthService _authService = AuthService();
   final TextEditingController _messageController = TextEditingController();
 
   late RtcEngine _engine;
   // Gift effect controllers
   final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _showLottie = false;
-  String? _lottieAsset;
   bool _torchOn = false;
   bool _isHandlingSpecialGift = false;
   bool _localUserJoined = false;
@@ -74,7 +68,17 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
 
     // Create RTC engine
     _engine = createAgoraRtcEngine();
-    await _engine.initialize(const RtcEngineContext(appId: appId));
+    if (AppConfig.agoraAppId.isEmpty) {
+      debugPrint('[EnhancedLiveStream] Missing AGORA_APP_ID. Pass it via --dart-define or set up AppConfig.');
+      // Fail fast with a user-friendly dialog
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Missing AGORA_APP_ID configuration')),
+        );
+      }
+      return;
+    }
+    await _engine.initialize(RtcEngineContext(appId: AppConfig.agoraAppId));
 
     // Register event handlers
     _engine.registerEventHandler(

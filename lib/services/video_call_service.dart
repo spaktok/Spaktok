@@ -50,9 +50,13 @@ class VideoCallService {
     try {
       await [Permission.microphone, Permission.camera].request();
 
-      // Engine initialized with empty app ID - token provided per channel join
+      // Engine initialized with App ID provided via --dart-define (see AppConfig)
       _engine = createAgoraRtcEngine();
-      await _engine!.initialize(const RtcEngineContext(appId: ''));
+      if (AppConfig.agoraAppId.isEmpty) {
+        debugPrint('[VideoCallService] Missing AGORA_APP_ID. Provide via --dart-define');
+        throw Exception('Missing AGORA_APP_ID');
+      }
+      await _engine!.initialize(RtcEngineContext(appId: AppConfig.agoraAppId));
 
       _isInitialized = true;
       debugPrint('[VideoCallService] Initialized (tokens managed by backend)');
