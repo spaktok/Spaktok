@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-// تسجيل دخول تجريبي
+// Demo login
 router.post("/login", (req, res) => {
-  res.json({ message: "تم تسجيل الدخول" });
+  res.json({ message: "Login successful" });
 });
 
 module.exports = router;

@@ -7,12 +7,12 @@ class StoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // رفع قصة جديدة (صورة أو فيديو)
+  // Upload new story (image or video)
   Future<void> uploadStory({
     required String userId,
     required File mediaFile,
     required String mediaType,
-    required int duration, // مدة القصة بالثواني
+    required int duration, // Story duration in seconds
   }) async {
     try {
       final String storyId = _firestore.collection('stories').doc().id;
@@ -38,7 +38,7 @@ class StoryService {
     }
   }
 
-  // جلب قصص المستخدمين (يمكن تصفيتها لاحقًا للقصص الحديثة فقط)
+  // Fetch user stories (can be filtered later for recent stories only)
   Stream<List<Story>> getUserStories(String userId) {
     return _firestore
         .collection('stories')
@@ -50,9 +50,9 @@ class StoryService {
             .toList());
   }
 
-  // جلب جميع القصص (لصفحة القصص الرئيسية)
+  // Fetch all stories (for main stories page)
   Stream<List<Story>> getAllStories() {
-    // يمكن إضافة منطق لتصفية القصص المنتهية الصلاحية هنا
+    // Can add logic to filter expired stories here
     return _firestore
         .collection('stories')
         .orderBy('timestamp', descending: true)
@@ -62,11 +62,11 @@ class StoryService {
             .toList());
   }
 
-  // حذف قصة
+  // Delete story
   Future<void> deleteStory(String storyId) async {
     try {
       await _firestore.collection('stories').doc(storyId).delete();
-      // يمكن إضافة منطق لحذف الملف من Firebase Storage هنا أيضًا
+      // Can add logic to delete file from Firebase Storage here as well
       print('Story deleted successfully: $storyId');
     } catch (e) {
       print('Error deleting story: $e');

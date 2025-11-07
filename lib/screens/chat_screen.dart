@@ -9,8 +9,8 @@ import 'package:flutter_screenshot_detect/flutter_screenshot_detect.dart';
 import 'package:spaktok/widgets/location_sharing_bottom_sheet.dart'; // New import
 
 class ChatScreen extends StatefulWidget {
-  final String receiverId; // معرف المستلم
-  final String receiverName; // اسم المستلم
+  final String receiverId; // Receiver ID
+  final String receiverName; // Receiver name
 
   const ChatScreen(
       {super.key, required this.receiverId, required this.receiverName});
@@ -25,7 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final LocationService _locationService =
       LocationService.instance; // New instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  User? _currentUser; // المستخدم الحالي
+  User? _currentUser; // Current user
   String? _chatRoomId;
   bool _isDisappearingEnabled = false;
   final FlutterScreenshotDetect _screenshotDetect = FlutterScreenshotDetect();
@@ -34,7 +34,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _currentUser = _auth.currentUser; // الحصول على المستخدم الحالي
+    _currentUser = _auth.currentUser; // Get current user
     if (_currentUser == null) {
       _signInAnonymously();
     } else {

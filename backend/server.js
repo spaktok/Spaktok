@@ -8,7 +8,7 @@ const WebSocket = require("ws");
 const path = require("path");
 const streamingRoutes = require("./routes/streaming");
 const battleGiftingRoutes = require("./routes/battle_gifting");
-const paymentRoutes = require("./routes/payment"); // إضافة مسارات الدفع
+const paymentRoutes = require("./routes/payment"); // Add payment routes
 
 const app = express();
 const server = http.createServer(app);
@@ -53,7 +53,7 @@ redisClient.connect()
 // Routes
 app.use("/streaming", streamingRoutes);
 app.use("/battle-gifting", battleGiftingRoutes);
-app.use("/api/payment", paymentRoutes); // استخدام مسارات الدفع
+app.use("/api/payment", paymentRoutes); // Use payment routes
 
 // ✅ API routes
 app.get("/", (req, res) => {

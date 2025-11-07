@@ -7,7 +7,7 @@ class ReelService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // رفع Reel جديد
+  // Upload new Reel
   Future<void> uploadReel({
     required String userId,
     required File videoFile,
@@ -36,7 +36,7 @@ class ReelService {
     }
   }
 
-  // جلب جميع Reels
+  // Fetch all Reels
   Stream<List<Reel>> getAllReels() {
     return _firestore
         .collection('reels')
@@ -47,7 +47,7 @@ class ReelService {
             .toList());
   }
 
-  // إضافة إعجاب لـ Reel
+  // Add like to Reel
   Future<void> likeReel(String reelId, String userId) async {
     final DocumentReference reelRef = _firestore.collection('reels').doc(reelId);
     final DocumentReference likeRef = reelRef.collection('likes').doc(userId);
@@ -62,7 +62,7 @@ class ReelService {
     });
   }
 
-  // إزالة إعجاب من Reel
+  // Remove like from Reel
   Future<void> unlikeReel(String reelId, String userId) async {
     final DocumentReference reelRef = _firestore.collection('reels').doc(reelId);
     final DocumentReference likeRef = reelRef.collection('likes').doc(userId);
@@ -79,7 +79,7 @@ class ReelService {
     });
   }
 
-  // إضافة تعليق لـ Reel
+  // Add comment to Reel
   Future<void> addComment(String reelId, String userId, String commentText) async {
     final DocumentReference reelRef = _firestore.collection('reels').doc(reelId);
     final DocumentReference commentRef = reelRef.collection('comments').doc();
@@ -98,11 +98,11 @@ class ReelService {
     });
   }
 
-  // حذف Reel
+  // Delete Reel
   Future<void> deleteReel(String reelId) async {
     try {
       await _firestore.collection('reels').doc(reelId).delete();
-      // يمكن إضافة منطق لحذف الملف من Firebase Storage هنا أيضًا
+      // Can add logic to delete file from Firebase Storage here as well
       print('Reel deleted successfully: $reelId');
     } catch (e) {
       print('Error deleting reel: $e');

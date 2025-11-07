@@ -74,7 +74,7 @@ class _ReelScreenState extends State<ReelScreen> {
                     children: [
                       Text('User ID: ${reel.userId}'),
                       Text('Description: ${reel.description}'),
-                      // هنا يمكن إضافة مشغل فيديو لعرض reel.videoUrl
+                      // Video player can be added here to display reel.videoUrl
                       Container(
                         height: 200,
                         color: Colors.black12,

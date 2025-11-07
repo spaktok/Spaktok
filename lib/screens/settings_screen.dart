@@ -544,7 +544,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showLanguageDialog(BuildContext context) {
     final languages = [
       'English',
-      'العربية',
+      'Arabic',
       'Español',
       'Français',
       'Deutsch',

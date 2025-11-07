@@ -2,9 +2,9 @@
 class Gift {
   final String id;
   final String name;
-  final int value; // قيمة الهدية بالعملة الافتراضية
-  final String imageUrl; // رابط صورة/أيقونة الهدية
-  final String? animationUrl; // رابط لرسوم متحركة للهدية (اختياري)
+  final int value; // Gift value in default currency
+  final String imageUrl; // Gift image/icon URL
+  final String? animationUrl; // Gift animation URL (optional)
 
   Gift({
     required this.id,

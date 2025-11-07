@@ -4,8 +4,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 
 
-const appId = "a41807bba5c144b5b8e1fd5ee711707b"; // استبدل بمعرف تطبيق Agora الخاص بك
-const token = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5klJiabJhiYmSaZJFqmGaSmmqanmhobmQIn09HsZDYGMDGn7c5gYGSAQxGdl8E3MKy1mYAAAut8gzQ=="; // استبدل بالرمز المميز المؤقت الخاص بك (للاختبار)
+const appId = "a41807bba5c144b5b8e1fd5ee711707b"; // Replace with your Agora App ID
+const token = "007eJxTYEiJ+bXuRdb2/+r1U3Kus0YXtponyjxlajd7rLFV9PmSjrMKDIkmhhYG5klJiabJhiYmSaZJFqmGaSmmqanmhobmQIn09HsZDYGMDGn7c5gYGSAQxGdl8E3MKy1mYAAAut8gzQ=="; // Replace with your temporary token (for testing)
 const channel = "test_channel";
 
 class LiveStreamScreen extends StatefulWidget {
@@ -16,11 +16,11 @@ class LiveStreamScreen extends StatefulWidget {
 }
 
 class _LiveStreamScreenState extends State<LiveStreamScreen> {
-  int? _localUid = 0; // معرف المستخدم المحلي (يمكن أن يكون أي رقم غير صفري)
-  final List<int> _remoteUids = []; // قائمة بمعرفات المستخدمين البعيدين
-  bool _localUserJoined = false; // ما إذا كان المستخدم المحلي قد انضم
-  bool _isAudioMuted = false; // حالة كتم الصوت المحلية
-  late RtcEngine _engine; // محرك RTC
+  int? _localUid = 0; // Local user ID (can be any non-zero number)
+  final List<int> _remoteUids = []; // List of remote user IDs
+  bool _localUserJoined = false; // Whether the local user has joined
+  bool _isAudioMuted = false; // Local audio mute state
+  late RtcEngine _engine; // RTC engine
 
   @override
   void initState() {
@@ -29,10 +29,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   }
 
   Future<void> initAgora() async {
-    // طلب أذونات الكاميرا والميكروفون
+    // Request camera and microphone permissions
     await [Permission.microphone, Permission.camera].request();
 
-    // إنشاء محرك RTC
+    // Create RTC engine
     _engine = createAgoraRtcEngine();
     await _engine.initialize(const RtcEngineContext(appId: appId));
 
@@ -42,19 +42,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
           debugPrint("local user ${connection.localUid} joined");
           setState(() {
             _localUserJoined = true;
-            _localUid = connection.localUid; // تحديث معرف المستخدم المحلي
+            _localUid = connection.localUid; // Update local user ID
           });
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           debugPrint("remote user $remoteUid joined");
           setState(() {
-            _remoteUids.add(remoteUid); // إضافة المستخدم البعيد إلى القائمة
+            _remoteUids.add(remoteUid); // Add remote user to the list
           });
         },
         onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
           debugPrint("remote user $remoteUid left channel");
           setState(() {
-            _remoteUids.remove(remoteUid); // إزالة المستخدم البعيد من القائمة
+            _remoteUids.remove(remoteUid); // Remove remote user from the list
           });
         },
         onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
@@ -72,7 +72,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     await _engine.joinChannel(
       token: token,
       channelId: channel,
-      uid: _localUid ?? 0, // استخدام معرف المستخدم المحلي
+      uid: _localUid ?? 0, // Use local user ID
       options: const ChannelMediaOptions(),
     );
   }
@@ -88,7 +88,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     await _engine.release();
   }
 
-  // عرض الفيديو المحلي
+  // Display local video
   Widget _localVideoWidget() {
     if (_localUserJoined) {
       return AgoraVideoView(
@@ -102,7 +102,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
   }
 
-  // عرض الفيديو البعيد
+  // Display remote video
   Widget _remoteVideoWidget(int remoteUid) {
     return AgoraVideoView(
       controller: VideoViewController.remote(
@@ -113,16 +113,16 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     );
   }
 
-  // بناء عرض الفيديو لجميع المشاركين
+  // Build video layout for all participants
   Widget _buildVideoLayout() {
     final List<Widget> videoWidgets = [];
 
-    // إضافة الفيديو المحلي
+    // Add local video
     if (_localUserJoined) {
       videoWidgets.add(Expanded(child: _localVideoWidget()));
     }
 
-    // إضافة الفيديوهات البعيدة
+    // Add remote videos
     for (int uid in _remoteUids) {
       videoWidgets.add(Expanded(child: _remoteVideoWidget(uid)));
     }
@@ -136,12 +136,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         ),
       );
     } else if (videoWidgets.length == 1) {
-      return videoWidgets.first; // عرض الفيديو الوحيد بملء الشاشة
+      return videoWidgets.first; // Display single video in full screen
     } else {
-      // عرض متعدد المشاركين (2-4)
+      // Multi-participant view (2-4)
       return GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // 2 عمود لـ 2 أو 4 مشاركين
+          crossAxisCount: 2, // 2 columns for 2 or 4 participants
           childAspectRatio: 1.0,
           mainAxisSpacing: 10.0,
           crossAxisSpacing: 10.0,
@@ -159,7 +159,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Live Stream")),
       body: Container(
-        color: Colors.black, // خلفية سوداء للفيديو
+        color: Colors.black, // Black background for video
         child: Stack(
           children: [
             Center(
@@ -174,21 +174,20 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
-                        // تبديل كتم الصوت
+                        // Toggle audio mute
                         setState(() {
                           _isAudioMuted = !_isAudioMuted;
                           _engine.muteLocalAudioStream(_isAudioMuted);
-                        }); // لتحديث حالة الزر
+                        }); // Update button state
                       },
                       child: const Text("Mute/Unmute Audio"),
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
                       onPressed: () async {
-                        // تبديل إيقاف/تشغيل الفيديو
                         // Toggle video on/off
                         await _engine.muteLocalVideoStream(!_localUserJoined);
-                        setState(() {}); // لتحديث حالة الزر
+                        setState(() {}); // Update button state
                       },
                       child: const Text("Stop/Start Video"),
                     ),

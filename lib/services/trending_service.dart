@@ -4,32 +4,32 @@ import 'package:spaktok/models/trending_content.dart';
 class TrendingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // جلب المحتوى الشائع (Explore/Trending)
+  // Fetch trending content (Explore/Trending)
   Stream<List<TrendingContent>> getTrendingContent() {
     return _firestore
         .collection('trending_content')
-        .orderBy('viewsCount', descending: true) // يمكن تعديل معايير الترتيب
-        .limit(20) // جلب أفضل 20 محتوى شائع
+        .orderBy('viewsCount', descending: true) // Can modify sorting criteria
+        .limit(20) // Fetch top 20 trending content
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => TrendingContent.fromJson(doc.data()))
             .toList());
   }
 
-  // تحديث عدد المشاهدات لمحتوى معين (لزيادة شعبيته)
+  // Update views count for specific content (to increase its popularity)
   Future<void> updateViewsCount(String contentId) async {
     try {
       final DocumentReference docRef = _firestore.collection('trending_content').doc(contentId);
       await docRef.update({
         'viewsCount': FieldValue.increment(1),
-        'timestamp': FieldValue.serverTimestamp(), // تحديث وقت آخر مشاهدة
+        'timestamp': FieldValue.serverTimestamp(), // Update last view timestamp
       });
     } catch (e) {
       print('Error updating views count: $e');
     }
   }
 
-  // إضافة محتوى جديد إلى قائمة الشائع (للاستخدام الداخلي أو من خلال وظائف Firebase)
+  // Add new content to trending list (for internal use or through Firebase functions)
   Future<void> addTrendingContent(TrendingContent content) async {
     try {
       await _firestore.collection('trending_content').doc(content.id).set(content.toJson());

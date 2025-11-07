@@ -171,7 +171,7 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
     }
 
     // Special handling for Nuclear Explosion gift
-    if (giftName.toLowerCase().contains('nuke') || giftName.toLowerCase().contains('nuclear') || giftName.contains('انفجار')) {
+    if (giftName.toLowerCase().contains('nuke') || giftName.toLowerCase().contains('nuclear') || giftName.contains('explosion')) {
       if (_isHandlingSpecialGift) return;
       _isHandlingSpecialGift = true;
 
@@ -225,26 +225,26 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
 
   String? _soundForGift(String giftName) {
     final name = giftName.toLowerCase();
-    if (name.contains('rose') || name.contains('وردة')) return 'sounds/rose.mp3';
-    if (name.contains('car') || name.contains('سيارة')) return 'sounds/car.mp3';
-    if (name.contains('mansion') || name.contains('قصر') || name.contains('منزل')) return 'sounds/mansion.mp3';
-    if (name.contains('heart') || name.contains('قلب')) return 'sounds/heart.mp3';
-    if (name.contains('crown') || name.contains('تاج')) return 'sounds/crown.mp3';
-    if (name.contains('money') || name.contains('مال') || name.contains('أموال')) return 'sounds/money.mp3';
-    if (name.contains('party') || name.contains('احتفال')) return 'sounds/party.mp3';
-    if (name.contains('nuke') || name.contains('nuclear') || name.contains('انفجار')) return 'sounds/nuke.mp3';
+    if (name.contains('rose')) return 'sounds/rose.mp3';
+    if (name.contains('car')) return 'sounds/car.mp3';
+    if (name.contains('mansion') || name.contains('house')) return 'sounds/mansion.mp3';
+    if (name.contains('heart')) return 'sounds/heart.mp3';
+    if (name.contains('crown')) return 'sounds/crown.mp3';
+    if (name.contains('money') || name.contains('cash')) return 'sounds/money.mp3';
+    if (name.contains('party') || name.contains('celebration')) return 'sounds/party.mp3';
+    if (name.contains('nuke') || name.contains('nuclear') || name.contains('explosion')) return 'sounds/nuke.mp3';
     return null;
   }
 
   String? _lottieForGift(String giftName) {
     final name = giftName.toLowerCase();
-    if (name.contains('rose') || name.contains('وردة')) return 'assets/animations/rose.json';
-    if (name.contains('car') || name.contains('سيارة')) return 'assets/animations/car.json';
-    if (name.contains('mansion') || name.contains('قصر') || name.contains('منزل')) return 'assets/animations/mansion.json';
-    if (name.contains('heart') || name.contains('قلب')) return 'assets/animations/heart.json';
-    if (name.contains('crown') || name.contains('تاج')) return 'assets/animations/crown.json';
-    if (name.contains('money') || name.contains('مال') || name.contains('أموال')) return 'assets/animations/money.json';
-    if (name.contains('party') || name.contains('احتفال')) return 'assets/animations/party.json';
+    if (name.contains('rose')) return 'assets/animations/rose.json';
+    if (name.contains('car')) return 'assets/animations/car.json';
+    if (name.contains('mansion') || name.contains('house')) return 'assets/animations/mansion.json';
+    if (name.contains('heart')) return 'assets/animations/heart.json';
+    if (name.contains('crown')) return 'assets/animations/crown.json';
+    if (name.contains('money') || name.contains('cash')) return 'assets/animations/money.json';
+    if (name.contains('party') || name.contains('celebration')) return 'assets/animations/party.json';
     return null;
   }
 
