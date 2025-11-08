@@ -69,6 +69,36 @@ firebase functions:config:set \
   agora.app_id="..."
 ```
 
+## Configuration & secrets (recommended)
+
+- Do NOT commit service account JSON files, API keys, or webhooks secrets into
+  the repository. Use environment variables, Firebase `functions:config`, or
+  your cloud provider's secret manager.
+- For local development you can create a `.env` file (add it to `.gitignore`)
+  and use a tool like `dotenv` or your local emulator environment. A template
+  `.env.example` is included at the repo root — copy it to `.env` and fill in
+  real values locally.
+- For Firebase Cloud Functions in production, prefer `firebase functions:config:set`
+  for runtime config or use Google Secret Manager and set `GOOGLE_APPLICATION_CREDENTIALS`
+  to the path of a service account JSON on the runtime environment.
+
+Example (set via Firebase CLI):
+
+```bash
+firebase functions:config:set stripe.secret_key="sk_live_..." stripe.webhook_secret="whsec_..."
+```
+
+Or set environment variables for Docker/CI:
+
+```bash
+export STRIPE_SECRET_KEY="sk_live_..."
+export STRIPE_WEBHOOK_SECRET="whsec_..."
+export AGORA_APP_ID="your_agora_app_id"
+```
+
+The functions codebase will prefer environment variables first and fall back
+to `functions.config()` when available.
+
 ## 📚 Core Systems
 
 ### 1. Short Videos System
