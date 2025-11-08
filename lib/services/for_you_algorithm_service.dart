@@ -238,10 +238,8 @@ class ForYouAlgorithmService {
   ) async {
     try {
       // Get content details
-      final contentDoc = await _firestore
-          .collection('videos')
-          .doc(contentId)
-          .get();
+      final contentDoc =
+          await _firestore.collection('videos').doc(contentId).get();
 
       if (!contentDoc.exists) return;
 
@@ -393,12 +391,14 @@ class ForYouAlgorithmService {
     final likes = (content['likes'] ?? 0).toDouble();
     final shares = (content['shares'] ?? 0).toDouble();
     final comments = (content['comments'] ?? 0).toDouble();
-    final engagementScore = ((likes * 1.0) + (shares * 2.0) + (comments * 1.5)) / views;
+    final engagementScore =
+        ((likes * 1.0) + (shares * 2.0) + (comments * 1.5)) / views;
     factors['engagement'] = engagementScore * _engagementWeight;
 
     // 3. Freshness factor (recency)
     final createdAt = (content['createdAt'] as Timestamp).toDate();
-    final hoursSinceCreation = DateTime.now().difference(createdAt).inHours.toDouble();
+    final hoursSinceCreation =
+        DateTime.now().difference(createdAt).inHours.toDouble();
     final freshnessScore = 1.0 / (1.0 + (hoursSinceCreation / 24.0));
     factors['freshness'] = freshnessScore * _freshnessWeight;
 
@@ -426,11 +426,13 @@ class ForYouAlgorithmService {
     personalizationScore += (userInterests.categories[category] ?? 0.0) * 1.0;
 
     // Normalize personalization score
-    personalizationScore = personalizationScore / 100.0; // Normalize to 0-1 range
+    personalizationScore =
+        personalizationScore / 100.0; // Normalize to 0-1 range
     factors['personalization'] = personalizationScore * _personalizedWeight;
 
     // 5. Diversity factor (introduce variety)
-    final diversityScore = Random().nextDouble(); // Random element for diversity
+    final diversityScore =
+        Random().nextDouble(); // Random element for diversity
     factors['diversity'] = diversityScore * _diversityWeight;
 
     // Calculate total score
@@ -458,7 +460,7 @@ class ForYouAlgorithmService {
 
       // Simple diversity: don't show too many videos from same creator in a row
       // This is a basic implementation - production would be more sophisticated
-      
+
       diversified.add(content);
     }
 

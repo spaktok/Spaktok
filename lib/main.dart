@@ -1,31 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:spaktok/core/firebase_options.dart';
 import 'package:spaktok/screens/main_navigation_screen.dart';
 import 'package:spaktok/screens/auth/login_screen.dart';
+import 'package:spaktok/screens/appearance_settings_screen.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/services/call_service.dart';
-import 'package:spaktok/services/location_service.dart'; // Import LocationService
-import 'package:spaktok/config/theme_config.dart';
+import 'package:spaktok/services/location_service.dart';
+import 'package:spaktok/services/theme_service.dart';
+import 'package:spaktok/services/chat_background_service.dart';
+import 'package:spaktok/services/sound_haptic_service.dart';
 
+/// التطبيق الرئيسي مع جميع التكاملات
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // تهيئة Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+
+  // تهيئة Stripe
+  Stripe.publishableKey = const String.fromEnvironment(
+    'STRIPE_PUBLISHABLE_KEY',
+    defaultValue: 'pk_test_your_key_here',
+  );
+  await Stripe.instance.applySettings();
+
+  // تهيئة الخدمات
+  final themeService = ThemeService();
+  final chatBgService = ChatBackgroundService();
+
+  await themeService.init();
+  await chatBgService.init();
+
+  runApp(
+    MyApp(
+      themeService: themeService,
+      chatBgService: chatBgService,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ThemeService themeService;
+  final ChatBackgroundService chatBgService;
+
+  const MyApp({
+    super.key,
+    required this.themeService,
+    required this.chatBgService,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Spaktok',
-      theme: ThemeConfig.lightTheme,
-      darkTheme: ThemeConfig.darkTheme,
-      themeMode: ThemeMode.dark,
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: themeService),
+        ChangeNotifierProvider.value(value: chatBgService),
+      ],
+      child: Consumer<ThemeService>(
+        builder: (context, themeService, child) {
+          return MaterialApp(
+            title: 'Spaktok',
+            debugShowCheckedModeBanner: false,
+
+            // الثيمات الثلاثة
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: themeService.themeMode,
+
+            home: const AuthWrapper(),
+
+            // Routes
+            routes: {
+              '/appearance': (context) => const AppearanceSettingsScreen(),
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -40,7 +93,8 @@ class AuthWrapper extends StatelessWidget {
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
         }
         if (snapshot.hasData) {
           return const LoggedInWrapper(); // User is logged in
@@ -68,7 +122,7 @@ class _LoggedInWrapperState extends State<LoggedInWrapper> {
     super.initState();
     // Start all essential background services when user logs in
     _callService.listenForIncomingCalls(context);
-    _locationService.startLocationUpdates(); 
+    _locationService.startLocationUpdates();
   }
 
   @override

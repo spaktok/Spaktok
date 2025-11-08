@@ -23,6 +23,7 @@ import 'package:image_picker_for_web/image_picker_for_web.dart';
 import 'package:iris_method_channel/iris_method_channel_web.dart';
 import 'package:package_info_plus/src/package_info_plus_web.dart';
 import 'package:permission_handler_html/permission_handler_html.dart';
+import 'package:rive_common/rive_web.dart';
 import 'package:shared_preferences_web/shared_preferences_web.dart';
 import 'package:sign_in_with_apple_web/sign_in_with_apple_web.dart';
 import 'package:video_player_web/video_player_web.dart';
@@ -47,6 +48,7 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   IrisMethodChannelWeb.registerWith(registrar);
   PackageInfoPlusWebPlugin.registerWith(registrar);
   WebPermissionHandler.registerWith(registrar);
+  RivePlugin.registerWith(registrar);
   SharedPreferencesPlugin.registerWith(registrar);
   SignInWithApplePlugin.registerWith(registrar);
   VideoPlayerPlugin.registerWith(registrar);

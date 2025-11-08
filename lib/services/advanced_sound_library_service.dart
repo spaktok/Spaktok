@@ -80,7 +80,7 @@ class AdvancedSoundLibraryService {
       if (query.isEmpty) return [];
 
       final queryLower = query.toLowerCase();
-      
+
       // Search in name
       final nameQuery = await _firestore
           .collection('sounds')
@@ -99,11 +99,11 @@ class AdvancedSoundLibraryService {
 
       // Combine results and remove duplicates
       final soundMap = <String, Sound>{};
-      
+
       for (var doc in nameQuery.docs) {
         soundMap[doc.id] = Sound.fromMap(doc.data(), doc.id);
       }
-      
+
       for (var doc in artistQuery.docs) {
         soundMap[doc.id] = Sound.fromMap(doc.data(), doc.id);
       }
@@ -192,17 +192,24 @@ class AdvancedSoundLibraryService {
   /// Get all available genres
   Future<List<String>> getGenres() async {
     try {
-      final querySnapshot = await _firestore
-          .collection('soundGenres')
-          .orderBy('name')
-          .get();
+      final querySnapshot =
+          await _firestore.collection('soundGenres').orderBy('name').get();
 
       return querySnapshot.docs
           .map((doc) => doc.data()['name'] as String)
           .toList();
     } catch (e) {
       print('Error getting genres: $e');
-      return ['Pop', 'Rock', 'Hip Hop', 'Electronic', 'R&B', 'Country', 'Jazz', 'Classical'];
+      return [
+        'Pop',
+        'Rock',
+        'Hip Hop',
+        'Electronic',
+        'R&B',
+        'Country',
+        'Jazz',
+        'Classical'
+      ];
     }
   }
 
@@ -223,8 +230,10 @@ class AdvancedSoundLibraryService {
       final String soundId = _firestore.collection('sounds').doc().id;
 
       // Upload audio file
-      final String audioPath = 'sounds/${user.uid}/$soundId-${DateTime.now().millisecondsSinceEpoch}.mp3';
-      final UploadTask audioUploadTask = _storage.ref().child(audioPath).putFile(audioFile);
+      final String audioPath =
+          'sounds/${user.uid}/$soundId-${DateTime.now().millisecondsSinceEpoch}.mp3';
+      final UploadTask audioUploadTask =
+          _storage.ref().child(audioPath).putFile(audioFile);
       final TaskSnapshot audioSnapshot = await audioUploadTask;
       final String audioUrl = await audioSnapshot.ref.getDownloadURL();
 
@@ -232,7 +241,8 @@ class AdvancedSoundLibraryService {
       String? coverImageUrl;
       if (coverImage != null) {
         final String imagePath = 'sounds/${user.uid}/$soundId-cover.jpg';
-        final UploadTask imageUploadTask = _storage.ref().child(imagePath).putFile(coverImage);
+        final UploadTask imageUploadTask =
+            _storage.ref().child(imagePath).putFile(coverImage);
         final TaskSnapshot imageSnapshot = await imageUploadTask;
         coverImageUrl = await imageSnapshot.ref.getDownloadURL();
       }
@@ -273,10 +283,7 @@ class AdvancedSoundLibraryService {
       if (user == null) throw Exception('User not authenticated');
 
       // Get sound data
-      final soundDoc = await _firestore
-          .collection('sounds')
-          .doc(soundId)
-          .get();
+      final soundDoc = await _firestore.collection('sounds').doc(soundId).get();
 
       if (!soundDoc.exists) {
         throw Exception('Sound not found');
@@ -285,10 +292,7 @@ class AdvancedSoundLibraryService {
       final soundData = soundDoc.data()!;
 
       // Update video with sound
-      await _firestore
-          .collection('videos')
-          .doc(videoId)
-          .update({
+      await _firestore.collection('videos').doc(videoId).update({
         'soundId': soundId,
         'soundName': soundData['name'],
         'soundArtist': soundData['artist'],
@@ -296,10 +300,7 @@ class AdvancedSoundLibraryService {
       });
 
       // Increment sound usage count
-      await _firestore
-          .collection('sounds')
-          .doc(soundId)
-          .update({
+      await _firestore.collection('sounds').doc(soundId).update({
         'usageCount': FieldValue.increment(1),
         'lastUsed': FieldValue.serverTimestamp(),
       });
@@ -318,7 +319,8 @@ class AdvancedSoundLibraryService {
   }
 
   /// Get videos using a specific sound
-  Future<List<Map<String, dynamic>>> getVideosWithSound(String soundId, {int limit = 50}) async {
+  Future<List<Map<String, dynamic>>> getVideosWithSound(String soundId,
+      {int limit = 50}) async {
     try {
       final querySnapshot = await _firestore
           .collection('videos')
@@ -357,11 +359,9 @@ class AdvancedSoundLibraryService {
 
       final sounds = <Sound>[];
       for (String soundId in soundIds) {
-        final soundDoc = await _firestore
-            .collection('sounds')
-            .doc(soundId)
-            .get();
-        
+        final soundDoc =
+            await _firestore.collection('sounds').doc(soundId).get();
+
         if (soundDoc.exists) {
           sounds.add(Sound.fromMap(soundDoc.data()!, soundDoc.id));
         }
@@ -431,11 +431,9 @@ class AdvancedSoundLibraryService {
       for (var video in recentVideos.docs) {
         final soundId = video.data()['soundId'];
         if (soundId != null) {
-          final soundDoc = await _firestore
-              .collection('sounds')
-              .doc(soundId)
-              .get();
-          
+          final soundDoc =
+              await _firestore.collection('sounds').doc(soundId).get();
+
           if (soundDoc.exists) {
             final genres = List<String>.from(soundDoc.data()!['genres'] ?? []);
             usedGenres.addAll(genres);
@@ -456,7 +454,9 @@ class AdvancedSoundLibraryService {
       }
 
       // Remove duplicates and limit
-      final uniqueSounds = {for (var sound in recommendedSounds) sound.id: sound};
+      final uniqueSounds = {
+        for (var sound in recommendedSounds) sound.id: sound
+      };
       return uniqueSounds.values.take(limit).toList();
     } catch (e) {
       print('Error getting recommended sounds: $e');

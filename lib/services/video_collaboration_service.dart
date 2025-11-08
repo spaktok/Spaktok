@@ -22,10 +22,8 @@ class VideoCollaborationService {
       if (user == null) throw Exception('User not authenticated');
 
       // Get original video data
-      final originalVideoDoc = await _firestore
-          .collection('videos')
-          .doc(originalVideoId)
-          .get();
+      final originalVideoDoc =
+          await _firestore.collection('videos').doc(originalVideoId).get();
 
       if (!originalVideoDoc.exists) {
         throw Exception('Original video not found');
@@ -40,9 +38,11 @@ class VideoCollaborationService {
 
       // Upload user video
       final String videoId = _firestore.collection('videos').doc().id;
-      final String filePath = 'videos/${user.uid}/$videoId-${DateTime.now().millisecondsSinceEpoch}.mp4';
-      
-      final UploadTask uploadTask = _storage.ref().child(filePath).putFile(userVideoFile);
+      final String filePath =
+          'videos/${user.uid}/$videoId-${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+      final UploadTask uploadTask =
+          _storage.ref().child(filePath).putFile(userVideoFile);
       final TaskSnapshot snapshot = await uploadTask;
       final String userVideoUrl = await snapshot.ref.getDownloadURL();
 
@@ -70,10 +70,7 @@ class VideoCollaborationService {
       });
 
       // Update original video duet count
-      await _firestore
-          .collection('videos')
-          .doc(originalVideoId)
-          .update({
+      await _firestore.collection('videos').doc(originalVideoId).update({
         'duetCount': FieldValue.increment(1),
       });
 
@@ -81,7 +78,8 @@ class VideoCollaborationService {
       await _createNotification(
         recipientId: originalVideoData['userId'],
         type: 'duet',
-        message: '${user.displayName ?? "Someone"} created a duet with your video',
+        message:
+            '${user.displayName ?? "Someone"} created a duet with your video',
         videoId: videoId,
       );
 
@@ -106,10 +104,8 @@ class VideoCollaborationService {
       if (user == null) throw Exception('User not authenticated');
 
       // Get original video data
-      final originalVideoDoc = await _firestore
-          .collection('videos')
-          .doc(originalVideoId)
-          .get();
+      final originalVideoDoc =
+          await _firestore.collection('videos').doc(originalVideoId).get();
 
       if (!originalVideoDoc.exists) {
         throw Exception('Original video not found');
@@ -130,9 +126,11 @@ class VideoCollaborationService {
 
       // Upload user video
       final String videoId = _firestore.collection('videos').doc().id;
-      final String filePath = 'videos/${user.uid}/$videoId-${DateTime.now().millisecondsSinceEpoch}.mp4';
-      
-      final UploadTask uploadTask = _storage.ref().child(filePath).putFile(userVideoFile);
+      final String filePath =
+          'videos/${user.uid}/$videoId-${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+      final UploadTask uploadTask =
+          _storage.ref().child(filePath).putFile(userVideoFile);
       final TaskSnapshot snapshot = await uploadTask;
       final String userVideoUrl = await snapshot.ref.getDownloadURL();
 
@@ -161,10 +159,7 @@ class VideoCollaborationService {
       });
 
       // Update original video stitch count
-      await _firestore
-          .collection('videos')
-          .doc(originalVideoId)
-          .update({
+      await _firestore.collection('videos').doc(originalVideoId).update({
         'stitchCount': FieldValue.increment(1),
       });
 
@@ -195,10 +190,8 @@ class VideoCollaborationService {
       if (user == null) throw Exception('User not authenticated');
 
       // Get original video data
-      final originalVideoDoc = await _firestore
-          .collection('videos')
-          .doc(originalVideoId)
-          .get();
+      final originalVideoDoc =
+          await _firestore.collection('videos').doc(originalVideoId).get();
 
       if (!originalVideoDoc.exists) {
         throw Exception('Original video not found');
@@ -208,9 +201,11 @@ class VideoCollaborationService {
 
       // Upload reaction video
       final String videoId = _firestore.collection('videos').doc().id;
-      final String filePath = 'videos/${user.uid}/$videoId-${DateTime.now().millisecondsSinceEpoch}.mp4';
-      
-      final UploadTask uploadTask = _storage.ref().child(filePath).putFile(reactionVideoFile);
+      final String filePath =
+          'videos/${user.uid}/$videoId-${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+      final UploadTask uploadTask =
+          _storage.ref().child(filePath).putFile(reactionVideoFile);
       final TaskSnapshot snapshot = await uploadTask;
       final String reactionVideoUrl = await snapshot.ref.getDownloadURL();
 
@@ -226,7 +221,8 @@ class VideoCollaborationService {
         'originalVideoId': originalVideoId,
         'originalUserId': originalVideoData['userId'],
         'originalVideoUrl': originalVideoData['videoUrl'],
-        'reactionPosition': 'bottom-right', // or 'top-right', 'top-left', 'bottom-left'
+        'reactionPosition':
+            'bottom-right', // or 'top-right', 'top-left', 'bottom-left'
         'hashtags': ['#reaction', ...(originalVideoData['hashtags'] ?? [])],
         'soundId': originalVideoData['soundId'],
         'likes': 0,
@@ -238,10 +234,7 @@ class VideoCollaborationService {
       });
 
       // Update original video reaction count
-      await _firestore
-          .collection('videos')
-          .doc(originalVideoId)
-          .update({
+      await _firestore.collection('videos').doc(originalVideoId).update({
         'reactionCount': FieldValue.increment(1),
       });
 

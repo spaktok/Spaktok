@@ -5,11 +5,11 @@ import 'dart:io';
 
 /// AR Lens Types
 enum ARLensType {
-  faceTracking,      // Face filters, beauty effects
-  worldTracking,     // Surface detection, AR objects
-  imageTracking,     // Marker-based AR
-  bodyTracking,      // Full body tracking
-  handTracking,      // Hand gesture tracking
+  faceTracking, // Face filters, beauty effects
+  worldTracking, // Surface detection, AR objects
+  imageTracking, // Marker-based AR
+  bodyTracking, // Full body tracking
+  handTracking, // Hand gesture tracking
 }
 
 /// AR Lens Category
@@ -237,10 +237,7 @@ class AdvancedARLensesService {
       if (user == null) throw Exception('User not authenticated');
 
       // Get lens data
-      final lensDoc = await _firestore
-          .collection('arLenses')
-          .doc(lensId)
-          .get();
+      final lensDoc = await _firestore.collection('arLenses').doc(lensId).get();
 
       if (!lensDoc.exists) throw Exception('Lens not found');
 
@@ -302,7 +299,8 @@ class AdvancedARLensesService {
 
       // Upload thumbnail
       final String thumbPath = 'ar-lenses/$lensId/thumbnail.jpg';
-      final thumbUpload = _storage.ref().child(thumbPath).putFile(thumbnailFile);
+      final thumbUpload =
+          _storage.ref().child(thumbPath).putFile(thumbnailFile);
       final thumbSnapshot = await thumbUpload;
       final String thumbnailUrl = await thumbSnapshot.ref.getDownloadURL();
 
@@ -310,7 +308,8 @@ class AdvancedARLensesService {
       String? previewVideoUrl;
       if (previewVideo != null) {
         final String videoPath = 'ar-lenses/$lensId/preview.mp4';
-        final videoUpload = _storage.ref().child(videoPath).putFile(previewVideo);
+        final videoUpload =
+            _storage.ref().child(videoPath).putFile(previewVideo);
         final videoSnapshot = await videoUpload;
         previewVideoUrl = await videoSnapshot.ref.getDownloadURL();
       }
@@ -369,10 +368,8 @@ class AdvancedARLensesService {
 
       final lenses = <ARLens>[];
       for (String lensId in lensIds) {
-        final lensDoc = await _firestore
-            .collection('arLenses')
-            .doc(lensId)
-            .get();
+        final lensDoc =
+            await _firestore.collection('arLenses').doc(lensId).get();
 
         if (lensDoc.exists) {
           lenses.add(ARLens.fromMap(lensDoc.data()!, lensDoc.id));
@@ -447,10 +444,8 @@ class AdvancedARLensesService {
 
       final lenses = <ARLens>[];
       for (String lensId in lensIds) {
-        final lensDoc = await _firestore
-            .collection('arLenses')
-            .doc(lensId)
-            .get();
+        final lensDoc =
+            await _firestore.collection('arLenses').doc(lensId).get();
 
         if (lensDoc.exists) {
           lenses.add(ARLens.fromMap(lensDoc.data()!, lensDoc.id));
@@ -525,8 +520,7 @@ class AdvancedARLensesService {
       }
 
       // Get top categories
-      final topCategories = categoryCount.entries
-          .toList()
+      final topCategories = categoryCount.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
 
       if (topCategories.isEmpty) {

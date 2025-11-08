@@ -61,8 +61,10 @@ class AdvancedVideoEffectsService {
       if (user == null) throw Exception('User not authenticated');
 
       // Upload background media
-      final String bgPath = 'video-effects/${user.uid}/backgrounds/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final UploadTask uploadTask = _storage.ref().child(bgPath).putFile(backgroundMedia);
+      final String bgPath =
+          'video-effects/${user.uid}/backgrounds/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final UploadTask uploadTask =
+          _storage.ref().child(bgPath).putFile(backgroundMedia);
       final TaskSnapshot snapshot = await uploadTask;
       final String bgUrl = await snapshot.ref.getDownloadURL();
 
@@ -415,10 +417,8 @@ class AdvancedVideoEffectsService {
   /// Get video processing job status
   Future<Map<String, dynamic>?> getProcessingJobStatus(String jobId) async {
     try {
-      final jobDoc = await _firestore
-          .collection('videoProcessingJobs')
-          .doc(jobId)
-          .get();
+      final jobDoc =
+          await _firestore.collection('videoProcessingJobs').doc(jobId).get();
 
       if (!jobDoc.exists) return null;
 
@@ -432,10 +432,7 @@ class AdvancedVideoEffectsService {
   /// Cancel processing job
   Future<void> cancelProcessingJob(String jobId) async {
     try {
-      await _firestore
-          .collection('videoProcessingJobs')
-          .doc(jobId)
-          .update({
+      await _firestore.collection('videoProcessingJobs').doc(jobId).update({
         'status': 'cancelled',
         'cancelledAt': FieldValue.serverTimestamp(),
       });

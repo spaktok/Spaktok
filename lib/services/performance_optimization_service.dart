@@ -237,9 +237,8 @@ class PerformanceOptimizationService {
 
   /// Invalidate cache by key pattern
   void invalidateCachePattern(String pattern) {
-    final keysToRemove = _cache.keys
-        .where((key) => key.contains(pattern))
-        .toList();
+    final keysToRemove =
+        _cache.keys.where((key) => key.contains(pattern)).toList();
 
     for (var key in keysToRemove) {
       _removeFromCache(key);
@@ -278,22 +277,23 @@ class PerformanceOptimizationService {
     int limit = 20,
   }) async {
     return getCached<List<Map<String, dynamic>>>(
-      key: 'feed_${feedType}_$limit',
-      fetchFunction: () async {
-        final querySnapshot = await _firestore
-            .collection('videos')
-            .where('isPublic', isEqualTo: true)
-            .orderBy('trendingScore', descending: true)
-            .limit(limit)
-            .get();
+          key: 'feed_${feedType}_$limit',
+          fetchFunction: () async {
+            final querySnapshot = await _firestore
+                .collection('videos')
+                .where('isPublic', isEqualTo: true)
+                .orderBy('trendingScore', descending: true)
+                .limit(limit)
+                .get();
 
-        return querySnapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList();
-      },
-      cacheDuration: _shortCacheDuration,
-      priority: CachePriority.high,
-    ) ?? [];
+            return querySnapshot.docs
+                .map((doc) => {'id': doc.id, ...doc.data()})
+                .toList();
+          },
+          cacheDuration: _shortCacheDuration,
+          priority: CachePriority.high,
+        ) ??
+        [];
   }
 
   /// Compress video (simulated - would use FFmpeg in production)
@@ -318,7 +318,8 @@ class PerformanceOptimizationService {
         'originalSize': originalSize,
         'compressedSize': compressedSize,
         'savedBytes': savedBytes,
-        'compressionRatio': (savedBytes / originalSize * 100).toStringAsFixed(2),
+        'compressionRatio':
+            (savedBytes / originalSize * 100).toStringAsFixed(2),
         'quality': quality,
       };
     } catch (e) {
@@ -337,12 +338,12 @@ class PerformanceOptimizationService {
     try {
       // In production, use image package or native compression
       // For now, simulate compression
-      
+
       final originalSize = imageData.length;
       final targetSize = (originalSize * (quality / 100)).round();
-      
+
       _totalDataSaved += (originalSize - targetSize);
-      
+
       // Return simulated compressed data
       return imageData.sublist(0, targetSize.clamp(0, imageData.length));
     } catch (e) {
@@ -425,7 +426,7 @@ class PerformanceOptimizationService {
         // Firestore 'in' query supports max 10 items
         for (int i = 0; i < uncachedIds.length; i += 10) {
           final batch = uncachedIds.skip(i).take(10).toList();
-          
+
           final querySnapshot = await _firestore
               .collection(collectionName)
               .where(FieldPath.documentId, whereIn: batch)
@@ -494,7 +495,8 @@ class PerformanceOptimizationService {
     return {
       'totalItems': _cache.length,
       'maxSize': _maxCacheSize,
-      'utilizationPercent': (_cache.length / _maxCacheSize * 100).toStringAsFixed(2),
+      'utilizationPercent':
+          (_cache.length / _maxCacheSize * 100).toStringAsFixed(2),
       'approximateSizeBytes': totalSize,
       'priorityDistribution': priorityCounts.map(
         (key, value) => MapEntry(key.toString().split('.').last, value),

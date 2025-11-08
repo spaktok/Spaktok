@@ -365,10 +365,9 @@ class MemoriesFlashbacksService {
 
       // Generate flashback title and description
       final yearsAgo = DateTime.now().year - date.year;
-      final title = yearsAgo == 1
-          ? 'One Year Ago Today'
-          : '$yearsAgo Years Ago Today';
-      
+      final title =
+          yearsAgo == 1 ? 'One Year Ago Today' : '$yearsAgo Years Ago Today';
+
       final description = _generateFlashbackDescription(memories, date);
 
       // Create flashback
@@ -581,7 +580,8 @@ class MemoriesFlashbacksService {
           .collection('memories')
           .doc(memoryId)
           .update({
-        'tags': FieldValue.arrayUnion(tags.map((t) => t.toLowerCase()).toList()),
+        'tags':
+            FieldValue.arrayUnion(tags.map((t) => t.toLowerCase()).toList()),
       });
     } catch (e) {
       print('Error adding tags: $e');
@@ -604,8 +604,7 @@ class MemoriesFlashbacksService {
           .collection('memories')
           .where('originalDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-          .where('originalDate',
-              isLessThan: Timestamp.fromDate(endOfDay))
+          .where('originalDate', isLessThan: Timestamp.fromDate(endOfDay))
           .get();
 
       return querySnapshot.docs

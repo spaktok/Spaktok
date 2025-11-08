@@ -350,10 +350,10 @@ class E2EEncryptionService {
   Future<Map<String, String>> _generateKeyPair(EncryptionType type) async {
     // In production, use proper crypto libraries like pointycastle
     // This is a simplified implementation
-    
+
     final random = List<int>.generate(32, (i) => _secureRandom.nextInt(256));
     final privateKey = base64Encode(random);
-    
+
     // Generate public key from private (simplified)
     final publicKeyHash = sha256.convert(utf8.encode(privateKey));
     final publicKey = base64Encode(publicKeyHash.bytes);
@@ -380,16 +380,18 @@ class E2EEncryptionService {
   String _encryptWithSymmetricKey(String data, String key, String iv) {
     // In production, use proper AES-256 implementation
     // This is a simplified version using XOR cipher
-    
+
     final keyBytes = base64Decode(key);
     final ivBytes = base64Decode(iv);
     final dataBytes = utf8.encode(data);
-    
+
     final encrypted = <int>[];
     for (int i = 0; i < dataBytes.length; i++) {
-      encrypted.add(dataBytes[i] ^ keyBytes[i % keyBytes.length] ^ ivBytes[i % ivBytes.length]);
+      encrypted.add(dataBytes[i] ^
+          keyBytes[i % keyBytes.length] ^
+          ivBytes[i % ivBytes.length]);
     }
-    
+
     return base64Encode(encrypted);
   }
 
@@ -401,20 +403,23 @@ class E2EEncryptionService {
   }
 
   /// Encrypt bytes with symmetric key
-  Uint8List _encryptBytesWithSymmetricKey(Uint8List data, String key, String iv) {
+  Uint8List _encryptBytesWithSymmetricKey(
+      Uint8List data, String key, String iv) {
     final keyBytes = base64Decode(key);
     final ivBytes = base64Decode(iv);
-    
+
     final encrypted = Uint8List(data.length);
     for (int i = 0; i < data.length; i++) {
-      encrypted[i] = data[i] ^ keyBytes[i % keyBytes.length] ^ ivBytes[i % ivBytes.length];
+      encrypted[i] =
+          data[i] ^ keyBytes[i % keyBytes.length] ^ ivBytes[i % ivBytes.length];
     }
-    
+
     return encrypted;
   }
 
   /// Decrypt bytes with symmetric key
-  Uint8List _decryptBytesWithSymmetricKey(Uint8List encryptedData, String key, String iv) {
+  Uint8List _decryptBytesWithSymmetricKey(
+      Uint8List encryptedData, String key, String iv) {
     return _encryptBytesWithSymmetricKey(encryptedData, key, iv);
   }
 
@@ -422,15 +427,16 @@ class E2EEncryptionService {
   String _encryptWithPublicKey(String data, String publicKey) {
     // In production, use proper RSA implementation
     // This is a simplified version
-    
+
     final publicKeyHash = sha256.convert(utf8.encode(publicKey));
     final dataBytes = utf8.encode(data);
-    
+
     final encrypted = <int>[];
     for (int i = 0; i < dataBytes.length; i++) {
-      encrypted.add(dataBytes[i] ^ publicKeyHash.bytes[i % publicKeyHash.bytes.length]);
+      encrypted.add(
+          dataBytes[i] ^ publicKeyHash.bytes[i % publicKeyHash.bytes.length]);
     }
-    
+
     return base64Encode(encrypted);
   }
 
@@ -439,12 +445,13 @@ class E2EEncryptionService {
     // Derive public key from private key
     final publicKeyHash = sha256.convert(utf8.encode(privateKey));
     final encryptedBytes = base64Decode(encryptedData);
-    
+
     final decrypted = <int>[];
     for (int i = 0; i < encryptedBytes.length; i++) {
-      decrypted.add(encryptedBytes[i] ^ publicKeyHash.bytes[i % publicKeyHash.bytes.length]);
+      decrypted.add(encryptedBytes[i] ^
+          publicKeyHash.bytes[i % publicKeyHash.bytes.length]);
     }
-    
+
     return utf8.decode(decrypted);
   }
 

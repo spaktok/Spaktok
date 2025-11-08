@@ -245,13 +245,13 @@ class SpotlightFeedService {
       // Get user's interests (liked tags, followed creators)
       final userInterests = await _getUserInterests(user.uid);
 
-      var query = _firestore
-          .collection('spotlight')
-          .where('isPublic', isEqualTo: true);
+      var query =
+          _firestore.collection('spotlight').where('isPublic', isEqualTo: true);
 
       // Filter by user interests if available
       if (userInterests.isNotEmpty) {
-        query = query.where('tags', arrayContainsAny: userInterests.take(10).toList());
+        query = query.where('tags',
+            arrayContainsAny: userInterests.take(10).toList());
       }
 
       query = query.orderBy('trendingScore', descending: true);
@@ -439,10 +439,8 @@ class SpotlightFeedService {
         query = query.where('status', isEqualTo: status);
       }
 
-      final querySnapshot = await query
-          .orderBy('earnedAt', descending: true)
-          .limit(limit)
-          .get();
+      final querySnapshot =
+          await query.orderBy('earnedAt', descending: true).limit(limit).get();
 
       return querySnapshot.docs
           .map((doc) => CreatorReward.fromMap(doc.data(), doc.id))

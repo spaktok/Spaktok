@@ -67,6 +67,21 @@ dependencies:
   google_sign_in: ^6.1.5
   flutter_facebook_auth: ^6.0.4
   sign_in_with_apple: ^5.0.0
+  # Encryption & Security
+  pointycastle: ^3.7.3
+  encrypt: ^5.0.3
+  flutter_secure_storage: ^9.0.0
+  # Video & Image Processing
+  ffmpeg_kit_flutter: ^5.1.0
+  # Advanced UI
+  animated_text_kit: ^4.2.2
+  shimmer: ^3.0.0
+  flutter_staggered_animations: ^1.1.1
+  # Theme & Colors
+  flex_color_scheme: ^7.3.1
+  # Animations
+  rive: ^0.13.15
+  flutter_animate: ^4.5.0
 
 dev_dependencies:
   flutter_test:
@@ -93,22 +108,17 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/animations/rose.json
-    - assets/animations/car.json
-    - assets/animations/mansion.json
-    - assets/animations/heart.json
-    - assets/animations/crown.json
-    - assets/animations/money.json
-    - assets/animations/party.json
-    - assets/animations/nuclear_explosion.json
-    - assets/sounds/rose.mp3
-    - assets/sounds/car.mp3
-    - assets/sounds/mansion.mp3
-    - assets/sounds/heart.mp3
-    - assets/sounds/crown.mp3
-    - assets/sounds/money.mp3
-    - assets/sounds/party.mp3
-    - assets/sounds/nuke.mp3
+    # Gift Animations
+    - assets/animations/
+    # Sounds
+    - assets/sounds/
+    # Logo & Branding
+    - assets/images/
+    # Filters & Effects
+    - assets/filters/
+    - assets/filters/ar_masks/
+    # Chat Backgrounds
+    - assets/backgrounds/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

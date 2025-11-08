@@ -23,7 +23,8 @@ class EnhancedLiveStreamScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<EnhancedLiveStreamScreen> createState() => _EnhancedLiveStreamScreenState();
+  State<EnhancedLiveStreamScreen> createState() =>
+      _EnhancedLiveStreamScreenState();
 }
 
 class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
@@ -69,7 +70,8 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
     // Create RTC engine
     _engine = createAgoraRtcEngine();
     if (AppConfig.agoraAppId.isEmpty) {
-      debugPrint('[EnhancedLiveStream] Missing AGORA_APP_ID. Pass it via --dart-define or set up AppConfig.');
+      debugPrint(
+          '[EnhancedLiveStream] Missing AGORA_APP_ID. Pass it via --dart-define or set up AppConfig.');
       // Fail fast with a user-friendly dialog
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +98,8 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
             _remoteUids.add(remoteUid);
           });
         },
-        onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
+        onUserOffline: (RtcConnection connection, int remoteUid,
+            UserOfflineReasonType reason) {
           debugPrint("Remote user $remoteUid left");
           setState(() {
             _remoteUids.remove(remoteUid);
@@ -107,10 +110,11 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
 
     // Enable video
     await _engine.enableVideo();
-    
+
     // Set channel profile
-    await _engine.setChannelProfile(ChannelProfileType.channelProfileLiveBroadcasting);
-    
+    await _engine
+        .setChannelProfile(ChannelProfileType.channelProfileLiveBroadcasting);
+
     // Set client role
     if (widget.isHost) {
       await _engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
@@ -175,7 +179,9 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
     }
 
     // Special handling for Nuclear Explosion gift
-    if (giftName.toLowerCase().contains('nuke') || giftName.toLowerCase().contains('nuclear') || giftName.contains('انفجار')) {
+    if (giftName.toLowerCase().contains('nuke') ||
+        giftName.toLowerCase().contains('nuclear') ||
+        giftName.contains('انفجار')) {
       if (_isHandlingSpecialGift) return;
       _isHandlingSpecialGift = true;
 
@@ -229,26 +235,45 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
 
   String? _soundForGift(String giftName) {
     final name = giftName.toLowerCase();
-    if (name.contains('rose') || name.contains('وردة')) return 'sounds/rose.mp3';
+    if (name.contains('rose') || name.contains('وردة'))
+      return 'sounds/rose.mp3';
     if (name.contains('car') || name.contains('سيارة')) return 'sounds/car.mp3';
-    if (name.contains('mansion') || name.contains('قصر') || name.contains('منزل')) return 'sounds/mansion.mp3';
-    if (name.contains('heart') || name.contains('قلب')) return 'sounds/heart.mp3';
-    if (name.contains('crown') || name.contains('تاج')) return 'sounds/crown.mp3';
-    if (name.contains('money') || name.contains('مال') || name.contains('أموال')) return 'sounds/money.mp3';
-    if (name.contains('party') || name.contains('احتفال')) return 'sounds/party.mp3';
-    if (name.contains('nuke') || name.contains('nuclear') || name.contains('انفجار')) return 'sounds/nuke.mp3';
+    if (name.contains('mansion') ||
+        name.contains('قصر') ||
+        name.contains('منزل')) return 'sounds/mansion.mp3';
+    if (name.contains('heart') || name.contains('قلب'))
+      return 'sounds/heart.mp3';
+    if (name.contains('crown') || name.contains('تاج'))
+      return 'sounds/crown.mp3';
+    if (name.contains('money') ||
+        name.contains('مال') ||
+        name.contains('أموال')) return 'sounds/money.mp3';
+    if (name.contains('party') || name.contains('احتفال'))
+      return 'sounds/party.mp3';
+    if (name.contains('nuke') ||
+        name.contains('nuclear') ||
+        name.contains('انفجار')) return 'sounds/nuke.mp3';
     return null;
   }
 
   String? _lottieForGift(String giftName) {
     final name = giftName.toLowerCase();
-    if (name.contains('rose') || name.contains('وردة')) return 'assets/animations/rose.json';
-    if (name.contains('car') || name.contains('سيارة')) return 'assets/animations/car.json';
-    if (name.contains('mansion') || name.contains('قصر') || name.contains('منزل')) return 'assets/animations/mansion.json';
-    if (name.contains('heart') || name.contains('قلب')) return 'assets/animations/heart.json';
-    if (name.contains('crown') || name.contains('تاج')) return 'assets/animations/crown.json';
-    if (name.contains('money') || name.contains('مال') || name.contains('أموال')) return 'assets/animations/money.json';
-    if (name.contains('party') || name.contains('احتفال')) return 'assets/animations/party.json';
+    if (name.contains('rose') || name.contains('وردة'))
+      return 'assets/animations/rose.json';
+    if (name.contains('car') || name.contains('سيارة'))
+      return 'assets/animations/car.json';
+    if (name.contains('mansion') ||
+        name.contains('قصر') ||
+        name.contains('منزل')) return 'assets/animations/mansion.json';
+    if (name.contains('heart') || name.contains('قلب'))
+      return 'assets/animations/heart.json';
+    if (name.contains('crown') || name.contains('تاج'))
+      return 'assets/animations/crown.json';
+    if (name.contains('money') ||
+        name.contains('مال') ||
+        name.contains('أموال')) return 'assets/animations/money.json';
+    if (name.contains('party') || name.contains('احتفال'))
+      return 'assets/animations/party.json';
     return null;
   }
 
@@ -346,25 +371,32 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                 children: [
                   // Viewer count
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.visibility, color: Colors.white, size: 16),
+                        const Icon(Icons.visibility,
+                            color: Colors.white, size: 16),
                         const SizedBox(width: 4),
                         StreamBuilder(
-                          stream: _streamService.getStream(widget.streamId).asStream(),
+                          stream: _streamService
+                              .getStream(widget.streamId)
+                              .asStream(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData && snapshot.data!.exists) {
-                              final data = snapshot.data!.data() as Map<String, dynamic>;
+                              final data =
+                                  snapshot.data!.data() as Map<String, dynamic>;
                               _viewerCount = data['viewerCount'] ?? 0;
                             }
                             return Text(
                               '$_viewerCount',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
                             );
                           },
                         ),
@@ -407,7 +439,8 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                       height: 200,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: StreamBuilder(
-                        stream: _streamService.getStreamMessages(widget.streamId),
+                        stream:
+                            _streamService.getStreamMessages(widget.streamId),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) {
                             return const SizedBox();
@@ -418,9 +451,11 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                             reverse: false,
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
-                              final message = messages[index].data() as Map<String, dynamic>;
+                              final message = messages[index].data()
+                                  as Map<String, dynamic>;
                               // Check if it's a gift message
-                              if (message.containsKey('giftName') && message.containsKey('giftImageUrl')) {
+                              if (message.containsKey('giftName') &&
+                                  message.containsKey('giftImageUrl')) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 8.0),
                                   child: Container(
@@ -435,7 +470,10 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                                           message['giftImageUrl'],
                                           height: 30,
                                           width: 30,
-                                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.white),
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.broken_image,
+                                                      color: Colors.white),
                                         ),
                                         const SizedBox(width: 8),
                                         Expanded(
@@ -443,15 +481,18 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                                             text: TextSpan(
                                               children: [
                                                 TextSpan(
-                                                  text: '${message['userName']} sent a ${message['giftName']}! ',
+                                                  text:
+                                                      '${message['userName']} sent a ${message['giftName']}! ',
                                                   style: const TextStyle(
                                                     color: Colors.yellowAccent,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
                                                 TextSpan(
-                                                  text: '(Cost: ${message['giftCost']} coins)',
-                                                  style: const TextStyle(color: Colors.white70),
+                                                  text:
+                                                      '(Cost: ${message['giftCost']} coins)',
+                                                  style: const TextStyle(
+                                                      color: Colors.white70),
                                                 ),
                                               ],
                                             ),
@@ -461,7 +502,8 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                                     ),
                                   ),
                                 );
-                              } else { // Regular chat message
+                              } else {
+                                // Regular chat message
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 8.0),
                                   child: Container(
@@ -482,7 +524,8 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                                           ),
                                           TextSpan(
                                             text: message['message'],
-                                            style: const TextStyle(color: Colors.white),
+                                            style: const TextStyle(
+                                                color: Colors.white),
                                           ),
                                         ],
                                       ),
@@ -508,16 +551,19 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'Send a message...',
-                                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                                hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.5)),
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.2),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(25),
                                   borderSide: BorderSide.none,
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
                                 suffixIcon: IconButton(
-                                  icon: const Icon(Icons.send, color: Colors.white),
+                                  icon: const Icon(Icons.send,
+                                      color: Colors.white),
                                   onPressed: _sendMessage,
                                 ),
                               ),
@@ -529,11 +575,14 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                           if (!widget.isHost) ...[
                             const SizedBox(width: 8),
                             IconButton(
-                              icon: const Icon(Icons.card_giftcard, color: Colors.white),
+                              icon: const Icon(Icons.card_giftcard,
+                                  color: Colors.white),
                               onPressed: () {
                                 showModalBottomSheet(
                                   context: context,
-                                  builder: (context) => GiftBottomSheet(receiverId: widget.streamId), // Assuming streamId is the host's UID
+                                  builder: (context) => GiftBottomSheet(
+                                      receiverId: widget
+                                          .streamId), // Assuming streamId is the host's UID
                                 );
                               },
                             ),
@@ -552,14 +601,17 @@ class _EnhancedLiveStreamScreenState extends State<EnhancedLiveStreamScreen> {
                             // Camera toggle
                             IconButton(
                               icon: Icon(
-                                _isCameraOff ? Icons.videocam_off : Icons.videocam,
+                                _isCameraOff
+                                    ? Icons.videocam_off
+                                    : Icons.videocam,
                                 color: Colors.white,
                               ),
                               onPressed: _toggleCamera,
                             ),
                             // Switch camera
                             IconButton(
-                              icon: const Icon(Icons.flip_camera_ios, color: Colors.white),
+                              icon: const Icon(Icons.flip_camera_ios,
+                                  color: Colors.white),
                               onPressed: _switchCamera,
                             ),
                           ],

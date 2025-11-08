@@ -4,9 +4,9 @@ class AgoraTokenService {
   // Singleton pattern
   static final AgoraTokenService _instance = AgoraTokenService._internal();
   static AgoraTokenService get instance => _instance;
-  
+
   AgoraTokenService._internal();
-  
+
   factory AgoraTokenService() {
     return _instance;
   }
@@ -26,7 +26,6 @@ class AgoraTokenService {
         throw Exception('Failed to get a valid token from the server.');
       }
       return token;
-
     } catch (e) {
       print('Error fetching Agora token: $e');
       rethrow;

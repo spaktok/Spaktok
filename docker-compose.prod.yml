@@ -1,0 +1,138 @@
+# ===================================================================
+# Docker Compose للإنتاج - Spaktok v2.0
+# ===================================================================
+
+version: '3.8'
+
+services:
+  # ===================================================================
+  # Backend Service (Node.js)
+  # ===================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: spaktok-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/spaktok
+      # Firebase
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      # Agora
+      - AGORA_APP_ID=${AGORA_APP_ID}
+      - AGORA_APP_CERTIFICATE=${AGORA_APP_CERTIFICATE}
+      # Stripe
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY_PROD}
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - spaktok-network
+    volumes:
+      - ./backend/logs:/app/logs
+
+  # ===================================================================
+  # Redis Service (Caching)
+  # ===================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: spaktok-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - spaktok-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===================================================================
+  # PostgreSQL Service (Database)
+  # ===================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: spaktok-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=spaktok
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - spaktok-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===================================================================
+  # Nginx Service (Load Balancer)
+  # ===================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: spaktok-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - backend
+    networks:
+      - spaktok-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===================================================================
+  # Flutter Web (Frontend) - Optional
+  # ===================================================================
+  flutter-web:
+    build:
+      context: .
+      dockerfile: flutter-docker/Dockerfile.web
+    container_name: spaktok-flutter-web
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - spaktok-network
+
+# ===================================================================
+# Networks
+# ===================================================================
+networks:
+  spaktok-network:
+    driver: bridge
+
+# ===================================================================
+# Volumes
+# ===================================================================
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local

@@ -48,7 +48,8 @@ class BitmojiAvatar {
   final String userId;
   final String username;
   final AvatarStyle style;
-  final Map<String, dynamic> features; // Hair, eyes, nose, mouth, skin tone, etc.
+  final Map<String, dynamic>
+      features; // Hair, eyes, nose, mouth, skin tone, etc.
   final List<String> outfits;
   final List<String> accessories;
   final String? defaultOutfit;
@@ -366,7 +367,10 @@ class BitmojiIntegrationService {
           .doc(user.uid)
           .collection('avatarStickers')
           .doc(stickerId)
-          .set({'stickerId': stickerId, 'createdAt': FieldValue.serverTimestamp()});
+          .set({
+        'stickerId': stickerId,
+        'createdAt': FieldValue.serverTimestamp()
+      });
 
       return sticker;
     } catch (e) {
@@ -414,7 +418,8 @@ class BitmojiIntegrationService {
             await _firestore.collection('avatarStickers').doc(stickerId).get();
 
         if (stickerDoc.exists) {
-          stickers.add(AvatarSticker.fromMap(stickerDoc.data()!, stickerDoc.id));
+          stickers
+              .add(AvatarSticker.fromMap(stickerDoc.data()!, stickerDoc.id));
         }
       }
 
