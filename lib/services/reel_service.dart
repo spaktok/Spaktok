@@ -402,7 +402,7 @@ class ReelService {
         .snapshots()
         .asyncMap((savedSnapshot) async {
       final reelIds = savedSnapshot.docs
-          .map((doc) => doc.data()?['reelId'] as String?)
+          .map((doc) => doc.data()['reelId'] as String?)
           .where((id) => id != null)
           .cast<String>()
           .toList();

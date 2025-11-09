@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:spaktok/services/video_call_service.dart';
 import 'package:spaktok/services/agora_token_service.dart';
@@ -10,11 +10,11 @@ class VideoCallScreen extends StatefulWidget {
   final String callType; // 'one-on-one' or 'group'
 
   const VideoCallScreen({
-    Key? key,
+    super.key,
     required this.channelName,
     required this.userId,
     this.callType = 'one-on-one',
-  }) : super(key: key);
+  });
 
   @override
   State<VideoCallScreen> createState() => _VideoCallScreenState();
@@ -25,7 +25,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   late AgoraTokenService _tokenService;
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
-  List<int> _remoteUids = [];
+  final List<int> _remoteUids = [];
   int? _localUserUid;
 
   @override
@@ -47,17 +47,15 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         uid: widget.userId,
       );
 
-      if (token != null) {
-        // Join channel with token
-        await _videoCallService.joinChannel(
-          token: token,
-          channelName: widget.channelName,
-          uid: widget.userId,
-        );
+      // Join channel with token
+      await _videoCallService.joinChannel(
+        token: token,
+        channelName: widget.channelName,
+        uid: widget.userId,
+      );
 
-        _localUserUid = int.tryParse(widget.userId);
-      }
-
+      _localUserUid = int.tryParse(widget.userId);
+    
       if (AppConfig.enableDebugLogging) {
         debugPrint('[VideoCall] Initialized and joined channel: \');
       }

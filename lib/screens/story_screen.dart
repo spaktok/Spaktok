@@ -54,7 +54,7 @@ class _StoryViewerState extends State<StoryViewer> with TickerProviderStateMixin
   VideoPlayerController? _videoController;
   final AuthService _authService = AuthService();
   UserData? _storyUser;
-  int _currentIndex = 0;
+  final int _currentIndex = 0;
 
   @override
   void initState() {

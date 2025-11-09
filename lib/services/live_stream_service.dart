@@ -15,7 +15,7 @@ class LiveStreamService {
   Future<void> createStream({required String title}) async { /* ... */ }
   Future<void> joinStream() async { /* ... */ }
   Future<void> leaveStream() async { /* ... */ }
-  Stream<int> getViewersCount() { /* ... */ return _streamDocRef.snapshots().map((s) => (s.data() as Map<String, dynamic>)?['viewers'] ?? 0); }
+  Stream<int> getViewersCount() { /* ... */ return _streamDocRef.snapshots().map((s) => (s.data() as Map<String, dynamic>)['viewers'] ?? 0); }
 
   // --- Chat Management ---
   Stream<List<ChatMessage>> getChatMessages() { /* ... */ return Stream.value([]); }

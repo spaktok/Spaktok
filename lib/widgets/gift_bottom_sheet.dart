@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class GiftBottomSheet extends StatefulWidget {
   final String receiverId;
 
-  const GiftBottomSheet({Key? key, required this.receiverId}) : super(key: key);
+  const GiftBottomSheet({super.key, required this.receiverId});
 
   @override
   State<GiftBottomSheet> createState() => _GiftBottomSheetState();
@@ -60,7 +60,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
         giftName: giftName,
         giftImageUrl: _gifts.firstWhere((g) => g['name'] == giftName)['imageUrl'],
         giftCost: giftCost,
-      );
+      )
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sent $giftName to ${widget.receiverId}!')),

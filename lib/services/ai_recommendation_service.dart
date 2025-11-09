@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:math';
 
 /// Service for AI-powered recommendations
 /// This is a basic implementation that can be enhanced with actual ML models

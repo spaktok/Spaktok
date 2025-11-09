@@ -16,7 +16,7 @@ class CallService {
     if (currentUser == null) return;
 
     try {
-      final channelName = 'call_${currentUser.uid}_${targetUserId}';
+      final channelName = 'call_${currentUser.uid}_$targetUserId';
       final token = await _tokenService.getToken(channelName);
 
       final callDoc = _firestore.collection('calls').doc(channelName);

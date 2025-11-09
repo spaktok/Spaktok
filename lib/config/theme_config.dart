@@ -13,12 +13,10 @@ class ThemeConfig {
     scaffoldBackgroundColor: vantablack, // Vantablack background
     colorScheme: const ColorScheme.dark(
       primary: electricBlue,      // For buttons, FABs, etc.
-      secondary: electricBlue,    // For other interactive elements
-      background: vantablack,     // Background
+      secondary: electricBlue,     // Background
       surface: vantablack,        // Surface of cards, dialogs
       onPrimary: pureWhite,       // Text on primary color
-      onSecondary: pureWhite,     // Text on secondary color
-      onBackground: pureWhite,    // Main text color
+      onSecondary: pureWhite,    // Main text color
       onSurface: pureWhite,       // Text on cards
     ),
 
@@ -67,11 +65,9 @@ class ThemeConfig {
     colorScheme: const ColorScheme.light(
       primary: electricBlue,
       secondary: electricBlue,
-      background: pureWhite,
       surface: pureWhite,
       onPrimary: pureWhite,
       onSecondary: vantablack,
-      onBackground: vantablack,
       onSurface: vantablack,
     ),
     appBarTheme: const AppBarTheme(

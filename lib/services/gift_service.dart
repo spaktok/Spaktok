@@ -72,7 +72,7 @@ class GiftService {
         throw Exception('Sender not found.');
       }
 
-      final senderBalance = (senderSnapshot.data()! as Map<String, dynamic>)['coins'] ?? 0;
+      final senderBalance = (senderSnapshot.data()!)['coins'] ?? 0;
 
       if (senderBalance < gift.coinCost) {
         throw Exception('Insufficient coins.');

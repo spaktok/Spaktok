@@ -19,16 +19,11 @@ abstract class AppException implements Exception {
 /// Authentication related exceptions
 class AuthException extends AppException {
   AuthException({
-    required String message,
-    String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    required super.message,
+    super.code,
+    super.originalException,
+    super.stackTrace,
+  });
 
   factory AuthException.userNotFound() {
     return AuthException(
@@ -83,16 +78,11 @@ class AuthException extends AppException {
 /// Network related exceptions
 class NetworkException extends AppException {
   NetworkException({
-    required String message,
-    String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    required super.message,
+    super.code,
+    super.originalException,
+    super.stackTrace,
+  });
 
   factory NetworkException.noConnection() {
     return NetworkException(
@@ -119,16 +109,11 @@ class NetworkException extends AppException {
 /// Payment related exceptions
 class PaymentException extends AppException {
   PaymentException({
-    required String message,
-    String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    required super.message,
+    super.code,
+    super.originalException,
+    super.stackTrace,
+  });
 
   factory PaymentException.insufficientBalance() {
     return PaymentException(
@@ -162,16 +147,11 @@ class PaymentException extends AppException {
 /// Database related exceptions
 class DatabaseException extends AppException {
   DatabaseException({
-    required String message,
-    String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    required super.message,
+    super.code,
+    super.originalException,
+    super.stackTrace,
+  });
 
   factory DatabaseException.documentNotFound() {
     return DatabaseException(
@@ -200,17 +180,12 @@ class ValidationException extends AppException {
   final Map<String, String>? fieldErrors;
 
   ValidationException({
-    required String message,
-    String? code,
+    required super.message,
+    super.code,
     this.fieldErrors,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    super.originalException,
+    super.stackTrace,
+  });
 
   factory ValidationException.invalidInput(Map<String, String> errors) {
     return ValidationException(
@@ -224,16 +199,11 @@ class ValidationException extends AppException {
 /// File related exceptions
 class FileException extends AppException {
   FileException({
-    required String message,
-    String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    required super.message,
+    super.code,
+    super.originalException,
+    super.stackTrace,
+  });
 
   factory FileException.fileNotFound() {
     return FileException(
@@ -267,29 +237,21 @@ class FileException extends AppException {
 /// Generic application exception
 class AppError extends AppException {
   AppError({
-    required String message,
-    String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
-  }) : super(
-          message: message,
-          code: code,
-          originalException: originalException,
-          stackTrace: stackTrace,
-        );
+    required super.message,
+    super.code,
+    super.originalException,
+    super.stackTrace,
+  });
 }
 
 /// Generic uncaught exception
 class UnknownException extends AppException {
   UnknownException({
-    String message = 'An unknown error occurred',
+    super.message = 'An unknown error occurred',
     String? code,
-    dynamic originalException,
-    StackTrace? stackTrace,
+    super.originalException,
+    super.stackTrace,
   }) : super(
-          message: message,
           code: code ?? 'unknown_error',
-          originalException: originalException,
-          stackTrace: stackTrace,
         );
 }

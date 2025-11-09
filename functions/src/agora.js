@@ -24,7 +24,8 @@ exports.getAgoraToken = functions.https.onCall((data, context) => {
   }
 
   // Lazy require so that deploy/install can continue even if dependency is absent.
-  let RtcTokenBuilder, RtcRole;
+  let RtcTokenBuilder;
+  let RtcRole;
   try {
     ({ RtcTokenBuilder, RtcRole } = require('agora-access-token'));
   } catch (e) {

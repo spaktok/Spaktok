@@ -120,7 +120,7 @@ class StreamService {
         messageData[\'message\'] = message;
       }
 
-      await _firestore
+      _firestore
           .collection(\'streams\')
           .doc(streamId)
           .collection(\'messages\')

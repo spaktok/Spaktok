@@ -3,15 +3,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:spaktok/core/firebase_options.dart';
-import 'package:spaktok/screens/main_navigation_screen.dart';
+import 'package:spaktok/spaktok/theme/app_theme.dart';
+import 'package:spaktok/spaktok/screens/main_navigation_screen.dart';
 import 'package:spaktok/screens/auth/login_screen.dart';
+import 'package:spaktok/screens/auth/signup_screen.dart' show SignUpScreen;
+import 'package:spaktok/screens/auth/forgot_password_screen.dart';
 import 'package:spaktok/screens/appearance_settings_screen.dart';
+import 'package:spaktok/spaktok/screens/settings_screen.dart';
+import 'package:spaktok/screens/notifications_screen.dart';
+import 'package:spaktok/screens/search_screen.dart';
+import 'package:spaktok/spaktok/screens/buy_coins_screen.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/services/call_service.dart';
 import 'package:spaktok/services/location_service.dart';
 import 'package:spaktok/services/theme_service.dart';
 import 'package:spaktok/services/chat_background_service.dart';
-import 'package:spaktok/services/sound_haptic_service.dart';
 
 /// التطبيق الرئيسي مع جميع التكاملات
 void main() async {
@@ -65,16 +71,24 @@ class MyApp extends StatelessWidget {
             title: 'Spaktok',
             debugShowCheckedModeBanner: false,
 
-            // الثيمات الثلاثة
-            theme: lightTheme,
-            darkTheme: darkTheme,
+            // Dual theme system: Pure White & Vantablack + Electric Blue
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
             themeMode: themeService.themeMode,
 
             home: const AuthWrapper(),
 
-            // Routes
+            // Named Routes for all primary screens
             routes: {
+              '/login': (context) => const LoginScreen(),
+              '/signup': (context) => const SignUpScreen(),
+              '/forgot-password': (context) => const ForgotPasswordScreen(),
+              '/settings': (context) => const SettingsScreen(),
               '/appearance': (context) => const AppearanceSettingsScreen(),
+              '/notifications': (context) => const NotificationsScreen(),
+              '/search': (context) => const SearchScreen(),
+              '/buy-coins': (context) => const BuyCoinsScreen(),
+              // Note: Gifts screen requires parameters, use Navigator.push with arguments
             },
           );
         },

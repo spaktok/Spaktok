@@ -32,6 +32,8 @@ const config = {
     appKey: env.CHAT_APP_KEY || '',
     orgName: env.CHAT_ORG_NAME || '',
     appName: env.CHAT_APP_NAME || '',
+    clientId: env.CHAT_CLIENT_ID || '',
+    clientSecret: env.CHAT_CLIENT_SECRET || '',
   },
   docker: {
     registryUser: env.DOCKER_REGISTRY_USERNAME || '',

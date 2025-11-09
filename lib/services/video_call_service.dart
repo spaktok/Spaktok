@@ -1,4 +1,4 @@
-﻿import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,9 +28,9 @@ class VideoCallService {
 
   RtcEngine? _engine;
   bool _isInitialized = false;
-  bool _isMuted = false;
-  bool _isVideoOff = false;
-  bool _isSpeakerOn = true;
+  final bool _isMuted = false;
+  final bool _isVideoOff = false;
+  final bool _isSpeakerOn = true;
   int? _localUid;
   final List<int> _remoteUids = [];
 

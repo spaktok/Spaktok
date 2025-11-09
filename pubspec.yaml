@@ -1,4 +1,4 @@
-﻿name: spaktok
+name: spaktok
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -83,6 +83,11 @@ dependencies:
   rive: ^0.13.15
   flutter_animate: ^4.5.0
 
+  intl: any
+  font_awesome_flutter: any
+  cached_network_image: any
+  google_maps_flutter: any
+  crypto: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

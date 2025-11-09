@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:spaktok/models/trending_content.dart';
 import 'package:spaktok/services/trending_service.dart';
 

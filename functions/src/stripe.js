@@ -10,7 +10,42 @@ if (!admin.apps.length) {
 }
 
 const stripeSecret = config.stripe.secretKey || process.env.STRIPE_SECRET_KEY || '';
-const stripe = new Stripe(stripeSecret, { apiVersion: '2022-11-15' });
+
+// Optional mock: when explicitly requested, use a lightweight mock to avoid
+// making network calls to Stripe during tests/CI. Enable by setting
+// USE_STRIPE_MOCK=true. Otherwise, use the real Stripe client (even in tests)
+// if a valid STRIPE_SECRET_KEY is present.
+let stripe;
+if (process.env.USE_STRIPE_MOCK === 'true') {
+  // Minimal mock implementation used only for tests.
+  stripe = {
+    paymentIntents: {
+      create: async ({ amount, currency, metadata }) => {
+        // Return a fake payment intent
+        return {
+          id: `pi_mock_${Date.now()}`,
+          amount: amount || 0,
+          currency: currency || 'usd',
+          metadata: metadata || {},
+          client_secret: `cs_mock_${Math.random().toString(36).slice(2)}`,
+        };
+      },
+    },
+    webhooks: {
+      constructEvent: (rawBody, signature, secret) => {
+        // In mock mode, assume the body is already the event
+        try {
+          return typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+        } catch (e) {
+          return rawBody;
+        }
+      },
+    },
+  };
+} else {
+  // Real Stripe client for production/dev
+  stripe = new Stripe(stripeSecret, { apiVersion: '2022-11-15' });
+}
 
 /**
  * Create a PaymentIntent for coin purchases. Callable function.
