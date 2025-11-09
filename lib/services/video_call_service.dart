@@ -1,4 +1,4 @@
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+﻿import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -53,7 +53,8 @@ class VideoCallService {
       // Engine initialized with App ID provided via --dart-define (see AppConfig)
       _engine = createAgoraRtcEngine();
       if (AppConfig.agoraAppId.isEmpty) {
-        debugPrint('[VideoCallService] Missing AGORA_APP_ID. Provide via --dart-define');
+        debugPrint(
+            '[VideoCallService] Missing AGORA_APP_ID. Provide via --dart-define');
         throw Exception('Missing AGORA_APP_ID');
       }
       await _engine!.initialize(RtcEngineContext(appId: AppConfig.agoraAppId));
@@ -75,13 +76,8 @@ class VideoCallService {
     if (!_isInitialized) await initialize();
 
     try {
-      // Request token from backend service
-      final token = await _tokenService.getToken(
-        channelName: channelName,
-        uid: uid,
-        userId: _authService.currentUser?.uid ?? 'anonymous',
-        role: 'publisher',
-      );
+      // Request token from backend service (positional API)
+      final token = await _tokenService.getToken(channelName);
 
       await _engine!.joinChannel(
         token: token,
@@ -129,6 +125,14 @@ class VideoCallService {
   Future<void> leaveChannel() async {
     await _engine?.leaveChannel();
     _remoteUids.clear();
+  }
+
+  Future<void> toggleVideo(bool enabled) async {
+    await _engine?.muteLocalVideoStream(!enabled);
+  }
+
+  Future<void> toggleAudio(bool enabled) async {
+    await _engine?.muteLocalAudioStream(!enabled);
   }
 
   void dispose() {

@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/screens/auth/signup_screen.dart';
 import 'package:spaktok/screens/auth/forgot_password_screen.dart';
-import 'package:spaktok/screens/main_navigation_screen.dart';
+import 'package:spaktok/spaktok/screens/main_navigation_screen.dart';
 import 'package:spaktok/widgets/social_login_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -275,7 +275,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.google,
                     text: 'Continue with Google',
-                    onPressed: () => _handleSocialLogin(_authService.signInWithGoogle),
+                    onPressed: () {
+                      _handleSocialLogin(() async {
+                        await _authService.signInWithGoogle();
+                      });
+                    },
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                   ),
@@ -283,7 +287,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.snapchat,
                     text: 'Continue with Snapchat',
-                    onPressed: () => _handleSocialLogin(_authService.signInWithFacebook), // Using Facebook for now
+                    onPressed: () {
+                      _handleSocialLogin(() async {
+                        await _authService.signInWithFacebook();
+                      });
+                    }, // Using Facebook for now
                     backgroundColor: const Color(0xFFFFFC00),
                     foregroundColor: Colors.black,
                   ),
@@ -291,7 +299,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.tiktok,
                     text: 'Continue with TikTok',
-                    onPressed: () => _handleSocialLogin(_authService.signInWithFacebook), // Using Facebook for now
+                    onPressed: () {
+                      _handleSocialLogin(() async {
+                        await _authService.signInWithFacebook();
+                      });
+                    }, // Using Facebook for now
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
                   ),

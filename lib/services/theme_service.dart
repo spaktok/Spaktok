@@ -112,7 +112,7 @@ class ThemeService extends ChangeNotifier {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _customColors!.surface,
         elevation: 2,
       ),
@@ -150,7 +150,7 @@ final ThemeData lightTheme = ThemeData(
     elevation: 0,
     centerTitle: true,
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: Colors.white,
     elevation: 2,
     shape: RoundedRectangleBorder(
@@ -190,7 +190,7 @@ final ThemeData darkTheme = ThemeData(
     elevation: 0,
     centerTitle: true,
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: const Color(0xFF1E1E1E),
     elevation: 4,
     shape: RoundedRectangleBorder(
@@ -233,7 +233,7 @@ final ThemeData animeTheme = ThemeData(
     elevation: 0,
     centerTitle: true,
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: const Color(0xFF1A1F3A),
     elevation: 8,
     shadowColor: const Color(0xFFFF69B4).withOpacity(0.3),

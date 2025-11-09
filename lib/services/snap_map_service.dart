@@ -4,60 +4,62 @@ import 'package:geolocator/geolocator.dart';
 
 /// Snap Map Service
 /// Handles location-based map integration and friend location sharing
+// Extracted enum and model from inside class (Dart does not allow nested class/enum declarations)
+enum LocationVisibility {
+  ghost, // Invisible to everyone
+  friends, // Visible to friends only
+  public, // Visible to everyone
+}
+
+class UserLocation {
+  final String userId;
+  final double latitude;
+  final double longitude;
+  final DateTime timestamp;
+  final String? status; // Optional status message
+  final LocationVisibility visibility;
+
+  UserLocation({
+    required this.userId,
+    required this.latitude,
+    required this.longitude,
+    required this.timestamp,
+    this.status,
+    required this.visibility,
+  });
+
+  factory UserLocation.fromMap(Map<String, dynamic> map) {
+    return UserLocation(
+      userId: map['userId'] ?? '',
+      latitude: (map['latitude'] ?? 0).toDouble(),
+      longitude: (map['longitude'] ?? 0).toDouble(),
+      timestamp: (map['timestamp'] is Timestamp)
+          ? (map['timestamp'] as Timestamp).toDate()
+          : DateTime.tryParse(map['timestamp']?.toString() ?? '') ??
+              DateTime.now(),
+      status: map['status'],
+      visibility: LocationVisibility.values.firstWhere(
+        (e) => e.toString().split('.').last == (map['visibility'] ?? 'ghost'),
+        orElse: () => LocationVisibility.ghost,
+      ),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'latitude': latitude,
+      'longitude': longitude,
+      'timestamp': Timestamp.fromDate(timestamp),
+      'status': status,
+      'visibility': visibility.toString().split('.').last,
+    };
+  }
+}
+
 class SnapMapService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  /// Location visibility modes
-  enum LocationVisibility {
-    ghost, // Invisible to everyone
-    friends, // Visible to friends only
-    public, // Visible to everyone
-  }
-
-  /// User location model
-  class UserLocation {
-    final String userId;
-    final double latitude;
-    final double longitude;
-    final DateTime timestamp;
-    final String? status; // Optional status message
-    final LocationVisibility visibility;
-
-    UserLocation({
-      required this.userId,
-      required this.latitude,
-      required this.longitude,
-      required this.timestamp,
-      this.status,
-      required this.visibility,
-    });
-
-    factory UserLocation.fromMap(Map<String, dynamic> map) {
-      return UserLocation(
-        userId: map['userId'] ?? '',
-        latitude: (map['latitude'] ?? 0).toDouble(),
-        longitude: (map['longitude'] ?? 0).toDouble(),
-        timestamp: (map['timestamp'] as Timestamp).toDate(),
-        status: map['status'],
-        visibility: LocationVisibility.values.firstWhere(
-          (e) => e.toString() == 'LocationVisibility.${map['visibility']}',
-          orElse: () => LocationVisibility.ghost,
-        ),
-      );
-    }
-
-    Map<String, dynamic> toMap() {
-      return {
-        'userId': userId,
-        'latitude': latitude,
-        'longitude': longitude,
-        'timestamp': Timestamp.fromDate(timestamp),
-        'status': status,
-        'visibility': visibility.toString().split('.').last,
-      };
-    }
-  }
 
   /// Get current location
   Future<Position> getCurrentLocation() async {
@@ -195,8 +197,7 @@ class SnapMapService {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    final doc =
-        await _firestore.collection('user_locations').doc(userId).get();
+    final doc = await _firestore.collection('user_locations').doc(userId).get();
     if (!doc.exists) return LocationVisibility.ghost;
 
     final visibility = doc.data()?['visibility'] ?? 'ghost';
@@ -231,9 +232,8 @@ class SnapMapService {
         .where('toUserId', isEqualTo: userId)
         .where('expiresAt', isGreaterThan: Timestamp.now())
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
   }
 
   /// Add location-based story

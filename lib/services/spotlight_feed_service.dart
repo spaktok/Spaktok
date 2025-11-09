@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer' as developer;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 
@@ -95,7 +96,7 @@ class SpotlightVideo {
       'isMonetized': isMonetized,
       'earnings': earnings,
       'createdAt': Timestamp.fromDate(createdAt),
-      'featuredAt': featuredAt != null ? Timestamp.fromDate(featuredAt) : null,
+      'featuredAt': featuredAt != null ? Timestamp.fromDate(featuredAt!) : null,
     };
   }
 }
@@ -201,8 +202,9 @@ class SpotlightFeedService {
           .set({'videoId': videoId, 'createdAt': FieldValue.serverTimestamp()});
 
       return video;
-    } catch (e) {
-      print('Error submitting to Spotlight: $e');
+    } catch (e, st) {
+      developer.log('Error submitting to Spotlight',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       rethrow;
     }
   }
@@ -227,8 +229,9 @@ class SpotlightFeedService {
       return querySnapshot.docs
           .map((doc) => SpotlightVideo.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      print('Error getting Spotlight feed: $e');
+    } catch (e, st) {
+      developer.log('Error getting Spotlight feed',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return [];
     }
   }
@@ -270,8 +273,9 @@ class SpotlightFeedService {
       return querySnapshot.docs
           .map((doc) => SpotlightVideo.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      print('Error getting personalized feed: $e');
+    } catch (e, st) {
+      developer.log('Error getting personalized feed',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return getSpotlightFeed(limit: limit);
     }
   }
@@ -293,8 +297,9 @@ class SpotlightFeedService {
       return querySnapshot.docs
           .map((doc) => SpotlightVideo.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      print('Error getting videos by tag: $e');
+    } catch (e, st) {
+      developer.log('Error getting videos by tag',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return [];
     }
   }
@@ -315,8 +320,9 @@ class SpotlightFeedService {
       return querySnapshot.docs
           .map((doc) => SpotlightVideo.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      print('Error getting user Spotlight videos: $e');
+    } catch (e, st) {
+      developer.log('Error getting user Spotlight videos',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return [];
     }
   }
@@ -348,8 +354,9 @@ class SpotlightFeedService {
 
       // Check if video qualifies for rewards
       await _checkAndCalculateRewards(videoId);
-    } catch (e) {
-      print('Error recording view: $e');
+    } catch (e, st) {
+      developer.log('Error recording view',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
     }
   }
 
@@ -376,8 +383,9 @@ class SpotlightFeedService {
 
       // Update engagement score
       await _updateEngagementScore(videoId);
-    } catch (e) {
-      print('Error liking video: $e');
+    } catch (e, st) {
+      developer.log('Error liking video',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       rethrow;
     }
   }
@@ -402,8 +410,9 @@ class SpotlightFeedService {
 
       // Update engagement score
       await _updateEngagementScore(videoId);
-    } catch (e) {
-      print('Error unliking video: $e');
+    } catch (e, st) {
+      developer.log('Error unliking video',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       rethrow;
     }
   }
@@ -417,8 +426,9 @@ class SpotlightFeedService {
 
       // Update engagement score
       await _updateEngagementScore(videoId);
-    } catch (e) {
-      print('Error sharing video: $e');
+    } catch (e, st) {
+      developer.log('Error sharing video',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
     }
   }
 
@@ -445,8 +455,9 @@ class SpotlightFeedService {
       return querySnapshot.docs
           .map((doc) => CreatorReward.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      print('Error getting creator rewards: $e');
+    } catch (e, st) {
+      developer.log('Error getting creator rewards',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return [];
     }
   }
@@ -469,8 +480,9 @@ class SpotlightFeedService {
       }
 
       return total;
-    } catch (e) {
-      print('Error getting total earnings: $e');
+    } catch (e, st) {
+      developer.log('Error getting total earnings',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return 0.0;
     }
   }
@@ -494,8 +506,9 @@ class SpotlightFeedService {
         'trendingScore': data['trendingScore'] ?? 0.0,
         'earnings': data['earnings'] ?? 0.0,
       };
-    } catch (e) {
-      print('Error getting video statistics: $e');
+    } catch (e, st) {
+      developer.log('Error getting video statistics',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return {};
     }
   }
@@ -530,8 +543,9 @@ class SpotlightFeedService {
         'engagementScore': engagementScore,
         'trendingScore': trendingScore,
       });
-    } catch (e) {
-      print('Error updating engagement score: $e');
+    } catch (e, st) {
+      developer.log('Error updating engagement score',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
     }
   }
 
@@ -587,8 +601,9 @@ class SpotlightFeedService {
             .doc(rewardId)
             .set(reward.toMap());
       }
-    } catch (e) {
-      print('Error calculating rewards: $e');
+    } catch (e, st) {
+      developer.log('Error calculating rewards',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
     }
   }
 
@@ -629,8 +644,9 @@ class SpotlightFeedService {
         ..sort((a, b) => b.value.compareTo(a.value));
 
       return sortedInterests.map((e) => e.key).toList();
-    } catch (e) {
-      print('Error getting user interests: $e');
+    } catch (e, st) {
+      developer.log('Error getting user interests',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       return [];
     }
   }
@@ -660,8 +676,9 @@ class SpotlightFeedService {
           .collection('spotlightVideos')
           .doc(videoId)
           .delete();
-    } catch (e) {
-      print('Error deleting video: $e');
+    } catch (e, st) {
+      developer.log('Error deleting video',
+          error: e, stackTrace: st, name: 'SpotlightFeedService');
       rethrow;
     }
   }

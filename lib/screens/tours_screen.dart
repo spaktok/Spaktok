@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/tours_service.dart';
 
-
 class ToursScreen extends StatefulWidget {
   const ToursScreen({super.key});
 
@@ -10,14 +9,15 @@ class ToursScreen extends StatefulWidget {
 }
 
 class _ToursScreenState extends State<ToursScreen> {
-  final ToursService _toursService = ToursService();
+  final ToursService _toursService = ToursService.instance;
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
   final List<Map<String, dynamic>> _tourSteps = [
     {
       'title': 'Welcome to Spaktok!',
-      'description': 'Discover a new way to connect, create, and share with the world.',
+      'description':
+          'Discover a new way to connect, create, and share with the world.',
       'icon': Icons.waving_hand,
       'color': Colors.purple,
       'features': [
@@ -29,7 +29,8 @@ class _ToursScreenState extends State<ToursScreen> {
     },
     {
       'title': 'Create Amazing Content',
-      'description': 'Use our advanced camera with filters, effects, and beauty tools to create stunning photos and videos.',
+      'description':
+          'Use our advanced camera with filters, effects, and beauty tools to create stunning photos and videos.',
       'icon': Icons.camera_alt,
       'color': Colors.blue,
       'features': [
@@ -41,7 +42,8 @@ class _ToursScreenState extends State<ToursScreen> {
     },
     {
       'title': 'Go Live & Connect',
-      'description': 'Start live streaming and interact with your audience in real-time.',
+      'description':
+          'Start live streaming and interact with your audience in real-time.',
       'icon': Icons.live_tv,
       'color': Colors.red,
       'features': [
@@ -53,7 +55,8 @@ class _ToursScreenState extends State<ToursScreen> {
     },
     {
       'title': 'Discover & Explore',
-      'description': 'Find trending content, follow creators, and discover new communities.',
+      'description':
+          'Find trending content, follow creators, and discover new communities.',
       'icon': Icons.explore,
       'color': Colors.orange,
       'features': [
@@ -65,7 +68,8 @@ class _ToursScreenState extends State<ToursScreen> {
     },
     {
       'title': 'Send Gifts & Support',
-      'description': 'Show appreciation to your favorite creators by sending virtual gifts.',
+      'description':
+          'Show appreciation to your favorite creators by sending virtual gifts.',
       'icon': Icons.card_giftcard,
       'color': Colors.pink,
       'features': [
@@ -302,7 +306,8 @@ class _ToursScreenState extends State<ToursScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[800],
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -338,7 +343,9 @@ class _ToursScreenState extends State<ToursScreen> {
             ),
             child: Row(
               children: [
-                Text(_currentPage < _tourSteps.length - 1 ? 'Next' : 'Get Started'),
+                Text(_currentPage < _tourSteps.length - 1
+                    ? 'Next'
+                    : 'Get Started'),
                 const SizedBox(width: 5),
                 Icon(
                   _currentPage < _tourSteps.length - 1

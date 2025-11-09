@@ -64,6 +64,11 @@ class ToursService {
     }
   }
 
+  // Alias for completeTour (used by screens)
+  Future<void> completeTour(String tourId) async {
+    await markTourCompleted(tourId);
+  }
+
   // Reset a tour
   Future<void> resetTour(String tourId) async {
     try {
@@ -103,12 +108,14 @@ class ToursService {
         ),
         TourStep(
           title: 'Home Feed',
-          description: 'Discover amazing content from creators around the world.',
+          description:
+              'Discover amazing content from creators around the world.',
           icon: Icons.home,
         ),
         TourStep(
           title: 'Go Live',
-          description: 'Start your own live stream and connect with your audience.',
+          description:
+              'Start your own live stream and connect with your audience.',
           icon: Icons.videocam,
         ),
         TourStep(
@@ -139,7 +146,8 @@ class ToursService {
         ),
         TourStep(
           title: 'Filters',
-          description: 'Apply beautiful filters to enhance your photos and videos.',
+          description:
+              'Apply beautiful filters to enhance your photos and videos.',
           icon: Icons.filter,
         ),
         TourStep(
@@ -190,7 +198,8 @@ class ToursService {
         ),
         TourStep(
           title: 'End Stream',
-          description: 'When you\'re done, tap the end button to finish your stream.',
+          description:
+              'When you\'re done, tap the end button to finish your stream.',
           icon: Icons.stop_circle,
         ),
       ],
@@ -206,12 +215,14 @@ class ToursService {
       steps: [
         TourStep(
           title: 'Messages',
-          description: 'Send text messages, photos, and videos to your friends.',
+          description:
+              'Send text messages, photos, and videos to your friends.',
           icon: Icons.message,
         ),
         TourStep(
           title: 'Camera Background',
-          description: 'Enable camera background in settings for a unique chat experience.',
+          description:
+              'Enable camera background in settings for a unique chat experience.',
           icon: Icons.camera,
         ),
         TourStep(

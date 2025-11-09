@@ -31,8 +31,8 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   @override
   void initState() {
     super.initState();
-    _videoCallService = VideoCallService();
-    _tokenService = AgoraTokenService();
+    _videoCallService = VideoCallService.instance;
+    _tokenService = AgoraTokenService.instance;
     _initializeCall();
   }
 
@@ -41,26 +41,39 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       // Initialize Agora engine
       await _videoCallService.initialize();
 
-      // Get token from backend
-      final token = await _tokenService.getToken(
-        channelName: widget.channelName,
-        uid: widget.userId,
-      );
+      // Parse UID from userId string
+      _localUserUid = int.tryParse(widget.userId) ?? 0;
 
-      // Join channel with token
+      // Join channel (service will get token internally)
       await _videoCallService.joinChannel(
-        token: token,
         channelName: widget.channelName,
-        uid: widget.userId,
+        uid: _localUserUid!,
+        isAudioOnly: false,
       );
 
-      _localUserUid = int.tryParse(widget.userId);
-    
+      // Register event handlers
+      _videoCallService.registerEventHandlers(
+        onUserJoined: (int remoteUid) {
+          setState(() {
+            _remoteUids.add(remoteUid);
+          });
+        },
+        onUserOffline: (int remoteUid) {
+          setState(() {
+            _remoteUids.remove(remoteUid);
+          });
+        },
+        onJoinChannelSuccess: () {
+          debugPrint('[VideoCall] Successfully joined channel');
+        },
+      );
+
       if (AppConfig.enableDebugLogging) {
-        debugPrint('[VideoCall] Initialized and joined channel: \');
+        debugPrint(
+            '[VideoCall] Initialized and joined channel: ${widget.channelName}');
       }
     } catch (e) {
-      _showError('Failed to initialize call: \');
+      _showError('Failed to initialize call: $e');
     }
   }
 
@@ -97,7 +110,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black87,
-        title: Text('Call - \'),
+        title: Text('Call - ${widget.channelName}'),
         elevation: 0,
       ),
       body: Stack(
@@ -107,7 +120,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             child: _localUserUid != null
                 ? AgoraVideoView(
                     controller: VideoViewController(
-                      rtcEngine: _videoCallService.engine,
+                      rtcEngine: _videoCallService.engine!,
                       canvas: VideoCanvas(uid: 0),
                     ),
                   )
@@ -130,7 +143,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               child: _remoteUids.isNotEmpty
                   ? AgoraVideoView(
                       controller: VideoViewController.remote(
-                        rtcEngine: _videoCallService.engine,
+                        rtcEngine: _videoCallService.engine!,
                         canvas: VideoCanvas(uid: _remoteUids.first),
                         connection: RtcConnection(
                           channelId: widget.channelName,
@@ -139,7 +152,8 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     )
                   : Container(
                       color: Colors.grey[800],
-                      child: const Icon(Icons.videocam_off, color: Colors.white54),
+                      child:
+                          const Icon(Icons.videocam_off, color: Colors.white54),
                     ),
             ),
           ),
@@ -168,7 +182,8 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   FloatingActionButton(
                     backgroundColor: _isVideoEnabled ? Colors.blue : Colors.red,
                     onPressed: _toggleVideo,
-                    child: Icon(_isVideoEnabled ? Icons.videocam : Icons.videocam_off),
+                    child: Icon(
+                        _isVideoEnabled ? Icons.videocam : Icons.videocam_off),
                   ),
                 ],
               ),

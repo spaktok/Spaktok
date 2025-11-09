@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:spaktok/services/stream_service.dart';
 
 class GiftBottomSheet extends StatefulWidget {
   final String receiverId;
@@ -26,7 +27,8 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
 
   Future<void> _fetchGifts() async {
     try {
-      final giftsSnapshot = await FirebaseFirestore.instance.collection('gifts').get();
+      final giftsSnapshot =
+          await FirebaseFirestore.instance.collection('gifts').get();
       setState(() {
         _gifts = giftsSnapshot.docs.map((doc) => doc.data()).toList();
         _isLoading = false;
@@ -52,15 +54,15 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
     }
 
     try {
-      // Deduct coins from sender (implement this logic in AuthService or a separate service)
-      // For now, we'll assume the user has enough balance and directly send the gift.
-      // In a real app, you'd call a Cloud Function to handle the transaction s      await _streamService.sendStreamMessage(
+      // Deduct coins (placeholder) then send gift message to stream
+      await _streamService.sendStreamMessage(
         streamId: widget.receiverId,
-        message: '', // Message is empty for gifts
+        message: '', // empty for gift
         giftName: giftName,
-        giftImageUrl: _gifts.firstWhere((g) => g['name'] == giftName)['imageUrl'],
+        giftImageUrl:
+            _gifts.firstWhere((g) => g['name'] == giftName)['imageUrl'],
         giftCost: giftCost,
-      )
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sent $giftName to ${widget.receiverId}!')),
@@ -115,7 +117,8 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
                           gift['imageUrl'],
                           height: 40,
                           width: 40,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.broken_image),
                         ),
                         const SizedBox(height: 8),
                         Text(gift['name']),
@@ -132,4 +135,3 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
     );
   }
 }
-

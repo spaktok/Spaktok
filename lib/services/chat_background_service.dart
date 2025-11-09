@@ -128,11 +128,16 @@ class ChatBackgroundService extends ChangeNotifier {
             Container(color: Colors.grey[100]),
             Opacity(
               opacity: 0.1,
-              child: Image.asset(
-                'assets/backgrounds/$_currentValue',
-                fit: BoxFit.repeat,
+              child: Container(
                 width: double.infinity,
                 height: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/backgrounds/$_currentValue'),
+                    repeat: ImageRepeat.repeat,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
           ],

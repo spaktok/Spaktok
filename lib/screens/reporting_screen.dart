@@ -20,7 +20,7 @@ class ReportingScreen extends StatefulWidget {
 }
 
 class _ReportingScreenState extends State<ReportingScreen> {
-  final ReportingService _reportingService = ReportingService();
+  final ReportingService _reportingService = ReportingService.instance;
   final AuthService _authService = AuthService();
   final TextEditingController _detailsController = TextEditingController();
   
@@ -375,12 +375,30 @@ class _ReportingScreenState extends State<ReportingScreen> {
     });
 
     try {
+      // Map the reason string to ReportReason enum
+      final reasonEnum = ReportReason.values.firstWhere(
+        (e) => e.toString().split('.').last.toLowerCase() == 
+               _selectedReason!.toLowerCase().replaceAll(' ', '').replaceAll('-', ''),
+        orElse: () => ReportReason.other,
+      );
+
+      // Determine report type from contentType
+      ReportType reportType;
+      if (widget.contentType == 'user') {
+        reportType = ReportType.user;
+      } else if (widget.contentType == 'live') {
+        reportType = ReportType.stream;
+      } else if (widget.contentType == 'comment') {
+        reportType = ReportType.comment;
+      } else {
+        reportType = ReportType.post;
+      }
+
       await _reportingService.submitReport(
-        contentId: widget.contentId ?? '',
-        contentType: widget.contentType ?? 'post',
-        reportedUserId: widget.reportedUserId ?? '',
-        reason: _selectedReason!,
-        details: _detailsController.text,
+        type: reportType,
+        targetId: widget.contentId ?? widget.reportedUserId ?? '',
+        reason: reasonEnum,
+        description: _detailsController.text,
       );
 
       if (mounted) {
@@ -416,3 +434,4 @@ class _ReportingScreenState extends State<ReportingScreen> {
     _detailsController.dispose();
     super.dispose();
   }
+}

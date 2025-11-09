@@ -13,6 +13,13 @@
   static const Duration tokenRequestTimeout = Duration(seconds: 30);
   static const int maxTokensPerUserPerDay = 100;
 
+  // Additional Agora endpoints for tests
+  static const String agoraRenewEndpoint =
+      '$backendBaseUrl/api/agora/token/renew';
+
+  // Getters for backward compatibility with tests
+  static int get tokenExpiryBuffer => agoraTokenExpiryBufferSeconds;
+
   // Debug configuration
   static const bool enableDebugLogging = true;
   static const bool debugAgoraTokenRequests = true;

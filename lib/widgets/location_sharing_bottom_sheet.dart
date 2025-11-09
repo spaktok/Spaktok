@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:spaktok/services/location_service.dart';
+// Updated import to reference snap map visibility enum
+import 'package:spaktok/services/snap_map_service.dart';
 
 class LocationSharingBottomSheet extends StatefulWidget {
-  final Function(LocationPrivacy privacy, List<String>? sharedWithFriends,
+  final Function(LocationVisibility privacy, List<String>? sharedWithFriends,
       bool isLive, DateTime? liveExpiresAt) onShareLocation;
 
   const LocationSharingBottomSheet({super.key, required this.onShareLocation});
@@ -14,7 +15,7 @@ class LocationSharingBottomSheet extends StatefulWidget {
 
 class _LocationSharingBottomSheetState
     extends State<LocationSharingBottomSheet> {
-  LocationPrivacy _selectedPrivacy = LocationPrivacy.off;
+  LocationVisibility _selectedPrivacy = LocationVisibility.ghost;
   final List<String> _selectedFriends = []; // Placeholder for selected friends
   bool _isLiveLocationSharing = false;
   DateTime? _liveLocationExpiresAt;
@@ -33,11 +34,11 @@ class _LocationSharingBottomSheetState
           ),
           const SizedBox(height: 16),
           ListTile(
-            title: const Text('Off'),
-            leading: Radio<LocationPrivacy>(
-              value: LocationPrivacy.off,
+            title: const Text('Ghost Mode (Hidden)'),
+            leading: Radio<LocationVisibility>(
+              value: LocationVisibility.ghost,
               groupValue: _selectedPrivacy,
-              onChanged: (LocationPrivacy? value) {
+              onChanged: (LocationVisibility? value) {
                 setState(() {
                   _selectedPrivacy = value!;
                   _isLiveLocationSharing = false;
@@ -48,10 +49,10 @@ class _LocationSharingBottomSheetState
           ),
           ListTile(
             title: const Text('Friends'),
-            leading: Radio<LocationPrivacy>(
-              value: LocationPrivacy.friends,
+            leading: Radio<LocationVisibility>(
+              value: LocationVisibility.friends,
               groupValue: _selectedPrivacy,
-              onChanged: (LocationPrivacy? value) {
+              onChanged: (LocationVisibility? value) {
                 setState(() {
                   _selectedPrivacy = value!;
                   _isLiveLocationSharing = false;
@@ -60,21 +61,9 @@ class _LocationSharingBottomSheetState
               },
             ),
           ),
-          ListTile(
-            title: const Text('Selected Friends'),
-            leading: Radio<LocationPrivacy>(
-              value: LocationPrivacy.selectedFriends,
-              groupValue: _selectedPrivacy,
-              onChanged: (LocationPrivacy? value) {
-                setState(() {
-                  _selectedPrivacy = value!;
-                  _isLiveLocationSharing = false;
-                  _liveLocationExpiresAt = null;
-                });
-              },
-            ),
-          ),
-          if (_selectedPrivacy == LocationPrivacy.selectedFriends)
+          // Placeholder for selected friends privacy (not supported by enum yet)
+          if (_selectedPrivacy == LocationVisibility.friends &&
+              _selectedFriends.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ElevatedButton(
@@ -88,21 +77,17 @@ class _LocationSharingBottomSheetState
                 child: const Text('Select Friends'),
               ),
             ),
-          ListTile(
-            title: const Text('Live Location (Temporary)'),
-            leading: Radio<LocationPrivacy>(
-              value: LocationPrivacy.live,
-              groupValue: _selectedPrivacy,
-              onChanged: (LocationPrivacy? value) {
-                setState(() {
-                  _selectedPrivacy = value!;
-                  _isLiveLocationSharing = true;
-                  // Set a default expiry, e.g., 1 hour from now
-                  _liveLocationExpiresAt =
-                      DateTime.now().add(const Duration(hours: 1));
-                });
-              },
-            ),
+          // Live location toggle simulated by separate switch instead of enum variant
+          SwitchListTile(
+            title: const Text('Share Live Location (1h)'),
+            value: _isLiveLocationSharing,
+            onChanged: (val) {
+              setState(() {
+                _isLiveLocationSharing = val;
+                _liveLocationExpiresAt =
+                    val ? DateTime.now().add(const Duration(hours: 1)) : null;
+              });
+            },
           ),
           const SizedBox(height: 16),
           Center(

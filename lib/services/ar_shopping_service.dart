@@ -1,64 +1,66 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// AR Shopping Service
-/// Handles e-commerce integration with AR product try-on functionality
-class ARShoppingService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+/// Product model for AR Shopping
+class Product {
+  final String id;
+  final String name;
+  final String description;
+  final double price;
+  final String currency;
+  final String imageUrl;
+  final String arModelUrl; // 3D model URL for AR try-on
+  final String category;
+  final List<String> tags;
+  final String sellerId;
+  final DateTime createdAt;
+  final int stock;
+  final Map<String, dynamic> arConfig; // AR-specific configuration
 
-  /// Product model for AR Shopping
-  static class Product {
-    final String id;
-    final String name;
-    final String description;
-    final double price;
-    final String currency;
-    final String imageUrl;
-    final String arModelUrl; // 3D model URL for AR try-on
-    final String category;
-    final List<String> tags;
-    final String sellerId;
-    final DateTime createdAt;
-    final int stock;
-    final Map<String, dynamic> arConfig; // AR-specific configuration
+  Product({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.currency,
+    required this.imageUrl,
+    required this.arModelUrl,
+    required this.category,
+    required this.tags,
+    required this.sellerId,
+    required this.createdAt,
+    required this.stock,
+    required this.arConfig,
+  });
 
-    Product({
-      required this.id,
-      required this.name,
-      required this.description,
-      required this.price,
-      required this.currency,
-      required this.imageUrl,
-      required this.arModelUrl,
-      required this.category,
-      required this.tags,
-      required this.sellerId,
-      required this.createdAt,
-      required this.stock,
-      required this.arConfig,
-    });
-
-    factory Product.fromMap(Map<String, dynamic> map, String id) {
-      return Product(
-        id: id,
-        name: map['name'] ?? '',
-        description: map['description'] ?? '',
-        price: (map['price'] ?? 0).toDouble(),
-        currency: map['currency'] ?? 'USD',
-        imageUrl: map['imageUrl'] ?? '',
-        arModelUrl: map['arModelUrl'] ?? '',
-        category: map['category'] ?? '',
-        tags: List<String>.from(map['tags'] ?? []),
-        sellerId: map['sellerId'] ?? '',
-        createdAt: (map['createdAt'] as Timestamp).toDate(),
-        stock: map['stock'] ?? 0,
-        arConfig: map['arConfig'] ?? {},
-      );
+  factory Product.fromMap(Map<String, dynamic> map, String id) {
+    final ts = map['createdAt'];
+    DateTime created;
+    if (ts is Timestamp) {
+      created = ts.toDate();
+    } else if (ts is int) {
+      created = DateTime.fromMillisecondsSinceEpoch(ts);
+    } else {
+      created = DateTime.now();
     }
+    return Product(
+      id: id,
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      price: (map['price'] ?? 0).toDouble(),
+      currency: map['currency'] ?? 'USD',
+      imageUrl: map['imageUrl'] ?? '',
+      arModelUrl: map['arModelUrl'] ?? '',
+      category: map['category'] ?? '',
+      tags: List<String>.from(map['tags'] ?? []),
+      sellerId: map['sellerId'] ?? '',
+      createdAt: created,
+      stock: map['stock'] ?? 0,
+      arConfig: (map['arConfig'] as Map<String, dynamic>?) ?? {},
+    );
+  }
 
-    Map<String, dynamic> toMap() {
-      return {
+  Map<String, dynamic> toMap() => {
         'name': name,
         'description': description,
         'price': price,
@@ -72,8 +74,13 @@ class ARShoppingService {
         'stock': stock,
         'arConfig': arConfig,
       };
-    }
-  }
+}
+
+/// AR Shopping Service
+/// Handles e-commerce integration with AR product try-on functionality
+class ARShoppingService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   /// Get all products
   Stream<List<Product>> getProducts() {
@@ -156,7 +163,8 @@ class ARShoppingService {
     final cartDoc = await _firestore.collection('carts').doc(userId).get();
     if (!cartDoc.exists) return;
 
-    final items = List<Map<String, dynamic>>.from(cartDoc.data()?['items'] ?? []);
+    final items =
+        List<Map<String, dynamic>>.from(cartDoc.data()?['items'] ?? []);
     items.removeWhere((item) => item['productId'] == productId);
 
     await _firestore.collection('carts').doc(userId).update({
@@ -166,7 +174,8 @@ class ARShoppingService {
   }
 
   /// Create order
-  Future<String> createOrder(List<Map<String, dynamic>> items, String shippingAddress) async {
+  Future<String> createOrder(
+      List<Map<String, dynamic>> items, String shippingAddress) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
@@ -206,9 +215,8 @@ class ARShoppingService {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
   }
 
   /// Save AR try-on session
@@ -235,9 +243,8 @@ class ARShoppingService {
         .orderBy('createdAt', descending: true)
         .limit(20)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
   }
 
   /// Add product (for sellers)
@@ -246,14 +253,15 @@ class ARShoppingService {
     if (userId == null) throw Exception('User not authenticated');
 
     final productRef = await _firestore.collection('ar_products').add(
-      product.toMap(),
-    );
+          product.toMap(),
+        );
 
     return productRef.id;
   }
 
   /// Update product (for sellers)
-  Future<void> updateProduct(String productId, Map<String, dynamic> updates) async {
+  Future<void> updateProduct(
+      String productId, Map<String, dynamic> updates) async {
     await _firestore.collection('ar_products').doc(productId).update(updates);
   }
 

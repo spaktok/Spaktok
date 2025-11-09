@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spaktok/main.dart';
-import 'package:spaktok/screens/main_navigation_screen.dart';
+import 'package:spaktok/spaktok/screens/main_navigation_screen.dart';
 import 'package:spaktok/screens/explore_screen.dart';
 import 'package:spaktok/screens/camera_screen.dart';
 import 'package:spaktok/screens/story_screen.dart';
-import 'package:spaktok/screens/reel_screen.dart';
+import 'package:spaktok/spaktok/screens/reel_screen.dart';
 import 'package:spaktok/screens/live_stream_screen.dart';
 
 void main() {

@@ -2,6 +2,51 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer' as dev;
+
+/// Translation cache model
+class TranslationCache {
+  final String originalText;
+  final String translatedText;
+  final String sourceLang;
+  final String targetLang;
+  final DateTime timestamp;
+
+  TranslationCache({
+    required this.originalText,
+    required this.translatedText,
+    required this.sourceLang,
+    required this.targetLang,
+    required this.timestamp,
+  });
+
+  factory TranslationCache.fromMap(Map<String, dynamic> map) {
+    final ts = map['timestamp'];
+    DateTime parsed;
+    if (ts is Timestamp) {
+      parsed = ts.toDate();
+    } else if (ts is int) {
+      parsed = DateTime.fromMillisecondsSinceEpoch(ts);
+    } else {
+      parsed = DateTime.now();
+    }
+    return TranslationCache(
+      originalText: map['originalText'] ?? '',
+      translatedText: map['translatedText'] ?? '',
+      sourceLang: map['sourceLang'] ?? '',
+      targetLang: map['targetLang'] ?? '',
+      timestamp: parsed,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'originalText': originalText,
+        'translatedText': translatedText,
+        'sourceLang': sourceLang,
+        'targetLang': targetLang,
+        'timestamp': Timestamp.fromDate(timestamp),
+      };
+}
 
 /// AI Translation Service
 /// Handles automatic translation of comments and messages using AI
@@ -11,8 +56,10 @@ class AITranslationService {
 
   // You can use Google Cloud Translation API, DeepL API, or OpenAI API
   // For this example, we'll use a generic API structure
-  static const String _apiKey = 'YOUR_TRANSLATION_API_KEY'; // Replace with actual key
-  static const String _apiUrl = 'https://translation.googleapis.com/language/translate/v2';
+  static const String _apiKey =
+      'YOUR_TRANSLATION_API_KEY'; // Replace with actual key
+  static const String _apiUrl =
+      'https://translation.googleapis.com/language/translate/v2';
 
   /// Supported languages
   static const Map<String, String> supportedLanguages = {
@@ -30,43 +77,6 @@ class AITranslationService {
     'hi': 'Hindi',
     'tr': 'Turkish',
   };
-
-  /// Translation cache model
-  static class TranslationCache {
-    final String originalText;
-    final String translatedText;
-    final String sourceLang;
-    final String targetLang;
-    final DateTime timestamp;
-
-    TranslationCache({
-      required this.originalText,
-      required this.translatedText,
-      required this.sourceLang,
-      required this.targetLang,
-      required this.timestamp,
-    });
-
-    factory TranslationCache.fromMap(Map<String, dynamic> map) {
-      return TranslationCache(
-        originalText: map['originalText'] ?? '',
-        translatedText: map['translatedText'] ?? '',
-        sourceLang: map['sourceLang'] ?? '',
-        targetLang: map['targetLang'] ?? '',
-        timestamp: (map['timestamp'] as Timestamp).toDate(),
-      );
-    }
-
-    Map<String, dynamic> toMap() {
-      return {
-        'originalText': originalText,
-        'translatedText': translatedText,
-        'sourceLang': sourceLang,
-        'targetLang': targetLang,
-        'timestamp': Timestamp.fromDate(timestamp),
-      };
-    }
-  }
 
   /// Translate text
   Future<String> translateText(
@@ -113,7 +123,7 @@ class AITranslationService {
         throw Exception('Translation failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('Translation error: $e');
+      dev.log('Translation error: $e', name: 'translation');
       return text; // Return original text if translation fails
     }
   }
@@ -122,7 +132,8 @@ class AITranslationService {
   Future<String> detectLanguage(String text) async {
     try {
       final response = await http.post(
-        Uri.parse('https://translation.googleapis.com/language/translate/v2/detect'),
+        Uri.parse(
+            'https://translation.googleapis.com/language/translate/v2/detect'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -139,7 +150,7 @@ class AITranslationService {
         throw Exception('Language detection failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('Language detection error: $e');
+      dev.log('Language detection error: $e', name: 'translation');
       return 'en'; // Default to English
     }
   }
@@ -263,8 +274,8 @@ class AITranslationService {
     final translations = <String>[];
 
     for (var text in texts) {
-      final translation = await translateText(text, targetLang,
-          sourceLang: sourceLang);
+      final translation =
+          await translateText(text, targetLang, sourceLang: sourceLang);
       translations.add(translation);
     }
 

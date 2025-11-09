@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/auth_service.dart';
-import 'package:spaktok/screens/main_navigation_screen.dart';
+import 'package:spaktok/spaktok/screens/main_navigation_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -17,7 +17,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -97,7 +97,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   Text(
                     'Create Account',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -106,7 +106,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  
+
                   Text(
                     'Join Spaktok today!',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -115,7 +115,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Username Field
                   TextFormField(
                     controller: _usernameController,
@@ -141,7 +141,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Display Name Field
                   TextFormField(
                     controller: _displayNameController,
@@ -164,7 +164,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Email Field
                   TextFormField(
                     controller: _emailController,
@@ -188,7 +188,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Password Field
                   TextFormField(
                     controller: _passwordController,
@@ -224,7 +224,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Confirm Password Field
                   TextFormField(
                     controller: _confirmPasswordController,
@@ -260,7 +260,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Sign Up Button
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleSignUp,
@@ -282,7 +282,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Terms and Privacy
                   Text(
                     'By signing up, you agree to our Terms of Service and Privacy Policy',

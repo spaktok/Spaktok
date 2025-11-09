@@ -102,31 +102,31 @@ class StreamService {
     try {
       final user = _authService.currentUser;
       if (user == null) {
-        throw Exception(\'User must be logged in to send messages\');
+        throw Exception('User must be logged in to send messages');
       }
 
       final Map<String, dynamic> messageData = {
-        \'userId\': user.uid,
-        \'userName\': user.displayName ?? \'Anonymous\',
-        \'userPhotoUrl\': user.photoURL,
-        \'timestamp\': FieldValue.serverTimestamp(),
+        'userId': user.uid,
+        'userName': user.displayName ?? 'Anonymous',
+        'userPhotoUrl': user.photoURL,
+        'timestamp': FieldValue.serverTimestamp(),
       };
 
       if (giftName != null && giftImageUrl != null && giftCost != null) {
-        messageData[\'giftName\'] = giftName;
-        messageData[\'giftImageUrl\'] = giftImageUrl;
-        messageData[\'giftCost\'] = giftCost;
+        messageData['giftName'] = giftName;
+        messageData['giftImageUrl'] = giftImageUrl;
+        messageData['giftCost'] = giftCost;
       } else {
-        messageData[\'message\'] = message;
+        messageData['message'] = message;
       }
 
-      _firestore
-          .collection(\'streams\')
+      await _firestore
+          .collection('streams')
           .doc(streamId)
-          .collection(\'messages\')
+          .collection('messages')
           .add(messageData);
     } catch (e) {
-      throw Exception(\'Failed to send message: $e\');
+      throw Exception('Failed to send message: $e');
     }
   }
 
