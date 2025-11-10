@@ -276,24 +276,24 @@ class PerformanceOptimizationService {
     String feedType, {
     int limit = 20,
   }) async {
-    return getCached<List<Map<String, dynamic>>>(
-          key: 'feed_${feedType}_$limit',
-          fetchFunction: () async {
-            final querySnapshot = await _firestore
-                .collection('videos')
-                .where('isPublic', isEqualTo: true)
-                .orderBy('trendingScore', descending: true)
-                .limit(limit)
-                .get();
+    final feed = await getCached<List<Map<String, dynamic>>>(
+      key: 'feed_${feedType}_$limit',
+      fetchFunction: () async {
+        final querySnapshot = await _firestore
+            .collection('videos')
+            .where('isPublic', isEqualTo: true)
+            .orderBy('trendingScore', descending: true)
+            .limit(limit)
+            .get();
 
-            return querySnapshot.docs
-                .map((doc) => {'id': doc.id, ...doc.data()})
-                .toList();
-          },
-          cacheDuration: _shortCacheDuration,
-          priority: CachePriority.high,
-        ) ??
-        [];
+        return querySnapshot.docs
+            .map((doc) => {'id': doc.id, ...doc.data()})
+            .toList();
+      },
+      cacheDuration: _shortCacheDuration,
+      priority: CachePriority.high,
+    );
+    return feed ?? <Map<String, dynamic>>[];
   }
 
   /// Compress video (simulated - would use FFmpeg in production)

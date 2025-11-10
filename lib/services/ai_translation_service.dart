@@ -299,7 +299,8 @@ class AITranslationService {
 
     for (var doc in snapshot.docs) {
       final data = doc.data();
-      stats['languagesUsed'].add(data['targetLang']);
+      final languagesUsed = stats['languagesUsed'] as Set?;
+      languagesUsed?.add(data['targetLang']);
     }
 
     return stats;

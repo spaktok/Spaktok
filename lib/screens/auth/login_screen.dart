@@ -275,8 +275,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.google,
                     text: 'Continue with Google',
-                    onPressed: () {
-                      _handleSocialLogin(() async {
+                    onPressed: () async {
+                      await _handleSocialLogin(() async {
                         await _authService.signInWithGoogle();
                       });
                     },
@@ -287,8 +287,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.snapchat,
                     text: 'Continue with Snapchat',
-                    onPressed: () {
-                      _handleSocialLogin(() async {
+                    onPressed: () async {
+                      await _handleSocialLogin(() async {
                         await _authService.signInWithFacebook();
                       });
                     }, // Using Facebook for now
@@ -299,8 +299,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.tiktok,
                     text: 'Continue with TikTok',
-                    onPressed: () {
-                      _handleSocialLogin(() async {
+                    onPressed: () async {
+                      await _handleSocialLogin(() async {
                         await _authService.signInWithFacebook();
                       });
                     }, // Using Facebook for now

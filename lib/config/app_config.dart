@@ -8,6 +8,12 @@
     defaultValue: '',
   );
 
+  // Stripe configuration
+  static const String stripePublishableKey = String.fromEnvironment(
+    'STRIPE_PUBLISHABLE_KEY',
+    defaultValue: '',
+  );
+
   // Agora token configuration
   static const int agoraTokenExpiryBufferSeconds = 600; // 10 minutes
   static const Duration tokenRequestTimeout = Duration(seconds: 30);
