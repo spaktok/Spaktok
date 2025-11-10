@@ -33,7 +33,7 @@ class AIRecommendationService {
         .get();
 
     // Get user's viewed videos
-    final viewedVideos = await _firestore
+await _firestore
         .collection('users')
         .doc(userId)
         .collection('viewed_videos')

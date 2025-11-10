@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:developer' as developer;
 
 enum ReportType {
   user,
@@ -64,7 +65,7 @@ class ReportingService {
 
       return true;
     } catch (e) {
-      debugPrint('Error submitting report: $e');
+      developer.log('Error submitting report: $e', name: 'reporting_service');
       return false;
     }
   }
@@ -158,7 +159,7 @@ class ReportingService {
 
       return true;
     } catch (e) {
-      debugPrint('Error blocking user: $e');
+      developer.log('Error blocking user: $e', name: 'reporting_service');
       return false;
     }
   }
@@ -182,7 +183,7 @@ class ReportingService {
 
       return true;
     } catch (e) {
-      debugPrint('Error unblocking user: $e');
+      developer.log('Error unblocking user: $e', name: 'reporting_service');
       return false;
     }
   }
@@ -202,7 +203,7 @@ class ReportingService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error getting blocked users: $e');
+      developer.log('Error getting blocked users: $e', name: 'reporting_service');
       return [];
     }
   }
@@ -282,7 +283,7 @@ class ReportingService {
 
       return true;
     } catch (e) {
-      debugPrint('Error muting user: $e');
+      developer.log('Error muting user: $e', name: 'reporting_service');
       return false;
     }
   }
@@ -304,7 +305,7 @@ class ReportingService {
 
       return true;
     } catch (e) {
-      debugPrint('Error unmuting user: $e');
+      developer.log('Error unmuting user: $e', name: 'reporting_service');
       return false;
     }
   }

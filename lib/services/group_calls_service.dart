@@ -1,4 +1,5 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:spaktok/services/agora_token_service.dart';
@@ -92,7 +93,7 @@ class GroupCallsService {
       await _firestore.collection('calls').doc(callId).set(call.toMap());
       return callId;
     } catch (e) {
-      print('[GroupCallsService] Error initiating call: $e');
+      developer.log('[GroupCallsService] Error initiating call: $e', name: 'group_calls_service');
       rethrow;
     }
   }
@@ -106,7 +107,7 @@ class GroupCallsService {
       final token = await _tokenService.getToken(channelName);
       return token;
     } catch (e) {
-      print('[GroupCallsService] Error getting token: $e');
+      developer.log('[GroupCallsService] Error getting token: $e', name: 'group_calls_service');
       rethrow;
     }
   }
@@ -118,7 +119,7 @@ class GroupCallsService {
         'endTime': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      print('[GroupCallsService] Error ending call: $e');
+      developer.log('[GroupCallsService] Error ending call: $e', name: 'group_calls_service');
       rethrow;
     }
   }

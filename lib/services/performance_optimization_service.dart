@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:developer' as developer;
 
 /// Cache Priority Level
 enum CachePriority {
@@ -82,7 +83,6 @@ class PerformanceMetrics {
 /// Redis-like caching, CDN integration, video compression
 class PerformanceOptimizationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
   final AuthService _authService = AuthService();
 
   // In-memory cache (simulates Redis)
@@ -154,7 +154,7 @@ class PerformanceOptimizationService {
 
       return data;
     } catch (e) {
-      print('Error in getCached: $e');
+      developer.log('Error in getCached: $e', name: 'performance_optimization_service');
       rethrow;
     }
   }
@@ -187,7 +187,7 @@ class PerformanceOptimizationService {
       _cacheTimers[key]?.cancel();
       _cacheTimers[key] = Timer(duration, () => _removeFromCache(key));
     } catch (e) {
-      print('Error adding to cache: $e');
+      developer.log('Error adding to cache: $e', name: 'performance_optimization_service');
     }
   }
 
@@ -251,7 +251,7 @@ class PerformanceOptimizationService {
       key: 'user_$userId',
       fetchFunction: () async {
         final doc = await _firestore.collection('users').doc(userId).get();
-        return doc.exists ? doc.data() : null;
+        return doc.data() ?? <String, dynamic>{};
       },
       cacheDuration: _longCacheDuration,
       priority: CachePriority.high,
@@ -264,7 +264,7 @@ class PerformanceOptimizationService {
       key: 'video_$videoId',
       fetchFunction: () async {
         final doc = await _firestore.collection('videos').doc(videoId).get();
-        return doc.exists ? doc.data() : null;
+        return doc.data() ?? <String, dynamic>{};
       },
       cacheDuration: _defaultCacheDuration,
       priority: CachePriority.medium,
@@ -323,7 +323,7 @@ class PerformanceOptimizationService {
         'quality': quality,
       };
     } catch (e) {
-      print('Error compressing video: $e');
+      developer.log('Error compressing video: $e', name: 'performance_optimization_service');
       rethrow;
     }
   }
@@ -347,7 +347,7 @@ class PerformanceOptimizationService {
       // Return simulated compressed data
       return imageData.sublist(0, targetSize.clamp(0, imageData.length));
     } catch (e) {
-      print('Error optimizing image: $e');
+      developer.log('Error optimizing image: $e', name: 'performance_optimization_service');
       rethrow;
     }
   }
@@ -393,7 +393,7 @@ class PerformanceOptimizationService {
 
       await Future.wait(futures);
     } catch (e) {
-      print('Error preloading content: $e');
+      developer.log('Error preloading content: $e', name: 'performance_optimization_service');
     }
   }
 
@@ -449,7 +449,7 @@ class PerformanceOptimizationService {
 
       return results;
     } catch (e) {
-      print('Error in batch fetch: $e');
+      developer.log('Error in batch fetch: $e', name: 'performance_optimization_service');
       return [];
     }
   }
@@ -507,7 +507,7 @@ class PerformanceOptimizationService {
   /// Warmup cache with popular content
   Future<void> warmupCache() async {
     try {
-      print('Starting cache warmup...');
+      developer.log('Starting cache warmup...', name: 'performance_optimization_service');
 
       // Cache trending videos
       await getCachedFeed('trending', limit: 20);
@@ -518,9 +518,9 @@ class PerformanceOptimizationService {
         await getCachedUserData(user.uid);
       }
 
-      print('Cache warmup completed');
+      developer.log('Cache warmup completed', name: 'performance_optimization_service');
     } catch (e) {
-      print('Error warming up cache: $e');
+      developer.log('Error warming up cache: $e', name: 'performance_optimization_service');
     }
   }
 
@@ -531,7 +531,7 @@ class PerformanceOptimizationService {
       // For now, return simulated size
       return 10 * 1024 * 1024; // 10 MB
     } catch (e) {
-      print('Error getting file size: $e');
+      developer.log('Error getting file size: $e', name: 'performance_optimization_service');
       return 0;
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 class TourStep {
   final String title;
@@ -60,7 +61,7 @@ class ToursService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('$_tourCompletedPrefix$tourId', true);
     } catch (e) {
-      debugPrint('Error marking tour as completed: $e');
+      developer.log('Error marking tour as completed: $e', name: 'tours_service');
     }
   }
 
@@ -75,7 +76,7 @@ class ToursService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('$_tourCompletedPrefix$tourId');
     } catch (e) {
-      debugPrint('Error resetting tour: $e');
+      developer.log('Error resetting tour: $e', name: 'tours_service');
     }
   }
 
@@ -90,7 +91,7 @@ class ToursService {
         }
       }
     } catch (e) {
-      debugPrint('Error resetting all tours: $e');
+      developer.log('Error resetting all tours: $e', name: 'tours_service');
     }
   }
 

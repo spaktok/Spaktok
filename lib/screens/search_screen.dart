@@ -203,13 +203,13 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                tag['color'].withOpacity(0.3),
+                tag['color'].withValues(alpha: 0.3),
                 Colors.grey[900]!,
               ],
             ),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: tag['color'].withOpacity(0.5),
+              color: tag['color'].withValues(alpha: 0.5),
               width: 1,
             ),
           ),
@@ -258,7 +258,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
             gradient: LinearGradient(
               colors: [
                 tag['color'],
-                tag['color'].withOpacity(0.5),
+                tag['color'].withValues(alpha: 0.5),
               ],
             ),
             borderRadius: BorderRadius.circular(10),

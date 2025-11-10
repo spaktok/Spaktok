@@ -9,6 +9,8 @@ enum LocationVisibility {
   ghost, // Invisible to everyone
   friends, // Visible to friends only
   public, // Visible to everyone
+  selected, // Only selected friends
+  friendsExcept, // All friends except excluded list
 }
 
 class UserLocation {
@@ -18,6 +20,9 @@ class UserLocation {
   final DateTime timestamp;
   final String? status; // Optional status message
   final LocationVisibility visibility;
+  final int? liveShareMinutes; // live share duration remaining
+  final List<String>? selectedFriendIds; // for selected visibility
+  final List<String>? excludedFriendIds; // for friendsExcept visibility
 
   UserLocation({
     required this.userId,
@@ -26,6 +31,9 @@ class UserLocation {
     required this.timestamp,
     this.status,
     required this.visibility,
+    this.liveShareMinutes,
+    this.selectedFriendIds,
+    this.excludedFriendIds,
   });
 
   factory UserLocation.fromMap(Map<String, dynamic> map) {
@@ -42,6 +50,13 @@ class UserLocation {
         (e) => e.toString().split('.').last == (map['visibility'] ?? 'ghost'),
         orElse: () => LocationVisibility.ghost,
       ),
+      liveShareMinutes: map['liveShareMinutes'],
+      selectedFriendIds: map['selectedFriendIds'] != null
+          ? List<String>.from(map['selectedFriendIds'])
+          : null,
+      excludedFriendIds: map['excludedFriendIds'] != null
+          ? List<String>.from(map['excludedFriendIds'])
+          : null,
     );
   }
 
@@ -53,6 +68,9 @@ class UserLocation {
       'timestamp': Timestamp.fromDate(timestamp),
       'status': status,
       'visibility': visibility.toString().split('.').last,
+      'liveShareMinutes': liveShareMinutes,
+      'selectedFriendIds': selectedFriendIds,
+      'excludedFriendIds': excludedFriendIds,
     };
   }
 }
@@ -85,9 +103,9 @@ class SnapMapService {
       throw Exception('Location permissions are permanently denied');
     }
 
-    // Get current position
+    // Get current position (modern API with settings)
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
   }
 
@@ -97,6 +115,9 @@ class SnapMapService {
     double longitude, {
     String? status,
     LocationVisibility visibility = LocationVisibility.friends,
+    int? liveShareMinutes, // if set, indicates temporary live location share
+    List<String>? selectedFriendIds,
+    List<String>? excludedFriendIds,
   }) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
@@ -108,6 +129,9 @@ class SnapMapService {
       timestamp: DateTime.now(),
       status: status,
       visibility: visibility,
+      liveShareMinutes: liveShareMinutes,
+      selectedFriendIds: selectedFriendIds,
+      excludedFriendIds: excludedFriendIds,
     );
 
     await _firestore
@@ -138,7 +162,7 @@ class SnapMapService {
         if (locationDoc.exists) {
           final location = UserLocation.fromMap(locationDoc.data()!);
           // Only show if visibility is friends or public
-          if (location.visibility != LocationVisibility.ghost) {
+          if (_canShowLocationForViewer(location, userId)) {
             locations.add(location);
           }
         }
@@ -146,6 +170,22 @@ class SnapMapService {
 
       return locations;
     });
+  }
+
+  /// Internal visibility logic
+  bool _canShowLocationForViewer(UserLocation loc, String viewerId) {
+    switch (loc.visibility) {
+      case LocationVisibility.ghost:
+        return false;
+      case LocationVisibility.friends:
+        return true; // Already filtered by friend list outside
+      case LocationVisibility.public:
+        return true;
+      case LocationVisibility.selected:
+        return loc.selectedFriendIds?.contains(viewerId) ?? false;
+      case LocationVisibility.friendsExcept:
+        return !(loc.excludedFriendIds?.contains(viewerId) ?? false);
+    }
   }
 
   /// Get nearby users (public locations only)
@@ -190,6 +230,86 @@ class SnapMapService {
     await _firestore.collection('user_locations').doc(userId).update({
       'visibility': visibility.toString().split('.').last,
     });
+  }
+
+  /// Advanced ghost mode toggle (with animated state flag)
+  Future<void> setGhostMode(bool enabled) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('User not authenticated');
+    await _firestore.collection('user_locations').doc(userId).update({
+      'visibility': enabled ? 'ghost' : 'friends',
+      'ghostAnimationState': enabled ? 'fade_out' : 'pulse_in',
+      'ghostUpdatedAt': Timestamp.now(),
+    });
+  }
+
+  /// Start a timed live location share (e.g. 15, 60, 480 minutes)
+  Future<void> startLiveLocationShare(int minutes) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('User not authenticated');
+    await _firestore.collection('user_locations').doc(userId).update({
+      'liveShareMinutes': minutes,
+      'liveShareStartedAt': Timestamp.now(),
+    });
+  }
+
+  /// Decrement live share timer (called periodically via client or Cloud Function)
+  Future<void> tickLiveShareTimer() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+    final doc = await _firestore.collection('user_locations').doc(userId).get();
+    if (!doc.exists) return;
+    final data = doc.data()!;
+    final minutes = (data['liveShareMinutes'] ?? 0) as int;
+    if (minutes <= 1) {
+      await _firestore.collection('user_locations').doc(userId).update({
+        'liveShareMinutes': null,
+      });
+    } else {
+      await _firestore.collection('user_locations').doc(userId).update({
+        'liveShareMinutes': minutes - 1,
+      });
+    }
+  }
+
+  /// Link a story pin to map (refined pin type)
+  Future<void> pinStoryToMap(
+      String storyId, double latitude, double longitude) async {
+    await addLocationStory(storyId, latitude, longitude);
+    await _firestore.collection('map_story_pins').add({
+      'storyId': storyId,
+      'latitude': latitude,
+      'longitude': longitude,
+      'pinnedAt': Timestamp.now(),
+      'expiresAt':
+          Timestamp.fromDate(DateTime.now().add(const Duration(hours: 24))),
+    });
+  }
+
+  /// Proximity events (simple implementation - could be optimized by geo queries)
+  Future<List<Map<String, dynamic>>> getProximityEvents(
+      double latitude, double longitude,
+      {double radiusKm = 2.0}) async {
+    final snap = await _firestore
+        .collection('user_locations')
+        .where('visibility', isNotEqualTo: 'ghost')
+        .get();
+    final events = <Map<String, dynamic>>[];
+    for (final d in snap.docs) {
+      final loc = UserLocation.fromMap(d.data());
+      final dist = Geolocator.distanceBetween(
+              latitude, longitude, loc.latitude, loc.longitude) /
+          1000.0;
+      if (dist <= radiusKm) {
+        events.add({
+          'userId': loc.userId,
+          'distanceKm': dist,
+          'timestamp': loc.timestamp,
+          'visibility': loc.visibility.toString().split('.').last,
+        });
+      }
+    }
+    return events;
   }
 
   /// Get user's location visibility

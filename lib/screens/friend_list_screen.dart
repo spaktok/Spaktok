@@ -47,7 +47,10 @@ class _FriendListScreenState extends State<FriendListScreen> {
         children: [
           // Friend Requests Section
           StreamBuilder<QuerySnapshot>(
-            stream: _authService.getFriendRequests(_currentUser!.uid),
+            stream: FirebaseFirestore.instance
+                .collection('friendRequests')
+                .where('receiverId', isEqualTo: _currentUser!.uid)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
@@ -78,7 +81,11 @@ class _FriendListScreenState extends State<FriendListScreen> {
                       final senderId = request['senderId'];
                       return FutureBuilder<Map<String, dynamic>?>(
                         // Fetch sender's data
-                        future: _authService.getUserDataById(senderId),
+                        future: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(senderId)
+                            .get()
+                            .then((d) => d.data()),
                         builder: (context, userSnapshot) {
                           if (userSnapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -133,7 +140,10 @@ class _FriendListScreenState extends State<FriendListScreen> {
           // Friends List Section
           Expanded(
             child: StreamBuilder<DocumentSnapshot>(
-              stream: _authService.getUserFriendsStream(_currentUser!.uid),
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(_currentUser!.uid)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
@@ -168,7 +178,11 @@ class _FriendListScreenState extends State<FriendListScreen> {
                           final friendId = friends[index];
                           return FutureBuilder<Map<String, dynamic>?>(
                             // Fetch friend's data
-                            future: _authService.getUserDataById(friendId),
+                            future: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(friendId)
+                                .get()
+                                .then((d) => d.data()),
                             builder: (context, userSnapshot) {
                               if (userSnapshot.connectionState ==
                                   ConnectionState.waiting) {

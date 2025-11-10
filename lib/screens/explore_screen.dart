@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:spaktok/models/trending_content.dart';
 import 'package:spaktok/services/trending_service.dart';
 
@@ -45,7 +46,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 return GestureDetector(
                   onTap: () {
                     // TODO: Navigate to content detail screen (story, reel, live stream)
-                    print('Tapped on ${content.title}');
+                    developer.log('Tapped on ${content.title}', name: 'explore_screen');
                     TrendingService().updateViewsCount(content.id); // Update views count
                   },
                   child: Card(

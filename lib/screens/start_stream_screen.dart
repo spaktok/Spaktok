@@ -14,7 +14,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final AuthService _authService = AuthService();
-  
+
   bool _isLoading = false;
 
   @override
@@ -30,14 +30,16 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
 
     final currentUser = _authService.currentUser;
     if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You must be logged in to start a stream.')));
-        return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('You must be logged in to start a stream.')));
+      return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final channelName = currentUser.uid; // Use user ID as a unique channel name
+      final channelName =
+          currentUser.uid; // Use user ID as a unique channel name
       final liveStreamService = LiveStreamService(channelName: channelName);
 
       // Set initial stream data in Firestore
@@ -48,7 +50,6 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
           MaterialPageRoute(
             builder: (context) => LiveStreamScreen(
               channelName: channelName,
-              broadcasterId: currentUser.uid,
               isBroadcaster: true,
             ),
           ),
@@ -57,7 +58,9 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start stream: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Failed to start stream: $e'),
+              backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -87,13 +90,13 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: 24),
-                
                 TextFormField(
                   controller: _titleController,
                   decoration: InputDecoration(
                     labelText: 'Stream Title',
                     hintText: 'e.g., Playing guitar and singing!',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -103,14 +106,15 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                   },
                 ),
                 const SizedBox(height: 32),
-                
                 ElevatedButton.icon(
                   onPressed: _isLoading ? null : _startStream,
                   icon: const Icon(Icons.play_circle_fill),
-                  label: const Text('Start Streaming', style: TextStyle(fontSize: 16)),
+                  label: const Text('Start Streaming',
+                      style: TextStyle(fontSize: 16)),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 if (_isLoading) ...[
@@ -118,14 +122,14 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                   const Center(child: CircularProgressIndicator()),
                 ],
                 const SizedBox(height: 32),
-                
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Tips for a great stream:', style: Theme.of(context).textTheme.titleMedium),
+                        Text('Tips for a great stream:',
+                            style: Theme.of(context).textTheme.titleMedium),
                         const SizedBox(height: 12),
                         _buildTip('Ensure good lighting and clear audio.'),
                         _buildTip('Maintain a stable internet connection.'),

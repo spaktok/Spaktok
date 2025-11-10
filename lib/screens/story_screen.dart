@@ -25,7 +25,8 @@ class _StoryScreenState extends State<StoryScreen> {
       body: StreamBuilder<Map<String, List<Story>>>(
         stream: _storyService.getGroupedStories(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
           final groupedStories = snapshot.data!;
           final users = groupedStories.keys.toList();
           return PageView.builder(
@@ -49,12 +50,12 @@ class StoryViewer extends StatefulWidget {
   State<StoryViewer> createState() => _StoryViewerState();
 }
 
-class _StoryViewerState extends State<StoryViewer> with TickerProviderStateMixin {
+class _StoryViewerState extends State<StoryViewer>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   VideoPlayerController? _videoController;
   final AuthService _authService = AuthService();
   UserData? _storyUser;
-  final int _currentIndex = 0;
 
   @override
   void initState() {
@@ -71,16 +72,17 @@ class _StoryViewerState extends State<StoryViewer> with TickerProviderStateMixin
 
   Future<void> _fetchStoryUser() async {
     if (widget.stories.isEmpty) return;
-    final userData = await _authService.getUserDataById(widget.stories.first.userId);
+    final userData =
+        await _authService.getUserDataById(widget.stories.first.userId);
     if (mounted) setState(() => _storyUser = userData);
   }
 
   void _loadStory(Story story) {
     // ... same loading logic as before
   }
-  
+
   void _nextStory() {
-      // ... same logic
+    // ... same logic
   }
 
   @override
@@ -111,12 +113,17 @@ class _StoryViewerState extends State<StoryViewer> with TickerProviderStateMixin
             Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: _storyUser?.photoURL != null ? CachedNetworkImageProvider(_storyUser!.photoURL!) : null,
+                  backgroundImage: _storyUser?.photoURL != null
+                      ? CachedNetworkImageProvider(_storyUser!.photoURL!)
+                      : null,
                 ),
                 const SizedBox(width: 8),
-                Text(_storyUser?.displayName ?? 'Loading...', style: const TextStyle(color: Colors.white)),
+                Text(_storyUser?.displayName ?? 'Loading...',
+                    style: const TextStyle(color: Colors.white)),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
+                IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context)),
               ],
             ),
           ],

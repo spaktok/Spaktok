@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer' as developer;
 
 class ChallengeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -29,7 +30,7 @@ class ChallengeService {
 
       return challengeRef.id;
     } catch (e) {
-      print('Error creating challenge: $e');
+      developer.log('Error creating challenge: $e', name: 'challenge_service');
       rethrow;
     }
   }
@@ -60,7 +61,7 @@ class ChallengeService {
 
       await batch.commit();
     } catch (e) {
-      print('Error joining challenge: $e');
+      developer.log('Error joining challenge: $e', name: 'challenge_service');
       rethrow;
     }
   }
@@ -82,7 +83,7 @@ class ChallengeService {
               })
           .toList();
     } catch (e) {
-      print('Error getting trending challenges: $e');
+      developer.log('Error getting trending challenges: $e', name: 'challenge_service');
       return [];
     }
   }
@@ -100,7 +101,7 @@ class ChallengeService {
       }
       return null;
     } catch (e) {
-      print('Error getting challenge details: $e');
+      developer.log('Error getting challenge details: $e', name: 'challenge_service');
       return null;
     }
   }
@@ -136,7 +137,7 @@ class ChallengeService {
         await _firestore.collection('challenges').doc(challengeId).update(updates);
       }
     } catch (e) {
-      print('Error updating challenge stats: $e');
+      developer.log('Error updating challenge stats: $e', name: 'challenge_service');
     }
   }
 
@@ -148,7 +149,7 @@ class ChallengeService {
         'endedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error ending challenge: $e');
+      developer.log('Error ending challenge: $e', name: 'challenge_service');
       rethrow;
     }
   }
@@ -171,7 +172,7 @@ class ChallengeService {
               })
           .toList();
     } catch (e) {
-      print('Error searching challenges: $e');
+      developer.log('Error searching challenges: $e', name: 'challenge_service');
       return [];
     }
   }

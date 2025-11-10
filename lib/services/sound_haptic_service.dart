@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
+import 'dart:developer' as developer;
 
 /// خدمة الأصوات والحركات الاهتزازية
 /// تدعم: مكتبة أصوات كاملة، اهتزازات مخصصة، haptic feedback
@@ -294,7 +295,7 @@ class SoundAndHapticService {
       await _audioPlayer.stop();
       await _audioPlayer.play(AssetSource(path.replaceFirst('assets/', '')));
     } catch (e) {
-      print('Error playing sound: $e');
+      developer.log('Error playing sound: $e', name: 'sound_haptic_service');
     }
   }
 

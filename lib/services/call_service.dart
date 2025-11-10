@@ -4,6 +4,7 @@ import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/services/agora_token_service.dart';
 import 'package:spaktok/screens/call_screen.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'dart:developer' as developer;
 
 class CallService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -40,7 +41,7 @@ class CallService {
 
     } catch (e) {
       // Handle error
-      print('Error making call: $e');
+      developer.log('Error making call: $e', name: 'call_service');
     }
   }
 
@@ -95,7 +96,7 @@ class CallService {
                     ),
                   );
                } catch (e) {
-                   print('Error accepting call: $e');
+                   developer.log('Error accepting call: $e', name: 'call_service');
                }
             },
           ),

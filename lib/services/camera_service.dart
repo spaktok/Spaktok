@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:developer' as developer;
 
 class CameraService {
   static CameraService? _instance;
@@ -41,7 +42,7 @@ class CameraService {
       await _controller!.initialize();
       return _controller;
     } catch (e) {
-      debugPrint('Error initializing camera: $e');
+      developer.log('Error initializing camera: $e', name: 'camera_service');
       return null;
     }
   }
@@ -71,7 +72,7 @@ class CameraService {
       await _controller!.initialize();
       return _controller;
     } catch (e) {
-      debugPrint('Error switching camera: $e');
+      developer.log('Error switching camera: $e', name: 'camera_service');
       return null;
     }
   }
@@ -104,7 +105,7 @@ class CameraService {
       final XFile file = await _controller!.takePicture();
       return file;
     } catch (e) {
-      debugPrint('Error taking picture: $e');
+      developer.log('Error taking picture: $e', name: 'camera_service');
       return null;
     }
   }
@@ -122,7 +123,7 @@ class CameraService {
     try {
       await _controller!.startVideoRecording();
     } catch (e) {
-      debugPrint('Error starting video recording: $e');
+      developer.log('Error starting video recording: $e', name: 'camera_service');
       rethrow;
     }
   }
@@ -136,7 +137,7 @@ class CameraService {
     try {
       return await _controller!.stopVideoRecording();
     } catch (e) {
-      debugPrint('Error stopping video recording: $e');
+      developer.log('Error stopping video recording: $e', name: 'camera_service');
       return null;
     }
   }
@@ -150,7 +151,7 @@ class CameraService {
     try {
       await _controller!.setFlashMode(mode);
     } catch (e) {
-      debugPrint('Error setting flash mode: $e');
+      developer.log('Error setting flash mode: $e', name: 'camera_service');
     }
   }
 
@@ -166,7 +167,7 @@ class CameraService {
       final clampedZoom = zoom.clamp(minZoom, maxZoom);
       await _controller!.setZoomLevel(clampedZoom);
     } catch (e) {
-      debugPrint('Error setting zoom level: $e');
+      developer.log('Error setting zoom level: $e', name: 'camera_service');
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:spaktok/models/gift.dart';
 import 'package:spaktok/models/gift_category.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'dart:developer' as developer;
 
 class GiftService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -41,7 +42,7 @@ class GiftService {
         return Gift.fromFirestore(doc);
       }
     } catch (e) {
-      debugPrint('Error getting gift by ID: $e');
+      developer.log('Error getting gift by ID: $e', name: 'gift_service');
     }
     return null;
   }
@@ -99,7 +100,7 @@ class GiftService {
 
       return true;
     }).catchError((error) {
-      debugPrint("Failed to send gift: $error");
+      developer.log("Failed to send gift: $error", name: 'gift_service');
       return false;
     });
   }

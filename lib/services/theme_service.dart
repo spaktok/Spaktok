@@ -140,37 +140,38 @@ final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFF6200EE),
+    seedColor: const Color(0xFF001BFF), // Electric deep blue accent
     brightness: Brightness.light,
+    primary: const Color(0xFF001BFF),
   ),
-  scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+  scaffoldBackgroundColor: const Color(0xFFFFFFFF), // Pure white
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color(0xFF6200EE),
+    backgroundColor: Color(0xFFFFFFFF),
     foregroundColor: Colors.white,
     elevation: 0,
     centerTitle: true,
   ),
   cardTheme: CardThemeData(
-    color: Colors.white,
+    color: const Color(0xFFFFFFFF),
     elevation: 2,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16),
     ),
   ),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: Color(0xFF6200EE),
+    backgroundColor: Color(0xFF001BFF),
     foregroundColor: Colors.white,
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: Colors.white,
+    fillColor: const Color(0xFFF7F7F7),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF6200EE), width: 2),
+      borderSide: const BorderSide(color: Color(0xFF001BFF), width: 2),
     ),
   ),
 );
@@ -180,37 +181,38 @@ final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFFBB86FC),
+    seedColor: const Color(0xFF001BFF), // Electric deep blue
     brightness: Brightness.dark,
+    primary: const Color(0xFF001BFF),
   ),
-  scaffoldBackgroundColor: const Color(0xFF121212),
+  scaffoldBackgroundColor: const Color(0xFF050505), // Vantablack-like
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color(0xFF1E1E1E),
-    foregroundColor: Colors.white,
+    backgroundColor: Color(0xFF0A0A0A),
+    foregroundColor: Color(0xFFFFFFFF),
     elevation: 0,
     centerTitle: true,
   ),
   cardTheme: CardThemeData(
-    color: const Color(0xFF1E1E1E),
+    color: const Color(0xFF0F0F0F),
     elevation: 4,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16),
     ),
   ),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: Color(0xFFBB86FC),
-    foregroundColor: Colors.black,
+    backgroundColor: Color(0xFF001BFF),
+    foregroundColor: Colors.white,
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: const Color(0xFF1E1E1E),
+    fillColor: const Color(0xFF0F0F0F),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFFBB86FC), width: 2),
+      borderSide: const BorderSide(color: Color(0xFF001BFF), width: 2),
     ),
   ),
 );
@@ -236,11 +238,11 @@ final ThemeData animeTheme = ThemeData(
   cardTheme: CardThemeData(
     color: const Color(0xFF1A1F3A),
     elevation: 8,
-    shadowColor: const Color(0xFFFF69B4).withOpacity(0.3),
+    shadowColor: const Color(0xFFFF69B4).withValues(alpha: 0.3),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
       side: BorderSide(
-        color: const Color(0xFFFF69B4).withOpacity(0.3),
+        color: const Color(0xFFFF69B4).withValues(alpha: 0.3),
         width: 1,
       ),
     ),
@@ -259,7 +261,7 @@ final ThemeData animeTheme = ThemeData(
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(
-        color: const Color(0xFFFF69B4).withOpacity(0.3),
+        color: const Color(0xFFFF69B4).withValues(alpha: 0.3),
       ),
     ),
     focusedBorder: OutlineInputBorder(
@@ -269,7 +271,7 @@ final ThemeData animeTheme = ThemeData(
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(
-        color: const Color(0xFFFF69B4).withOpacity(0.3),
+        color: const Color(0xFFFF69B4).withValues(alpha: 0.3),
       ),
     ),
   ),
@@ -309,12 +311,12 @@ class CustomColors {
 
   String toJson() {
     return '{'
-        '"primary":${primary.value},'
-        '"secondary":${secondary.value},'
-        '"background":${background.value},'
-        '"surface":${surface.value},'
-        '"error":${error.value},'
-        '"text":${text.value}'
+        '"primary":${primary.toARGB32()},'
+        '"secondary":${secondary.toARGB32()},'
+        '"background":${background.toARGB32()},'
+        '"surface":${surface.toARGB32()},'
+        '"error":${error.toARGB32()},'
+        '"text":${text.toARGB32()}'
         '}';
   }
 

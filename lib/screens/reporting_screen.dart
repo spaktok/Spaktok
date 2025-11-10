@@ -21,7 +21,6 @@ class ReportingScreen extends StatefulWidget {
 
 class _ReportingScreenState extends State<ReportingScreen> {
   final ReportingService _reportingService = ReportingService.instance;
-  final AuthService _authService = AuthService();
   final TextEditingController _detailsController = TextEditingController();
   
   String? _selectedReason;
@@ -178,7 +177,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: isSelected ? reason['color'].withOpacity(0.2) : Colors.grey[900],
+          color: isSelected ? reason['color'].withValues(alpha: 0.2) : Colors.grey[900],
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: isSelected ? reason['color'] : Colors.grey[800]!,
@@ -190,7 +189,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: reason['color'].withOpacity(0.2),
+                color: reason['color'].withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer' as developer;
 
 class HashtagService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -39,7 +40,7 @@ class HashtagService {
 
       await batch.commit();
     } catch (e) {
-      print('Error saving hashtags: $e');
+      developer.log('Error saving hashtags: $e', name: 'hashtag_service');
       rethrow;
     }
   }
@@ -61,7 +62,7 @@ class HashtagService {
               })
           .toList();
     } catch (e) {
-      print('Error getting trending hashtags: $e');
+      developer.log('Error getting trending hashtags: $e', name: 'hashtag_service');
       return [];
     }
   }
@@ -88,7 +89,7 @@ class HashtagService {
 
       return querySnapshot.docs.map((doc) => doc.data()['name'] as String).toList();
     } catch (e) {
-      print('Error searching hashtags: $e');
+      developer.log('Error searching hashtags: $e', name: 'hashtag_service');
       return [];
     }
   }

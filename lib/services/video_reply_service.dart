@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 class VideoReplyService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -52,7 +53,7 @@ class VideoReplyService {
 
       return videoReplyRef.id;
     } catch (e) {
-      print('Error uploading video reply: $e');
+      developer.log('Error uploading video reply: $e', name: 'video_reply_service');
       rethrow;
     }
   }
@@ -120,7 +121,7 @@ class VideoReplyService {
         });
       }
     } catch (e) {
-      print('Error liking video reply: $e');
+      developer.log('Error liking video reply: $e', name: 'video_reply_service');
       rethrow;
     }
   }
@@ -143,7 +144,7 @@ class VideoReplyService {
         'viewCount': FieldValue.increment(1),
       });
     } catch (e) {
-      print('Error incrementing view count: $e');
+      developer.log('Error incrementing view count: $e', name: 'video_reply_service');
     }
   }
 
@@ -174,7 +175,7 @@ class VideoReplyService {
           final ref = _storage.refFromURL(videoUrl);
           await ref.delete();
         } catch (e) {
-          print('Error deleting video from storage: $e');
+          developer.log('Error deleting video from storage: $e', name: 'video_reply_service');
         }
       }
 
@@ -191,7 +192,7 @@ class VideoReplyService {
         'videoReplyCount': FieldValue.increment(-1),
       });
     } catch (e) {
-      print('Error deleting video reply: $e');
+      developer.log('Error deleting video reply: $e', name: 'video_reply_service');
       rethrow;
     }
   }

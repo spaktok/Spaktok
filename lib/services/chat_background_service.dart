@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 /// خدمة خلفيات الدردشة المتقدمة
 /// تدعم: صور، تدرجات، أنماط، الكاميرا الخلفية المباشرة
@@ -65,7 +66,7 @@ class ChatBackgroundService extends ChangeNotifier {
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        print('No cameras available');
+        developer.log('No cameras available', name: 'chat_background_service');
         return;
       }
 
@@ -86,7 +87,7 @@ class ChatBackgroundService extends ChangeNotifier {
       _isCameraActive = true;
       notifyListeners();
     } catch (e) {
-      print('Error starting camera: $e');
+      developer.log('Error starting camera: $e', name: 'chat_background_service');
       _isCameraActive = false;
     }
   }
@@ -153,7 +154,7 @@ class ChatBackgroundService extends ChangeNotifier {
               image: AssetImage('assets/backgrounds/$_currentValue'),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Colors.purple.withOpacity(0.3),
+                Colors.purple.withValues(alpha: 0.3),
                 BlendMode.overlay,
               ),
             ),
@@ -187,7 +188,7 @@ class ChatBackgroundService extends ChangeNotifier {
         ),
         // طبقة شفافة لتحسين قراءة الرسائل
         Container(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
         ),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
+import 'dart:developer' as developer;
 
 /// Message Encryption Type
 enum EncryptionType {
@@ -148,7 +149,7 @@ class E2EEncryptionService {
 
       return encryptionKey;
     } catch (e) {
-      print('Error initializing encryption: $e');
+      developer.log('Error initializing encryption: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -208,7 +209,7 @@ class E2EEncryptionService {
 
       return encryptedMessage;
     } catch (e) {
-      print('Error encrypting message: $e');
+      developer.log('Error encrypting message: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -243,7 +244,7 @@ class E2EEncryptionService {
 
       return decryptedContent;
     } catch (e) {
-      print('Error decrypting message: $e');
+      developer.log('Error decrypting message: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -286,7 +287,7 @@ class E2EEncryptionService {
         'iv': iv,
       };
     } catch (e) {
-      print('Error encrypting media: $e');
+      developer.log('Error encrypting media: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -320,7 +321,7 @@ class E2EEncryptionService {
 
       return decryptedData;
     } catch (e) {
-      print('Error decrypting media: $e');
+      developer.log('Error decrypting media: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -341,7 +342,7 @@ class E2EEncryptionService {
       final doc = querySnapshot.docs.first;
       return EncryptionKey.fromMap(doc.data(), doc.id);
     } catch (e) {
-      print('Error getting encryption key: $e');
+      developer.log('Error getting encryption key: $e', name: 'e2e_encryption_service');
       return null;
     }
   }
@@ -488,7 +489,7 @@ class E2EEncryptionService {
 
       return doc.data()?['key'];
     } catch (e) {
-      print('Error getting private key: $e');
+      developer.log('Error getting private key: $e', name: 'e2e_encryption_service');
       return null;
     }
   }
@@ -511,7 +512,7 @@ class E2EEncryptionService {
       // Generate new key
       return await initializeEncryption();
     } catch (e) {
-      print('Error rotating encryption key: $e');
+      developer.log('Error rotating encryption key: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -546,7 +547,7 @@ class E2EEncryptionService {
           .doc(keyId)
           .delete();
     } catch (e) {
-      print('Error deleting encryption key: $e');
+      developer.log('Error deleting encryption key: $e', name: 'e2e_encryption_service');
       rethrow;
     }
   }
@@ -567,7 +568,7 @@ class E2EEncryptionService {
           .map((doc) => EncryptionKey.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting encryption keys: $e');
+      developer.log('Error getting encryption keys: $e', name: 'e2e_encryption_service');
       return [];
     }
   }
@@ -581,7 +582,7 @@ class E2EEncryptionService {
       final key = await _getUserEncryptionKey(targetUserId);
       return key != null && key.isActive;
     } catch (e) {
-      print('Error checking encryption status: $e');
+      developer.log('Error checking encryption status: $e', name: 'e2e_encryption_service');
       return false;
     }
   }

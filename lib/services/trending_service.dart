@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spaktok/models/trending_content.dart';
+import 'dart:developer' as developer;
 
 class TrendingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,7 +26,7 @@ class TrendingService {
         'timestamp': FieldValue.serverTimestamp(), // تحديث وقت آخر مشاهدة
       });
     } catch (e) {
-      print('Error updating views count: $e');
+      developer.log('Error updating views count: $e', name: 'trending_service');
     }
   }
 
@@ -34,7 +35,7 @@ class TrendingService {
     try {
       await _firestore.collection('trending_content').doc(content.id).set(content.toJson());
     } catch (e) {
-      print('Error adding trending content: $e');
+      developer.log('Error adding trending content: $e', name: 'trending_service');
     }
   }
 }

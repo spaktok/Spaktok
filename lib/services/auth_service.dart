@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spaktok/models/user.dart'; // Import the new UserData model
+import 'dart:developer' as developer;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -17,7 +18,7 @@ class AuthService {
         return UserData.fromMap(doc.data()!);
       }
     } catch (e) {
-      print('Error getting user data: $e');
+      developer.log('Error getting user data: $e', name: 'AuthService');
     }
     return null;
   }
@@ -43,7 +44,7 @@ class AuthService {
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
-      print('Error resetting password: $e');
+      developer.log('Error resetting password: $e', name: 'AuthService');
       rethrow;
     }
   }
@@ -87,7 +88,7 @@ class AuthService {
 
       return credential;
     } catch (e) {
-      print('Error signing up: $e');
+      developer.log('Error signing up: $e', name: 'AuthService');
       rethrow;
     }
   }

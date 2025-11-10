@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/models/story.dart';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 class StoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -31,9 +32,9 @@ class StoryService {
       );
 
       await _firestore.collection('stories').doc(storyId).set(story.toJson());
-      print('Story uploaded successfully: $storyId');
+      developer.log('Story uploaded successfully: $storyId', name: 'story_service');
     } catch (e) {
-      print('Error uploading story: $e');
+      developer.log('Error uploading story: $e', name: 'story_service');
       rethrow;
     }
   }
@@ -67,9 +68,9 @@ class StoryService {
     try {
       // You might want to get the story data first to delete the file from storage
       await _firestore.collection('stories').doc(storyId).delete();
-      print('Story deleted successfully: $storyId');
+      developer.log('Story deleted successfully: $storyId', name: 'story_service');
     } catch (e) {
-      print('Error deleting story: $e');
+      developer.log('Error deleting story: $e', name: 'story_service');
       rethrow;
     }
   }

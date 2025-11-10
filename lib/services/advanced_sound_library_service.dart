@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 /// Model for Sound/Music
 class Sound {
@@ -110,7 +111,7 @@ class AdvancedSoundLibraryService {
 
       return soundMap.values.toList();
     } catch (e) {
-      print('Error searching sounds: $e');
+      developer.log('Error searching sounds: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -129,7 +130,7 @@ class AdvancedSoundLibraryService {
           .map((doc) => Sound.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting trending sounds: $e');
+      developer.log('Error getting trending sounds: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -147,7 +148,7 @@ class AdvancedSoundLibraryService {
           .map((doc) => Sound.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting popular sounds: $e');
+      developer.log('Error getting popular sounds: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -165,7 +166,7 @@ class AdvancedSoundLibraryService {
           .map((doc) => Sound.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting new sounds: $e');
+      developer.log('Error getting new sounds: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -184,7 +185,7 @@ class AdvancedSoundLibraryService {
           .map((doc) => Sound.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting sounds by genre: $e');
+      developer.log('Error getting sounds by genre: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -199,7 +200,7 @@ class AdvancedSoundLibraryService {
           .map((doc) => doc.data()['name'] as String)
           .toList();
     } catch (e) {
-      print('Error getting genres: $e');
+      developer.log('Error getting genres: $e', name: 'advanced_sound_library_service');
       return [
         'Pop',
         'Rock',
@@ -271,7 +272,7 @@ class AdvancedSoundLibraryService {
 
       return sound;
     } catch (e) {
-      print('Error uploading custom sound: $e');
+      developer.log('Error uploading custom sound: $e', name: 'advanced_sound_library_service');
       rethrow;
     }
   }
@@ -313,7 +314,7 @@ class AdvancedSoundLibraryService {
             .update({'category': 'trending'});
       }
     } catch (e) {
-      print('Error applying sound to video: $e');
+      developer.log('Error applying sound to video: $e', name: 'advanced_sound_library_service');
       rethrow;
     }
   }
@@ -333,7 +334,7 @@ class AdvancedSoundLibraryService {
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
     } catch (e) {
-      print('Error getting videos with sound: $e');
+      developer.log('Error getting videos with sound: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -369,7 +370,7 @@ class AdvancedSoundLibraryService {
 
       return sounds;
     } catch (e) {
-      print('Error getting favorite sounds: $e');
+      developer.log('Error getting favorite sounds: $e', name: 'advanced_sound_library_service');
       return [];
     }
   }
@@ -390,7 +391,7 @@ class AdvancedSoundLibraryService {
         'addedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error adding to favorites: $e');
+      developer.log('Error adding to favorites: $e', name: 'advanced_sound_library_service');
       rethrow;
     }
   }
@@ -408,7 +409,7 @@ class AdvancedSoundLibraryService {
           .doc(soundId)
           .delete();
     } catch (e) {
-      print('Error removing from favorites: $e');
+      developer.log('Error removing from favorites: $e', name: 'advanced_sound_library_service');
       rethrow;
     }
   }
@@ -459,7 +460,7 @@ class AdvancedSoundLibraryService {
       };
       return uniqueSounds.values.take(limit).toList();
     } catch (e) {
-      print('Error getting recommended sounds: $e');
+      developer.log('Error getting recommended sounds: $e', name: 'advanced_sound_library_service');
       return getPopularSounds(limit: limit);
     }
   }

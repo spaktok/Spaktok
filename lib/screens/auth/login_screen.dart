@@ -70,9 +70,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleSocialLogin(Future<void> Function() loginMethod) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       await loginMethod();
@@ -275,11 +277,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.google,
                     text: 'Continue with Google',
-                    onPressed: () async {
-                      await _handleSocialLogin(() async {
-                        await _authService.signInWithGoogle();
-                      });
-                    },
+                    onPressed: () => _handleSocialLogin(
+                        () async => await _authService.signInWithGoogle),
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                   ),
@@ -287,11 +286,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.snapchat,
                     text: 'Continue with Snapchat',
-                    onPressed: () async {
-                      await _handleSocialLogin(() async {
-                        await _authService.signInWithFacebook();
-                      });
-                    }, // Using Facebook for now
+                    onPressed: () => _handleSocialLogin(
+                        () async => await _authService.signInWithFacebook),
                     backgroundColor: const Color(0xFFFFFC00),
                     foregroundColor: Colors.black,
                   ),
@@ -299,11 +295,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SocialLoginButton(
                     icon: FontAwesomeIcons.tiktok,
                     text: 'Continue with TikTok',
-                    onPressed: () async {
-                      await _handleSocialLogin(() async {
-                        await _authService.signInWithFacebook();
-                      });
-                    }, // Using Facebook for now
+                    onPressed: () => _handleSocialLogin(
+                        () async => await _authService.signInWithFacebook),
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
                   ),

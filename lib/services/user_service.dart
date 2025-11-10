@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'dart:developer' as developer;
 
 /// User Service - Manages user data and profile operations
 class UserService {
@@ -23,7 +24,7 @@ class UserService {
       final doc = await _firestore.collection('users').doc(userId).get();
       return doc.data();
     } catch (e) {
-      debugPrint('Error getting user data: $e');
+      developer.log('Error getting user data: $e', name: 'user_service');
       return null;
     }
   }
@@ -56,9 +57,9 @@ class UserService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      debugPrint('Profile updated successfully');
+      developer.log('Profile updated successfully', name: 'user_service');
     } catch (e) {
-      debugPrint('Error updating profile: $e');
+      developer.log('Error updating profile: $e', name: 'user_service');
       throw Exception('Failed to update profile: $e');
     }
   }
@@ -106,9 +107,9 @@ class UserService {
         'followersCount': FieldValue.increment(1),
       });
 
-      debugPrint('User followed: $targetUserId');
+      developer.log('User followed: $targetUserId', name: 'user_service');
     } catch (e) {
-      debugPrint('Error following user: $e');
+      developer.log('Error following user: $e', name: 'user_service');
       throw Exception('Failed to follow user: $e');
     }
   }
@@ -146,9 +147,9 @@ class UserService {
         'followersCount': FieldValue.increment(-1),
       });
 
-      debugPrint('User unfollowed: $targetUserId');
+      developer.log('User unfollowed: $targetUserId', name: 'user_service');
     } catch (e) {
-      debugPrint('Error unfollowing user: $e');
+      developer.log('Error unfollowing user: $e', name: 'user_service');
       throw Exception('Failed to unfollow user: $e');
     }
   }
@@ -168,7 +169,7 @@ class UserService {
 
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking if user is followed: $e');
+      developer.log('Error checking if user is followed: $e', name: 'user_service');
       return false;
     }
   }
@@ -210,9 +211,9 @@ class UserService {
         'blockedAt': FieldValue.serverTimestamp(),
       });
 
-      debugPrint('User blocked: $targetUserId');
+      developer.log('User blocked: $targetUserId', name: 'user_service');
     } catch (e) {
-      debugPrint('Error blocking user: $e');
+      developer.log('Error blocking user: $e', name: 'user_service');
       throw Exception('Failed to block user: $e');
     }
   }
@@ -232,9 +233,9 @@ class UserService {
           .doc(targetUserId)
           .delete();
 
-      debugPrint('User unblocked: $targetUserId');
+      developer.log('User unblocked: $targetUserId', name: 'user_service');
     } catch (e) {
-      debugPrint('Error unblocking user: $e');
+      developer.log('Error unblocking user: $e', name: 'user_service');
       throw Exception('Failed to unblock user: $e');
     }
   }
@@ -254,7 +255,7 @@ class UserService {
 
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking if user is blocked: $e');
+      developer.log('Error checking if user is blocked: $e', name: 'user_service');
       return false;
     }
   }
@@ -275,7 +276,7 @@ class UserService {
 
       return snapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      debugPrint('Error searching users: $e');
+      developer.log('Error searching users: $e', name: 'user_service');
       return [];
     }
   }
@@ -298,7 +299,7 @@ class UserService {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting user stats: $e');
+      developer.log('Error getting user stats: $e', name: 'user_service');
       return null;
     }
   }
@@ -312,7 +313,7 @@ class UserService {
         'badges': FieldValue.arrayUnion([badgeId]),
       });
     } catch (e) {
-      debugPrint('Error adding badge: $e');
+      developer.log('Error adding badge: $e', name: 'user_service');
     }
   }
 
@@ -323,7 +324,7 @@ class UserService {
         'badges': FieldValue.arrayRemove([badgeId]),
       });
     } catch (e) {
-      debugPrint('Error removing badge: $e');
+      developer.log('Error removing badge: $e', name: 'user_service');
     }
   }
 
@@ -341,9 +342,9 @@ class UserService {
         'privacySettings': settings,
       });
 
-      debugPrint('Privacy settings updated');
+      developer.log('Privacy settings updated', name: 'user_service');
     } catch (e) {
-      debugPrint('Error updating privacy settings: $e');
+      developer.log('Error updating privacy settings: $e', name: 'user_service');
       throw Exception('Failed to update privacy settings: $e');
     }
   }
@@ -357,7 +358,7 @@ class UserService {
       }
       return {};
     } catch (e) {
-      debugPrint('Error getting privacy settings: $e');
+      developer.log('Error getting privacy settings: $e', name: 'user_service');
       return {};
     }
   }
@@ -381,9 +382,9 @@ class UserService {
       // Delete Firebase Auth user
       await user.delete();
 
-      debugPrint('Account deleted successfully');
+      developer.log('Account deleted successfully', name: 'user_service');
     } catch (e) {
-      debugPrint('Error deleting account: $e');
+      developer.log('Error deleting account: $e', name: 'user_service');
       throw Exception('Failed to delete account: $e');
     }
   }
@@ -397,7 +398,7 @@ class UserService {
       }
       return false;
     } catch (e) {
-      debugPrint('Error checking account status: $e');
+      developer.log('Error checking account status: $e', name: 'user_service');
       return false;
     }
   }

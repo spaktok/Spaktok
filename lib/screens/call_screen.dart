@@ -119,7 +119,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildControlButton({required IconData icon, required VoidCallback onTap, Color color = Colors.white, bool isLarge = false}) {
     return FloatingActionButton(
       onPressed: onTap,
-      backgroundColor: isLarge ? color : Colors.white.withOpacity(0.3),
+      backgroundColor: isLarge ? color : Colors.white.withValues(alpha: 0.3),
       heroTag: null, // To allow multiple FABs
       child: Icon(icon, color: isLarge ? Colors.white : color, size: isLarge ? 36 : 24),
     );

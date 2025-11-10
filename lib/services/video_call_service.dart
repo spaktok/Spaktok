@@ -1,4 +1,5 @@
-﻿import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'dart:developer' as developer;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,8 +23,6 @@ class VideoCallService {
 
   VideoCallService._();
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
   final AgoraTokenService _tokenService = AgoraTokenService.instance;
 
   RtcEngine? _engine;
@@ -53,16 +52,19 @@ class VideoCallService {
       // Engine initialized with App ID provided via --dart-define (see AppConfig)
       _engine = createAgoraRtcEngine();
       if (AppConfig.agoraAppId.isEmpty) {
-        debugPrint(
-            '[VideoCallService] Missing AGORA_APP_ID. Provide via --dart-define');
+        developer.log(
+            '[VideoCallService] Missing AGORA_APP_ID. Provide via --dart-define',
+            name: 'video_call_service');
         throw Exception('Missing AGORA_APP_ID');
       }
       await _engine!.initialize(RtcEngineContext(appId: AppConfig.agoraAppId));
 
       _isInitialized = true;
-      debugPrint('[VideoCallService] Initialized (tokens managed by backend)');
+      developer
+          .log('[VideoCallService] Initialized (tokens managed by backend)');
     } catch (e) {
-      debugPrint('[VideoCallService] Init error: $e');
+      developer.log('[VideoCallService] Init error: $e',
+          name: 'video_call_service');
       rethrow;
     }
   }
@@ -91,9 +93,11 @@ class VideoCallService {
         ),
       );
 
-      debugPrint('[VideoCallService] Joined channel: $channelName');
+      developer.log('[VideoCallService] Joined channel: $channelName',
+          name: 'video_call_service');
     } catch (e) {
-      debugPrint('[VideoCallService] Join error: $e');
+      developer.log('[VideoCallService] Join error: $e',
+          name: 'video_call_service');
       rethrow;
     }
   }

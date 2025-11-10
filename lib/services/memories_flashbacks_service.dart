@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'dart:developer' as developer;
 
 /// Memory Category
 enum MemoryCategory {
@@ -148,7 +149,6 @@ class Flashback {
 /// Snapchat-style memories system with automatic flashback generation
 class MemoriesFlashbacksService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
   final AuthService _authService = AuthService();
 
   /// Save content to memories
@@ -196,7 +196,7 @@ class MemoriesFlashbacksService {
 
       return memory;
     } catch (e) {
-      print('Error saving to memories: $e');
+      developer.log('Error saving to memories: $e', name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -233,7 +233,7 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting memories: $e');
+      developer.log('Error getting memories: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -260,7 +260,7 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting memories by category: $e');
+      developer.log('Error getting memories by category: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -286,7 +286,7 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error searching memories: $e');
+      developer.log('Error searching memories: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -310,7 +310,7 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting favorite memories: $e');
+      developer.log('Error getting favorite memories: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -328,7 +328,7 @@ class MemoriesFlashbacksService {
           .doc(memoryId)
           .update({'isFavorite': isFavorite});
     } catch (e) {
-      print('Error toggling favorite: $e');
+      developer.log('Error toggling favorite: $e', name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -346,7 +346,7 @@ class MemoriesFlashbacksService {
           .doc(memoryId)
           .delete();
     } catch (e) {
-      print('Error deleting memory: $e');
+      developer.log('Error deleting memory: $e', name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -393,7 +393,7 @@ class MemoriesFlashbacksService {
 
       return flashback;
     } catch (e) {
-      print('Error generating flashback: $e');
+      developer.log('Error generating flashback: $e', name: 'memories_flashbacks_service');
       return null;
     }
   }
@@ -420,7 +420,7 @@ class MemoriesFlashbacksService {
 
       return flashbacks;
     } catch (e) {
-      print('Error getting today\'s flashbacks: $e');
+      developer.log('Error getting today\'s flashbacks: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -443,7 +443,7 @@ class MemoriesFlashbacksService {
           .map((doc) => Flashback.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting flashbacks: $e');
+      developer.log('Error getting flashbacks: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -482,7 +482,7 @@ class MemoriesFlashbacksService {
 
       return memories;
     } catch (e) {
-      print('Error getting flashback memories: $e');
+      developer.log('Error getting flashback memories: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -539,7 +539,7 @@ class MemoriesFlashbacksService {
 
       return storyId;
     } catch (e) {
-      print('Error creating story from memories: $e');
+      developer.log('Error creating story from memories: $e', name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -562,7 +562,7 @@ class MemoriesFlashbacksService {
         'category': category.toString().split('.').last,
       });
     } catch (e) {
-      print('Error updating memory category: $e');
+      developer.log('Error updating memory category: $e', name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -583,7 +583,7 @@ class MemoriesFlashbacksService {
             FieldValue.arrayUnion(tags.map((t) => t.toLowerCase()).toList()),
       });
     } catch (e) {
-      print('Error adding tags: $e');
+      developer.log('Error adding tags: $e', name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -610,7 +610,7 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting memories for date: $e');
+      developer.log('Error getting memories for date: $e', name: 'memories_flashbacks_service');
       return [];
     }
   }

@@ -11,7 +11,6 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final AuthService _authService = AuthService();
 
   final List<Map<String, dynamic>> _notifications = [
     {

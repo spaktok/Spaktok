@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 /// Service for handling video collaboration features (Duet, Stitch, Reaction)
 /// Similar to TikTok's duet and stitch features
@@ -85,7 +86,7 @@ class VideoCollaborationService {
 
       return videoId;
     } catch (e) {
-      print('Error creating duet: $e');
+      developer.log('Error creating duet: $e', name: 'video_collaboration_service');
       rethrow;
     }
   }
@@ -173,7 +174,7 @@ class VideoCollaborationService {
 
       return videoId;
     } catch (e) {
-      print('Error creating stitch: $e');
+      developer.log('Error creating stitch: $e', name: 'video_collaboration_service');
       rethrow;
     }
   }
@@ -248,7 +249,7 @@ class VideoCollaborationService {
 
       return videoId;
     } catch (e) {
-      print('Error creating reaction: $e');
+      developer.log('Error creating reaction: $e', name: 'video_collaboration_service');
       rethrow;
     }
   }
@@ -268,7 +269,7 @@ class VideoCollaborationService {
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
     } catch (e) {
-      print('Error getting duets: $e');
+      developer.log('Error getting duets: $e', name: 'video_collaboration_service');
       return [];
     }
   }
@@ -288,7 +289,7 @@ class VideoCollaborationService {
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
     } catch (e) {
-      print('Error getting stitches: $e');
+      developer.log('Error getting stitches: $e', name: 'video_collaboration_service');
       return [];
     }
   }
@@ -308,7 +309,7 @@ class VideoCollaborationService {
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
     } catch (e) {
-      print('Error getting reactions: $e');
+      developer.log('Error getting reactions: $e', name: 'video_collaboration_service');
       return [];
     }
   }
@@ -330,7 +331,7 @@ class VideoCollaborationService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error creating notification: $e');
+      developer.log('Error creating notification: $e', name: 'video_collaboration_service');
     }
   }
 }

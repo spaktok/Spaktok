@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:provider/provider.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,7 +39,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
         _errorMessage = 'Failed to load gifts: $e';
         _isLoading = false;
       });
-      print('Error fetching gifts: $e');
+      developer.log('Error fetching gifts: $e', name: 'gift_bottom_sheet');
     }
   }
 
@@ -72,7 +73,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to send gift: $e')),
       );
-      print('Error sending gift: $e');
+      developer.log('Error sending gift: $e', name: 'gift_bottom_sheet');
     }
   }
 

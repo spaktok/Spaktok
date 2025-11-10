@@ -1,4 +1,4 @@
-﻿class AppConfig {
+class AppConfig {
   // Backend configuration
   static const String backendBaseUrl = 'http://localhost:5000';
   static const String agoraTokenEndpoint = '$backendBaseUrl/api/agora/token';

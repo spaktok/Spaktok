@@ -68,7 +68,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -148,7 +148,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
               onTap: () => setState(() => _selectedGift = gift),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.3) : Colors.black.withOpacity(0.2),
+                  color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
@@ -177,7 +177,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,

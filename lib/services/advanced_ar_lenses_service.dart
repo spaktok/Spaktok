@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 /// AR Lens Types
 enum ARLensType {
@@ -136,7 +137,8 @@ class AdvancedARLensesService {
           .map((doc) => ARLens.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting featured lenses: $e');
+      developer.log('Error getting featured lenses: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -154,7 +156,8 @@ class AdvancedARLensesService {
           .map((doc) => ARLens.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting trending lenses: $e');
+      developer.log('Error getting trending lenses: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -176,7 +179,8 @@ class AdvancedARLensesService {
           .map((doc) => ARLens.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting lenses by category: $e');
+      developer.log('Error getting lenses by category: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -198,7 +202,8 @@ class AdvancedARLensesService {
           .map((doc) => ARLens.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting lenses by type: $e');
+      developer.log('Error getting lenses by type: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -221,7 +226,8 @@ class AdvancedARLensesService {
           .map((doc) => ARLens.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error searching lenses: $e');
+      developer.log('Error searching lenses: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -275,7 +281,8 @@ class AdvancedARLensesService {
       // Add to user's recent lenses
       await _addToRecentLenses(lensId);
     } catch (e) {
-      print('Error applying lens: $e');
+      developer.log('Error applying lens: $e',
+          name: 'advanced_ar_lenses_service');
       rethrow;
     }
   }
@@ -342,7 +349,8 @@ class AdvancedARLensesService {
 
       return lens;
     } catch (e) {
-      print('Error creating custom lens: $e');
+      developer.log('Error creating custom lens: $e',
+          name: 'advanced_ar_lenses_service');
       rethrow;
     }
   }
@@ -378,7 +386,8 @@ class AdvancedARLensesService {
 
       return lenses;
     } catch (e) {
-      print('Error getting favorite lenses: $e');
+      developer.log('Error getting favorite lenses: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -399,7 +408,8 @@ class AdvancedARLensesService {
         'addedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error adding to favorites: $e');
+      developer.log('Error adding to favorites: $e',
+          name: 'advanced_ar_lenses_service');
       rethrow;
     }
   }
@@ -417,7 +427,8 @@ class AdvancedARLensesService {
           .doc(lensId)
           .delete();
     } catch (e) {
-      print('Error removing from favorites: $e');
+      developer.log('Error removing from favorites: $e',
+          name: 'advanced_ar_lenses_service');
       rethrow;
     }
   }
@@ -454,7 +465,8 @@ class AdvancedARLensesService {
 
       return lenses;
     } catch (e) {
-      print('Error getting recent lenses: $e');
+      developer.log('Error getting recent lenses: $e',
+          name: 'advanced_ar_lenses_service');
       return [];
     }
   }
@@ -500,7 +512,8 @@ class AdvancedARLensesService {
         'ratingCount': ratingsSnapshot.docs.length,
       });
     } catch (e) {
-      print('Error rating lens: $e');
+      developer.log('Error rating lens: $e',
+          name: 'advanced_ar_lenses_service');
       rethrow;
     }
   }
@@ -538,7 +551,8 @@ class AdvancedARLensesService {
       final uniqueLenses = {for (var lens in recommendedLenses) lens.id: lens};
       return uniqueLenses.values.take(limit).toList();
     } catch (e) {
-      print('Error getting recommended lenses: $e');
+      developer.log('Error getting recommended lenses: $e',
+          name: 'advanced_ar_lenses_service');
       return getTrendingLenses(limit: limit);
     }
   }
@@ -559,7 +573,8 @@ class AdvancedARLensesService {
         'usedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      print('Error adding to recent lenses: $e');
+      developer.log('Error adding to recent lenses: $e',
+          name: 'advanced_ar_lenses_service');
     }
   }
 

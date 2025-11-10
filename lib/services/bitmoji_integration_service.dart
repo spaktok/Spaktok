@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
+import 'dart:developer' as developer;
 
 /// Avatar Style
 enum AvatarStyle {
@@ -152,7 +153,6 @@ class AvatarSticker {
 /// Snapchat-style personalized avatar system with expressions and stickers
 class BitmojiIntegrationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
   final AuthService _authService = AuthService();
 
   /// Create new avatar
@@ -189,7 +189,7 @@ class BitmojiIntegrationService {
 
       return avatar;
     } catch (e) {
-      print('Error creating avatar: $e');
+      developer.log('Error creating avatar: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -217,7 +217,7 @@ class BitmojiIntegrationService {
 
       return BitmojiAvatar.fromMap(avatarDoc.data()!, avatarDoc.id);
     } catch (e) {
-      print('Error getting user avatar: $e');
+      developer.log('Error getting user avatar: $e', name: 'bitmoji_integration_service');
       return null;
     }
   }
@@ -245,7 +245,7 @@ class BitmojiIntegrationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error updating avatar features: $e');
+      developer.log('Error updating avatar features: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -270,7 +270,7 @@ class BitmojiIntegrationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error changing avatar style: $e');
+      developer.log('Error changing avatar style: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -286,7 +286,7 @@ class BitmojiIntegrationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error adding outfit: $e');
+      developer.log('Error adding outfit: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -302,7 +302,7 @@ class BitmojiIntegrationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error adding accessory: $e');
+      developer.log('Error adding accessory: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -318,7 +318,7 @@ class BitmojiIntegrationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error setting default outfit: $e');
+      developer.log('Error setting default outfit: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -373,7 +373,7 @@ class BitmojiIntegrationService {
 
       return sticker;
     } catch (e) {
-      print('Error generating sticker: $e');
+      developer.log('Error generating sticker: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -391,7 +391,7 @@ class BitmojiIntegrationService {
           .map((doc) => AvatarSticker.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error getting avatar stickers: $e');
+      developer.log('Error getting avatar stickers: $e', name: 'bitmoji_integration_service');
       return [];
     }
   }
@@ -424,7 +424,7 @@ class BitmojiIntegrationService {
 
       return stickers;
     } catch (e) {
-      print('Error getting favorite stickers: $e');
+      developer.log('Error getting favorite stickers: $e', name: 'bitmoji_integration_service');
       return [];
     }
   }
@@ -471,7 +471,7 @@ class BitmojiIntegrationService {
         'lastMessageSender': user.uid,
       });
     } catch (e) {
-      print('Error sending sticker in chat: $e');
+      developer.log('Error sending sticker in chat: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -511,7 +511,7 @@ class BitmojiIntegrationService {
         ]),
       });
     } catch (e) {
-      print('Error adding avatar to story: $e');
+      developer.log('Error adding avatar to story: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }
@@ -531,7 +531,7 @@ class BitmojiIntegrationService {
               })
           .toList();
     } catch (e) {
-      print('Error getting available outfits: $e');
+      developer.log('Error getting available outfits: $e', name: 'bitmoji_integration_service');
       return [];
     }
   }
@@ -553,7 +553,7 @@ class BitmojiIntegrationService {
               })
           .toList();
     } catch (e) {
-      print('Error getting available accessories: $e');
+      developer.log('Error getting available accessories: $e', name: 'bitmoji_integration_service');
       return [];
     }
   }
@@ -570,7 +570,7 @@ class BitmojiIntegrationService {
 
       return stickers;
     } catch (e) {
-      print('Error generating all expressions: $e');
+      developer.log('Error generating all expressions: $e', name: 'bitmoji_integration_service');
       return [];
     }
   }
@@ -598,7 +598,7 @@ class BitmojiIntegrationService {
         'avatarId': FieldValue.delete(),
       });
     } catch (e) {
-      print('Error deleting avatar: $e');
+      developer.log('Error deleting avatar: $e', name: 'bitmoji_integration_service');
       rethrow;
     }
   }

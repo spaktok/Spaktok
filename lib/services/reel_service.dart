@@ -7,6 +7,7 @@ import 'package:spaktok/services/challenge_service.dart';
 import 'package:spaktok/services/ai_recommendation_service.dart';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:developer' as developer;
 
 class ReelService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -75,9 +76,9 @@ class ReelService {
         await challengeService.joinChallenge(challengeId, userId, reelId);
       }
 
-      print('Reel uploaded successfully: $reelId');
+      developer.log('Reel uploaded successfully: $reelId', name: 'reel_service');
     } catch (e) {
-      print('Error uploading reel: $e');
+      developer.log('Error uploading reel: $e', name: 'reel_service');
       rethrow;
     }
   }
@@ -350,9 +351,9 @@ class ReelService {
     try {
       await _firestore.collection('reels').doc(reelId).delete();
       // يمكن إضافة منطق لحذف الملف من Firebase Storage هنا أيضًا
-      print('Reel deleted successfully: $reelId');
+      developer.log('Reel deleted successfully: $reelId', name: 'reel_service');
     } catch (e) {
-      print('Error deleting reel: $e');
+      developer.log('Error deleting reel: $e', name: 'reel_service');
       rethrow;
     }
   }

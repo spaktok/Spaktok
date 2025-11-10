@@ -135,7 +135,7 @@ class _ToursScreenState extends State<ToursScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            _tourSteps[_currentPage]['color'].withOpacity(0.3),
+            _tourSteps[_currentPage]['color'].withValues(alpha: 0.3),
             Colors.black,
           ],
         ),
@@ -184,7 +184,7 @@ class _ToursScreenState extends State<ToursScreen> {
             width: 150,
             height: 150,
             decoration: BoxDecoration(
-              color: step['color'].withOpacity(0.2),
+              color: step['color'].withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
                 color: step['color'],
@@ -192,7 +192,7 @@ class _ToursScreenState extends State<ToursScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: step['color'].withOpacity(0.5),
+                  color: step['color'].withValues(alpha: 0.5),
                   blurRadius: 30,
                   spreadRadius: 10,
                 ),
@@ -237,7 +237,7 @@ class _ToursScreenState extends State<ToursScreen> {
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

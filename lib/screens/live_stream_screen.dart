@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -101,7 +101,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     // UI for battle progress bar, scores, timer, etc.
     return Container(
       padding: const EdgeInsets.all(8.0),
-      color: Colors.black.withOpacity(0.5),
+      color: Colors.black.withValues(alpha: 0.5),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [Text('You: 100', style: TextStyle(color: Colors.white)), Text('Opponent: 80', style: TextStyle(color: Colors.white))],

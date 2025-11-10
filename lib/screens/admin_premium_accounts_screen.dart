@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
@@ -59,7 +60,7 @@ class _AdminPremiumAccountsScreenState
               })
           .toList();
     } catch (e) {
-      print('Error loading data: $e');
+      developer.log('Error loading data: $e', name: 'admin_premium_accounts_screen');
       // Handle error
     } finally {
       setState(() {
@@ -77,7 +78,7 @@ class _AdminPremiumAccountsScreenState
       });
       _loadData(); // Reload data after change
     } catch (e) {
-      print('Error assigning premium: $e');
+      developer.log('Error assigning premium: $e', name: 'admin_premium_accounts_screen');
       // Handle error
     }
   }
@@ -90,7 +91,7 @@ class _AdminPremiumAccountsScreenState
       });
       _loadData(); // Reload data after change
     } catch (e) {
-      print('Error unassigning premium: $e');
+      developer.log('Error unassigning premium: $e', name: 'admin_premium_accounts_screen');
       // Handle error
     }
   }

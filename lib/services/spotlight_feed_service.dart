@@ -153,7 +153,6 @@ class CreatorReward {
 /// TikTok For You page + Snapchat Spotlight with creator rewards
 class SpotlightFeedService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
   final AuthService _authService = AuthService();
 
   // Reward rates (configurable)
@@ -529,7 +528,7 @@ class SpotlightFeedService {
 
       // Calculate engagement score (weighted formula)
       final engagementScore = (likes * 2.0) + (shares * 3.0) + (comments * 1.5);
-      final engagementRate = views > 0 ? engagementScore / views : 0.0;
+views > 0 ? engagementScore / views : 0.0;
 
       // Calculate trending score (combines engagement + recency)
       final createdAt = (data['createdAt'] as Timestamp).toDate();

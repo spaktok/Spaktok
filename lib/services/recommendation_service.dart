@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
+import 'dart:developer' as developer;
 
 class RecommendationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -50,7 +51,7 @@ class RecommendationService {
 
       return rankedPosts;
     } catch (e) {
-      print('Error getting For You feed: $e');
+      developer.log('Error getting For You feed: $e', name: 'recommendation_service');
       return [];
     }
   }
@@ -74,7 +75,7 @@ class RecommendationService {
         'engagementRate': 0.0,
       };
     } catch (e) {
-      print('Error getting user preferences: $e');
+      developer.log('Error getting user preferences: $e', name: 'recommendation_service');
       return {};
     }
   }
@@ -92,7 +93,7 @@ class RecommendationService {
 
       return querySnapshot.docs.map((doc) => doc.data()['postId'] as String).toList();
     } catch (e) {
-      print('Error getting interaction history: $e');
+      developer.log('Error getting interaction history: $e', name: 'recommendation_service');
       return [];
     }
   }
@@ -211,7 +212,7 @@ class RecommendationService {
 
       await preferencesRef.set(updates, SetOptions(merge: true));
     } catch (e) {
-      print('Error updating user preferences: $e');
+      developer.log('Error updating user preferences: $e', name: 'recommendation_service');
     }
   }
 
@@ -258,7 +259,7 @@ class RecommendationService {
 
       return rankedUsers.take(limit).toList();
     } catch (e) {
-      print('Error getting recommended users: $e');
+      developer.log('Error getting recommended users: $e', name: 'recommendation_service');
       return [];
     }
   }

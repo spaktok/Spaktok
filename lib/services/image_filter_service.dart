@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
+import 'dart:developer' as developer;
 
 enum FilterType {
   none,
@@ -47,7 +48,7 @@ class ImageFilterService {
       
       return imageFile;
     } catch (e) {
-      debugPrint('Error applying filter: $e');
+      developer.log('Error applying filter: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -68,7 +69,7 @@ class ImageFilterService {
 
       return Uint8List.fromList(img.encodeJpg(filteredImage));
     } catch (e) {
-      debugPrint('Error applying filter: $e');
+      developer.log('Error applying filter: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -203,7 +204,7 @@ class ImageFilterService {
       final adjusted = img.adjustColor(image, brightness: brightness);
       return Uint8List.fromList(img.encodeJpg(adjusted));
     } catch (e) {
-      debugPrint('Error adjusting brightness: $e');
+      developer.log('Error adjusting brightness: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -217,7 +218,7 @@ class ImageFilterService {
       final adjusted = img.adjustColor(image, contrast: contrast);
       return Uint8List.fromList(img.encodeJpg(adjusted));
     } catch (e) {
-      debugPrint('Error adjusting contrast: $e');
+      developer.log('Error adjusting contrast: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -231,7 +232,7 @@ class ImageFilterService {
       final adjusted = img.adjustColor(image, saturation: saturation);
       return Uint8List.fromList(img.encodeJpg(adjusted));
     } catch (e) {
-      debugPrint('Error adjusting saturation: $e');
+      developer.log('Error adjusting saturation: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -251,7 +252,7 @@ class ImageFilterService {
       final cropped = img.copyCrop(image, x: x, y: y, width: width, height: height);
       return Uint8List.fromList(img.encodeJpg(cropped));
     } catch (e) {
-      debugPrint('Error cropping image: $e');
+      developer.log('Error cropping image: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -265,7 +266,7 @@ class ImageFilterService {
       final rotated = img.copyRotate(image, angle: angle);
       return Uint8List.fromList(img.encodeJpg(rotated));
     } catch (e) {
-      debugPrint('Error rotating image: $e');
+      developer.log('Error rotating image: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -279,7 +280,7 @@ class ImageFilterService {
       final flipped = horizontal ? img.flipHorizontal(image) : img.flipVertical(image);
       return Uint8List.fromList(img.encodeJpg(flipped));
     } catch (e) {
-      debugPrint('Error flipping image: $e');
+      developer.log('Error flipping image: $e', name: 'image_filter_service');
       rethrow;
     }
   }
@@ -297,7 +298,7 @@ class ImageFilterService {
       final resized = img.copyResize(image, width: width, height: height);
       return Uint8List.fromList(img.encodeJpg(resized));
     } catch (e) {
-      debugPrint('Error resizing image: $e');
+      developer.log('Error resizing image: $e', name: 'image_filter_service');
       rethrow;
     }
   }

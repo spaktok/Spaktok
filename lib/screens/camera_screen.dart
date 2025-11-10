@@ -113,7 +113,7 @@ class _CameraScreenState extends State<CameraScreen> {
             _selectedFilter = selected ? filter : 'None';
           });
         },
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.3),
+        selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.3),
       ),
     );
   }

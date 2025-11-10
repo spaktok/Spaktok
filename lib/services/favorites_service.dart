@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:developer' as developer;
 
 class FavoritesService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,7 +26,7 @@ class FavoritesService {
         });
       }
     } catch (e) {
-      print('Error saving to favorites: $e');
+      developer.log('Error saving to favorites: $e', name: 'favorites_service');
       rethrow;
     }
   }
@@ -42,7 +43,7 @@ class FavoritesService {
 
       return favoriteDoc.exists;
     } catch (e) {
-      print('Error checking favorites: $e');
+      developer.log('Error checking favorites: $e', name: 'favorites_service');
       return false;
     }
   }
@@ -89,7 +90,7 @@ class FavoritesService {
 
       return posts;
     } catch (e) {
-      print('Error getting favorite posts: $e');
+      developer.log('Error getting favorite posts: $e', name: 'favorites_service');
       return [];
     }
   }
@@ -104,7 +105,7 @@ class FavoritesService {
           .doc(postId)
           .delete();
     } catch (e) {
-      print('Error removing from favorites: $e');
+      developer.log('Error removing from favorites: $e', name: 'favorites_service');
       rethrow;
     }
   }
@@ -120,7 +121,7 @@ class FavoritesService {
 
       return favoritesSnapshot.docs.length;
     } catch (e) {
-      print('Error getting favorites count: $e');
+      developer.log('Error getting favorites count: $e', name: 'favorites_service');
       return 0;
     }
   }
@@ -145,7 +146,7 @@ class FavoritesService {
 
       return collectionRef.id;
     } catch (e) {
-      print('Error creating favorite collection: $e');
+      developer.log('Error creating favorite collection: $e', name: 'favorites_service');
       rethrow;
     }
   }
@@ -180,7 +181,7 @@ class FavoritesService {
         'postCount': FieldValue.increment(1),
       });
     } catch (e) {
-      print('Error adding to collection: $e');
+      developer.log('Error adding to collection: $e', name: 'favorites_service');
       rethrow;
     }
   }

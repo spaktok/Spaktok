@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:async';
+import 'dart:developer' as developer;
 
 class DisappearingMessagesService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -44,7 +45,7 @@ class DisappearingMessagesService {
 
       return messageRef.id;
     } catch (e) {
-      print('Error sending disappearing message: $e');
+      developer.log('Error sending disappearing message: $e', name: 'disappearing_messages_service');
       rethrow;
     }
   }
@@ -62,11 +63,13 @@ class DisappearingMessagesService {
       if (!messageDoc.exists) return;
 
       final messageData = messageDoc.data()!;
-      final disappearAfterSeconds = messageData['disappearAfterSeconds'] as int?;
+      final disappearAfterSeconds =
+          messageData['disappearAfterSeconds'] as int?;
 
       DateTime? disappearsAt;
       if (disappearAfterSeconds != null) {
-        disappearsAt = DateTime.now().add(Duration(seconds: disappearAfterSeconds));
+        disappearsAt =
+            DateTime.now().add(Duration(seconds: disappearAfterSeconds));
       } else {
         // Disappear immediately after read
         disappearsAt = DateTime.now().add(const Duration(seconds: 5));
@@ -81,7 +84,7 @@ class DisappearingMessagesService {
       // Schedule message deletion
       _scheduleMessageDeletion(chatId, messageId, disappearsAt);
     } catch (e) {
-      print('Error marking message as read: $e');
+      developer.log('Error marking message as read: $e', name: 'disappearing_messages_service');
     }
   }
 
@@ -124,14 +127,14 @@ class DisappearingMessagesService {
           final ref = _storage.refFromURL(mediaUrl);
           await ref.delete();
         } catch (e) {
-          print('Error deleting media from storage: $e');
+          developer.log('Error deleting media from storage: $e', name: 'disappearing_messages_service');
         }
       }
 
       // Delete message document
       await messageDoc.reference.delete();
     } catch (e) {
-      print('Error deleting message: $e');
+      developer.log('Error deleting message: $e', name: 'disappearing_messages_service');
     }
   }
 
@@ -155,10 +158,11 @@ class DisappearingMessagesService {
     try {
       await _firestore.collection('chats').doc(chatId).update({
         'disappearingMessagesEnabled': enabled,
-        'defaultDisappearAfterSeconds': defaultDisappearAfterSeconds ?? 24 * 60 * 60, // 24 hours
+        'defaultDisappearAfterSeconds':
+            defaultDisappearAfterSeconds ?? 24 * 60 * 60, // 24 hours
       });
     } catch (e) {
-      print('Error toggling disappearing messages: $e');
+      developer.log('Error toggling disappearing messages: $e', name: 'disappearing_messages_service');
       rethrow;
     }
   }
@@ -172,7 +176,7 @@ class DisappearingMessagesService {
       final chatData = chatDoc.data()!;
       return chatData['disappearingMessagesEnabled'] ?? false;
     } catch (e) {
-      print('Error checking disappearing messages status: $e');
+      developer.log('Error checking disappearing messages status: $e', name: 'disappearing_messages_service');
       return false;
     }
   }
@@ -195,7 +199,7 @@ class DisappearingMessagesService {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error sending screenshot notification: $e');
+      developer.log('Error sending screenshot notification: $e', name: 'disappearing_messages_service');
     }
   }
 
@@ -203,12 +207,8 @@ class DisappearingMessagesService {
   Future<void> cleanupExpiredMessages() async {
     try {
       final now = Timestamp.now();
-      
-      // Query all chats
       final chatsSnapshot = await _firestore.collection('chats').get();
-
       for (final chatDoc in chatsSnapshot.docs) {
-        // Query expired messages
         final expiredMessages = await _firestore
             .collection('chats')
             .doc(chatDoc.id)
@@ -216,38 +216,12 @@ class DisappearingMessagesService {
             .where('isDisappearing', isEqualTo: true)
             .where('disappearsAt', isLessThan: now)
             .get();
-
-        // Delete expired messages
         for (final messageDoc in expiredMessages.docs) {
           await deleteMessage(chatDoc.id, messageDoc.id);
         }
       }
     } catch (e) {
-      print('Error cleaning up expired messages: $e');
+      developer.log('Error cleaning up expired messages: $e', name: 'disappearing_messages_service');
     }
   }
 }
-
-
-  // Send screenshot notification
-  Future<void> sendScreenshotNotification({
-    required String chatId,
-    required String userId,
-    required String messageId,
-  }) async {
-    try {
-      await _firestore
-          .collection("chats")
-          .doc(chatId)
-          .collection("notifications")
-          .add({
-        "type": "screenshot",
-        "userId": userId,
-        "messageId": messageId,
-        "timestamp": FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print("Error sending screenshot notification: $e");
-    }
-  }
-

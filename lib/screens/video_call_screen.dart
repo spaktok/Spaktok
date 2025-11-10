@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:spaktok/services/video_call_service.dart';
 import 'package:spaktok/services/agora_token_service.dart';
@@ -22,7 +23,6 @@ class VideoCallScreen extends StatefulWidget {
 
 class _VideoCallScreenState extends State<VideoCallScreen> {
   late VideoCallService _videoCallService;
-  late AgoraTokenService _tokenService;
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
   final List<int> _remoteUids = [];
@@ -32,7 +32,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   void initState() {
     super.initState();
     _videoCallService = VideoCallService.instance;
-    _tokenService = AgoraTokenService.instance;
     _initializeCall();
   }
 

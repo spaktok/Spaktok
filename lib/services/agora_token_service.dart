@@ -1,4 +1,5 @@
-﻿import 'package:cloud_functions/cloud_functions.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'dart:developer' as developer;
 
 class AgoraTokenService {
   // Singleton pattern
@@ -27,7 +28,7 @@ class AgoraTokenService {
       }
       return token;
     } catch (e) {
-      print('Error fetching Agora token: $e');
+      developer.log('Error fetching Agora token: $e', name: 'agora_token_service');
       rethrow;
     }
   }

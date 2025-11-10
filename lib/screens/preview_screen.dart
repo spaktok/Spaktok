@@ -127,7 +127,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
           _buildBottomContent(),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],
@@ -162,7 +162,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
           ),
         ),
         child: Column(
@@ -180,7 +180,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                     borderSide: BorderSide(color: Colors.grey[600]!),
                   ),
                   filled: true,
-                  fillColor: Colors.black.withOpacity(0.5),
+                  fillColor: Colors.black.withValues(alpha: 0.5),
                 ),
               ),
             const SizedBox(height: 20),

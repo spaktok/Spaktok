@@ -4,7 +4,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 /// Service for managing global music and audio library
 class MusicLibraryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   /// Get trending music tracks
   Stream<List<Map<String, dynamic>>> getTrendingMusic({int limit = 20}) {
