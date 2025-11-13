@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:developer' as developer;
 
@@ -169,7 +168,8 @@ class UserService {
 
       return doc.exists;
     } catch (e) {
-      developer.log('Error checking if user is followed: $e', name: 'user_service');
+      developer.log('Error checking if user is followed: $e',
+          name: 'user_service');
       return false;
     }
   }
@@ -255,7 +255,8 @@ class UserService {
 
       return doc.exists;
     } catch (e) {
-      developer.log('Error checking if user is blocked: $e', name: 'user_service');
+      developer.log('Error checking if user is blocked: $e',
+          name: 'user_service');
       return false;
     }
   }
@@ -344,7 +345,8 @@ class UserService {
 
       developer.log('Privacy settings updated', name: 'user_service');
     } catch (e) {
-      developer.log('Error updating privacy settings: $e', name: 'user_service');
+      developer.log('Error updating privacy settings: $e',
+          name: 'user_service');
       throw Exception('Failed to update privacy settings: $e');
     }
   }

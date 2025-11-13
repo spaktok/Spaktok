@@ -502,7 +502,7 @@ class AdvancedARLensesService {
 
       final totalRating = ratingsSnapshot.docs.fold<double>(
         0.0,
-        (sum, doc) => sum + (doc.data()['rating'] as num).toDouble(),
+        (acc, doc) => acc + (doc.data()['rating'] as num).toDouble(),
       );
 
       final avgRating = totalRating / ratingsSnapshot.docs.length;

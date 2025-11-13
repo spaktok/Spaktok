@@ -7,7 +7,7 @@ class ShortVideoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  static const int MAX_VIDEO_DURATION_SECONDS = 600; // 10 minutes
+  static const int maxVideoDurationSeconds = 600; // 10 minutes
 
   /// Upload a short video with metadata
   Future<String> uploadVideo({
@@ -22,15 +22,16 @@ class ShortVideoService {
     Map<String, dynamic>? location,
   }) async {
     // Validate video duration
-    if (durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
-      throw Exception('Video duration exceeds maximum allowed duration of 10 minutes');
+    if (durationSeconds > maxVideoDurationSeconds) {
+      throw Exception(
+          'Video duration exceeds maximum allowed duration of 10 minutes');
     }
 
     // Upload video to Firebase Storage
     final String videoId = _firestore.collection('videos').doc().id;
     final String videoPath = 'videos/$userId/$videoId.mp4';
     final Reference videoRef = _storage.ref().child(videoPath);
-    
+
     await videoRef.putFile(videoFile);
     final String videoUrl = await videoRef.getDownloadURL();
 
@@ -122,7 +123,8 @@ class ShortVideoService {
   }
 
   /// Get trending hashtags
-  Future<List<Map<String, dynamic>>> getTrendingHashtags({int limit = 10}) async {
+  Future<List<Map<String, dynamic>>> getTrendingHashtags(
+      {int limit = 10}) async {
     // This would typically be computed by a Cloud Function
     // For now, we'll return a placeholder implementation
     final videosSnapshot = await _firestore
@@ -211,7 +213,7 @@ class ShortVideoService {
   /// Delete a video
   Future<void> deleteVideo(String videoId, String userId) async {
     final videoDoc = await _firestore.collection('videos').doc(videoId).get();
-    
+
     if (!videoDoc.exists) {
       throw Exception('Video not found');
     }

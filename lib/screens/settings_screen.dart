@@ -341,7 +341,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSection(
+      BuildContext context, String title, List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -433,7 +434,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderSide: BorderSide(color: Colors.grey[700]!),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    borderSide:
+                        BorderSide(color: Theme.of(context).primaryColor),
                   ),
                 ),
               ),
@@ -449,7 +451,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderSide: BorderSide(color: Colors.grey[700]!),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    borderSide:
+                        BorderSide(color: Theme.of(context).primaryColor),
                   ),
                 ),
               ),
@@ -465,7 +468,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderSide: BorderSide(color: Colors.grey[700]!),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    borderSide:
+                        BorderSide(color: Theme.of(context).primaryColor),
                   ),
                 ),
               ),
@@ -614,9 +618,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
+                final navigator = Navigator.of(context);
                 await _authService.signOut();
                 if (mounted) {
-                  Navigator.pop(context);
+                  navigator.pop();
                   // Navigate to login screen
                 }
               },

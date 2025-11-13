@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer' as developer;
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 
 /// Spotlight Video Model
@@ -528,7 +527,7 @@ class SpotlightFeedService {
 
       // Calculate engagement score (weighted formula)
       final engagementScore = (likes * 2.0) + (shares * 3.0) + (comments * 1.5);
-views > 0 ? engagementScore / views : 0.0;
+      views > 0 ? engagementScore / views : 0.0;
 
       // Calculate trending score (combines engagement + recency)
       final createdAt = (data['createdAt'] as Timestamp).toDate();

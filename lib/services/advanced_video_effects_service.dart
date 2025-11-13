@@ -97,7 +97,8 @@ class AdvancedVideoEffectsService {
 
       return bgUrl;
     } catch (e) {
-      developer.log('Error applying green screen: $e', name: 'advanced_video_effects_service');
+      developer.log('Error applying green screen: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -135,7 +136,8 @@ class AdvancedVideoEffectsService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      developer.log('Error applying voice effect: $e', name: 'advanced_video_effects_service');
+      developer.log('Error applying voice effect: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -184,7 +186,8 @@ class AdvancedVideoEffectsService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      developer.log('Error applying time effect: $e', name: 'advanced_video_effects_service');
+      developer.log('Error applying time effect: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -208,7 +211,7 @@ class AdvancedVideoEffectsService {
       final videoUrl = videoData['videoUrl'];
 
       // Create processing job for speech recognition
-      final jobDoc = await _firestore.collection('videoProcessingJobs').add({
+      await _firestore.collection('videoProcessingJobs').add({
         'videoId': videoId,
         'userId': user.uid,
         'type': 'autoCaptions',
@@ -257,7 +260,8 @@ class AdvancedVideoEffectsService {
 
       return mockCaptions;
     } catch (e) {
-      developer.log('Error generating auto-captions: $e', name: 'advanced_video_effects_service');
+      developer.log('Error generating auto-captions: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -294,7 +298,8 @@ class AdvancedVideoEffectsService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      developer.log('Error applying video filter: $e', name: 'advanced_video_effects_service');
+      developer.log('Error applying video filter: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -336,7 +341,8 @@ class AdvancedVideoEffectsService {
         'hasEffects': true,
       });
     } catch (e) {
-      developer.log('Error adding text overlay: $e', name: 'advanced_video_effects_service');
+      developer.log('Error adding text overlay: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -374,7 +380,8 @@ class AdvancedVideoEffectsService {
         'hasEffects': true,
       });
     } catch (e) {
-      developer.log('Error adding sticker overlay: $e', name: 'advanced_video_effects_service');
+      developer.log('Error adding sticker overlay: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }
@@ -425,7 +432,8 @@ class AdvancedVideoEffectsService {
 
       return {'id': jobDoc.id, ...jobDoc.data()!};
     } catch (e) {
-      developer.log('Error getting job status: $e', name: 'advanced_video_effects_service');
+      developer.log('Error getting job status: $e',
+          name: 'advanced_video_effects_service');
       return null;
     }
   }
@@ -438,7 +446,8 @@ class AdvancedVideoEffectsService {
         'cancelledAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      developer.log('Error cancelling job: $e', name: 'advanced_video_effects_service');
+      developer.log('Error cancelling job: $e',
+          name: 'advanced_video_effects_service');
       rethrow;
     }
   }

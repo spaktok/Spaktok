@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:spaktok/services/video_call_service.dart';
-import 'package:spaktok/services/agora_token_service.dart';
 import 'package:spaktok/config/app_config.dart';
 
 class VideoCallScreen extends StatefulWidget {

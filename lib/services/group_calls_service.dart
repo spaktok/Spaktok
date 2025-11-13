@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:spaktok/services/agora_token_service.dart';
-import 'package:spaktok/config/app_config.dart';
 
 // REMOVED: Hardcoded Agora App ID and Token - Now managed by backend
 
@@ -42,7 +40,7 @@ class Call {
       initiatorId: map['initiatorId'] ?? '',
       participantIds: List<String>.from(map['participantIds'] ?? []),
       type: CallType.values.firstWhere(
-        (e) => e.toString() == 'CallType.' + (map['type'] ?? 'audio'),
+        (e) => e.toString() == 'CallType.${map['type'] ?? 'audio'}',
         orElse: () => CallType.audio,
       ),
       startTime:
@@ -93,7 +91,8 @@ class GroupCallsService {
       await _firestore.collection('calls').doc(callId).set(call.toMap());
       return callId;
     } catch (e) {
-      developer.log('[GroupCallsService] Error initiating call: $e', name: 'group_calls_service');
+      developer.log('[GroupCallsService] Error initiating call: $e',
+          name: 'group_calls_service');
       rethrow;
     }
   }
@@ -107,7 +106,8 @@ class GroupCallsService {
       final token = await _tokenService.getToken(channelName);
       return token;
     } catch (e) {
-      developer.log('[GroupCallsService] Error getting token: $e', name: 'group_calls_service');
+      developer.log('[GroupCallsService] Error getting token: $e',
+          name: 'group_calls_service');
       rethrow;
     }
   }
@@ -119,7 +119,8 @@ class GroupCallsService {
         'endTime': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      developer.log('[GroupCallsService] Error ending call: $e', name: 'group_calls_service');
+      developer.log('[GroupCallsService] Error ending call: $e',
+          name: 'group_calls_service');
       rethrow;
     }
   }

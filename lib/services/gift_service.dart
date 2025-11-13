@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:spaktok/models/gift.dart';
 import 'package:spaktok/models/gift_category.dart';
 import 'package:spaktok/services/auth_service.dart';
@@ -9,7 +8,7 @@ class GiftService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
-  // --- Gift Catalog --- 
+  // --- Gift Catalog ---
 
   /// Get all gift categories from Firestore
   Stream<List<GiftCategory>> getGiftCategories() {
@@ -29,9 +28,8 @@ class GiftService {
         .where('categoryId', isEqualTo: categoryId)
         .orderBy('coinCost', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Gift.fromFirestore(doc))
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Gift.fromFirestore(doc)).toList());
   }
 
   /// Get a single gift by its ID
@@ -47,7 +45,7 @@ class GiftService {
     return null;
   }
 
-  // --- Send Gift --- 
+  // --- Send Gift ---
 
   Future<bool> sendGift({
     required String receiverId,
@@ -78,14 +76,15 @@ class GiftService {
       if (senderBalance < gift.coinCost) {
         throw Exception('Insufficient coins.');
       }
-      
+
       // 1. Deduct coins from sender
-      transaction.update(senderRef, {'coins': FieldValue.increment(-gift.coinCost)});
-      
+      transaction
+          .update(senderRef, {'coins': FieldValue.increment(-gift.coinCost)});
+
       // 2. Add revenue to receiver (e.g., 70% of the value)
       final revenue = (gift.coinCost * 0.7).toInt();
       transaction.update(receiverRef, {'coins': FieldValue.increment(revenue)});
-      
+
       // 3. Log the gift transaction for the live stream or context
       transaction.set(_firestore.collection('gifts_log').doc(), {
         'giftId': gift.id,
@@ -93,7 +92,7 @@ class GiftService {
         'receiverId': receiverId,
         'timestamp': FieldValue.serverTimestamp(),
         'contextType': contextType,
-        'contextId': contextId, 
+        'contextId': contextId,
         'coinCost': gift.coinCost,
         'revenue': revenue,
       });

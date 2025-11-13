@@ -12,9 +12,12 @@ class CallService {
   final AgoraTokenService _tokenService = AgoraTokenService();
 
   /// Make a call to a target user
-  Future<void> makeCall(BuildContext context, {required String targetUserId}) async {
+  Future<void> makeCall(BuildContext context,
+      {required String targetUserId}) async {
     final currentUser = _authService.currentUser;
     if (currentUser == null) return;
+
+    final navigator = Navigator.of(context);
 
     try {
       final channelName = 'call_${currentUser.uid}_$targetUserId';
@@ -29,16 +32,17 @@ class CallService {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => CallScreen(
-            channelName: channelName,
-            token: token,
-            role: ClientRoleType.clientRoleBroadcaster,
+      if (context.mounted) {
+        navigator.push(
+          MaterialPageRoute(
+            builder: (_) => CallScreen(
+              channelName: channelName,
+              token: token,
+              role: ClientRoleType.clientRoleBroadcaster,
+            ),
           ),
-        ),
-      );
-
+        );
+      }
     } catch (e) {
       // Handle error
       developer.log('Error making call: $e', name: 'call_service');
@@ -46,6 +50,9 @@ class CallService {
   }
 
   /// Listen for incoming calls
+  ///
+  /// TODO: Refactor to use callback pattern or StreamController instead of passing BuildContext
+  /// to avoid holding stale context references across async boundaries.
   void listenForIncomingCalls(BuildContext context) {
     final currentUser = _authService.currentUser;
     if (currentUser == null) return;
@@ -56,14 +63,15 @@ class CallService {
         .where('status', isEqualTo: 'dialing')
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
+      if (snapshot.docs.isNotEmpty && context.mounted) {
         final callData = snapshot.docs.first.data();
         _showIncomingCallDialog(context, callData);
       }
     });
   }
 
-  void _showIncomingCallDialog(BuildContext context, Map<String, dynamic> callData) {
+  void _showIncomingCallDialog(
+      BuildContext context, Map<String, dynamic> callData) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -74,30 +82,41 @@ class CallService {
           TextButton(
             child: const Text('Decline'),
             onPressed: () {
-              _firestore.collection('calls').doc(callData['channelName']).update({'status': 'declined'});
+              _firestore
+                  .collection('calls')
+                  .doc(callData['channelName'])
+                  .update({'status': 'declined'});
               Navigator.of(ctx).pop();
             },
           ),
           TextButton(
             child: const Text('Accept'),
             onPressed: () async {
-               Navigator.of(ctx).pop();
-               try {
-                  final token = await _tokenService.getToken(callData['channelName']);
-                   await _firestore.collection('calls').doc(callData['channelName']).update({'status': 'active'});
+              final navigator = Navigator.of(context);
+              Navigator.of(ctx).pop();
+              try {
+                final token =
+                    await _tokenService.getToken(callData['channelName']);
+                await _firestore
+                    .collection('calls')
+                    .doc(callData['channelName'])
+                    .update({'status': 'active'});
 
-                   Navigator.of(context).push(
+                if (context.mounted) {
+                  navigator.push(
                     MaterialPageRoute(
                       builder: (_) => CallScreen(
                         channelName: callData['channelName'],
                         token: token,
-                        role: ClientRoleType.clientRoleBroadcaster, // Both are broadcasters in a 1-on-1 call
+                        role: ClientRoleType
+                            .clientRoleBroadcaster, // Both are broadcasters in a 1-on-1 call
                       ),
                     ),
                   );
-               } catch (e) {
-                   developer.log('Error accepting call: $e', name: 'call_service');
-               }
+                }
+              } catch (e) {
+                developer.log('Error accepting call: $e', name: 'call_service');
+              }
             },
           ),
         ],

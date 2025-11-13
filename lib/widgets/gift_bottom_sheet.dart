@@ -54,6 +54,9 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
       return;
     }
 
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
       // Deduct coins (placeholder) then send gift message to stream
       await _streamService.sendStreamMessage(
@@ -65,12 +68,14 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
         giftCost: giftCost,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      messenger.showSnackBar(
         SnackBar(content: Text('Sent $giftName to ${widget.receiverId}!')),
       );
-      Navigator.pop(context); // Close the bottom sheet
+      navigator.pop(); // Close the bottom sheet
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      messenger.showSnackBar(
         SnackBar(content: Text('Failed to send gift: $e')),
       );
       developer.log('Error sending gift: $e', name: 'gift_bottom_sheet');

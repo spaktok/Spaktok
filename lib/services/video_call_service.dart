@@ -1,9 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'dart:developer' as developer;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:spaktok/services/auth_service.dart';
 import 'package:spaktok/services/agora_token_service.dart';
 import 'package:spaktok/config/app_config.dart';
 

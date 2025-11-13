@@ -31,7 +31,8 @@ class _ChallengesScreenState extends State<ChallengesScreen>
   Future<void> _loadTrendingChallenges() async {
     setState(() => _isLoading = true);
     try {
-      final challenges = await _challengeService.getTrendingChallenges(limit: 30);
+      final challenges =
+          await _challengeService.getTrendingChallenges(limit: 30);
       setState(() {
         _trendingChallenges = challenges;
         _isLoading = false;
@@ -372,6 +373,8 @@ class _ChallengesScreenState extends State<ChallengesScreen>
               if (titleController.text.isNotEmpty &&
                   descriptionController.text.isNotEmpty &&
                   hashtagController.text.isNotEmpty) {
+                final navigator = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
                 try {
                   await _challengeService.createChallenge(
                     title: titleController.text,
@@ -380,8 +383,8 @@ class _ChallengesScreenState extends State<ChallengesScreen>
                     hashtag: hashtagController.text,
                   );
                   if (mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    navigator.pop();
+                    messenger.showSnackBar(
                       const SnackBar(
                         content: Text('Challenge created successfully!'),
                       ),
@@ -390,7 +393,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(content: Text('Error: $e')),
                     );
                   }

@@ -66,6 +66,7 @@ class _CameraScreenState extends State<CameraScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking image: $e')),
       );
@@ -194,7 +195,9 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
               margin: const EdgeInsets.all(16),
               child: _image == null
-                  ? (_isCameraInitialized && cameraController != null && cameraController!.value.isInitialized
+                  ? (_isCameraInitialized &&
+                          cameraController != null &&
+                          cameraController!.value.isInitialized
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: ColorFiltered(
@@ -214,7 +217,8 @@ class _CameraScreenState extends State<CameraScreen> {
                               SizedBox(height: 16),
                               Text(
                                 'No image or camera preview',
-                                style: TextStyle(color: Colors.grey, fontSize: 18),
+                                style:
+                                    TextStyle(color: Colors.grey, fontSize: 18),
                               ),
                             ],
                           ),
@@ -233,13 +237,17 @@ class _CameraScreenState extends State<CameraScreen> {
                     ),
             ),
           ),
-          if (_image != null || (_isCameraInitialized && cameraController != null && cameraController!.value.isInitialized)) ...[
+          if (_image != null ||
+              (_isCameraInitialized &&
+                  cameraController != null &&
+                  cameraController!.value.isInitialized)) ...[
             SizedBox(
               height: 60,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: _filters.map((filter) => _buildFilterChip(filter)).toList(),
+                children:
+                    _filters.map((filter) => _buildFilterChip(filter)).toList(),
               ),
             ),
             Expanded(
@@ -298,10 +306,26 @@ class _CameraScreenState extends State<CameraScreen> {
   ColorFilter _getColorFilter() {
     // Apply brightness, contrast, and saturation first
     List<double> matrix = [
-      _contrast, 0, 0, 0, 0,
-      0, _contrast, 0, 0, 0,
-      0, 0, _contrast, 0, 0,
-      0, 0, 0, _saturation, 0,
+      _contrast,
+      0,
+      0,
+      0,
+      0,
+      0,
+      _contrast,
+      0,
+      0,
+      0,
+      0,
+      0,
+      _contrast,
+      0,
+      0,
+      0,
+      0,
+      0,
+      _saturation,
+      0,
     ];
 
     // Apply brightness after contrast and saturation
@@ -312,56 +336,167 @@ class _CameraScreenState extends State<CameraScreen> {
     switch (_selectedFilter) {
       case 'Black & White':
         return const ColorFilter.matrix([
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0, 0, 0, 1, 0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       case 'Sepia':
         return const ColorFilter.matrix([
-          0.393, 0.769, 0.189, 0, 0,
-          0.349, 0.686, 0.168, 0, 0,
-          0.272, 0.534, 0.131, 0, 0,
-          0, 0, 0, 1, 0,
+          0.393,
+          0.769,
+          0.189,
+          0,
+          0,
+          0.349,
+          0.686,
+          0.168,
+          0,
+          0,
+          0.272,
+          0.534,
+          0.131,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       case 'Vintage':
         return const ColorFilter.matrix([
-          0.9, 0.5, 0.1, 0, 0,
-          0.3, 0.8, 0.1, 0, 0,
-          0.2, 0.3, 0.5, 0, 0,
-          0, 0, 0, 1, 0,
+          0.9,
+          0.5,
+          0.1,
+          0,
+          0,
+          0.3,
+          0.8,
+          0.1,
+          0,
+          0,
+          0.2,
+          0.3,
+          0.5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       case 'Warm':
         return const ColorFilter.matrix([
-          1.2, 0, 0, 0, 0,
-          0, 1.0, 0, 0, 0,
-          0, 0, 0.8, 0, 0,
-          0, 0, 0, 1, 0,
+          1.2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1.0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       case 'Cool':
         return const ColorFilter.matrix([
-          0.8, 0, 0, 0, 0,
-          0, 1.0, 0, 0, 0,
-          0, 0, 1.2, 0, 0,
-          0, 0, 0, 1, 0,
+          0.8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1.0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1.2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       case 'Dramatic':
         return const ColorFilter.matrix([
-          1.5, 0, 0, 0, 0,
-          0, 1.5, 0, 0, 0,
-          0, 0, 1.5, 0, 0,
-          0, 0, 0, 1, 0,
+          1.5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1.5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1.5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       case 'Soft':
         return const ColorFilter.matrix([
-          0.8, 0.1, 0.1, 0, 0,
-          0.1, 0.8, 0.1, 0, 0,
-          0.1, 0.1, 0.8, 0, 0,
-          0, 0, 0, 1, 0,
+          0.8,
+          0.1,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.8,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]);
       default:
         return ColorFilter.matrix(matrix);
     }
   }
 }
-

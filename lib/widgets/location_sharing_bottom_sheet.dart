@@ -33,32 +33,31 @@ class _LocationSharingBottomSheetState
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 16),
-          ListTile(
-            title: const Text('Ghost Mode (Hidden)'),
-            leading: Radio<LocationVisibility>(
-              value: LocationVisibility.ghost,
-              groupValue: _selectedPrivacy,
-              onChanged: (LocationVisibility? value) {
-                setState(() {
-                  _selectedPrivacy = value!;
-                  _isLiveLocationSharing = false;
-                  _liveLocationExpiresAt = null;
-                });
-              },
-            ),
-          ),
-          ListTile(
-            title: const Text('Friends'),
-            leading: Radio<LocationVisibility>(
-              value: LocationVisibility.friends,
-              groupValue: _selectedPrivacy,
-              onChanged: (LocationVisibility? value) {
-                setState(() {
-                  _selectedPrivacy = value!;
-                  _isLiveLocationSharing = false;
-                  _liveLocationExpiresAt = null;
-                });
-              },
+          RadioGroup<LocationVisibility>(
+            onChanged: (LocationVisibility? value) {
+              setState(() {
+                _selectedPrivacy = value!;
+                _isLiveLocationSharing = false;
+                _liveLocationExpiresAt = null;
+              });
+            },
+            child: Column(
+              children: [
+                ListTile(
+                  title: const Text('Ghost Mode (Hidden)'),
+                  leading: Radio<LocationVisibility>(
+                    value: LocationVisibility.ghost,
+                    toggleable: _selectedPrivacy == LocationVisibility.ghost,
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Friends'),
+                  leading: Radio<LocationVisibility>(
+                    value: LocationVisibility.friends,
+                    toggleable: _selectedPrivacy == LocationVisibility.friends,
+                  ),
+                ),
+              ],
             ),
           ),
           // Placeholder for selected friends privacy (not supported by enum yet)

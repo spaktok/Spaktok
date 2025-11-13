@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:developer' as developer;
 
@@ -196,7 +195,8 @@ class MemoriesFlashbacksService {
 
       return memory;
     } catch (e) {
-      developer.log('Error saving to memories: $e', name: 'memories_flashbacks_service');
+      developer.log('Error saving to memories: $e',
+          name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -233,7 +233,8 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      developer.log('Error getting memories: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting memories: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -260,7 +261,8 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      developer.log('Error getting memories by category: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting memories by category: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -286,7 +288,8 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      developer.log('Error searching memories: $e', name: 'memories_flashbacks_service');
+      developer.log('Error searching memories: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -310,7 +313,8 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      developer.log('Error getting favorite memories: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting favorite memories: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -328,7 +332,8 @@ class MemoriesFlashbacksService {
           .doc(memoryId)
           .update({'isFavorite': isFavorite});
     } catch (e) {
-      developer.log('Error toggling favorite: $e', name: 'memories_flashbacks_service');
+      developer.log('Error toggling favorite: $e',
+          name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -346,7 +351,8 @@ class MemoriesFlashbacksService {
           .doc(memoryId)
           .delete();
     } catch (e) {
-      developer.log('Error deleting memory: $e', name: 'memories_flashbacks_service');
+      developer.log('Error deleting memory: $e',
+          name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -393,7 +399,8 @@ class MemoriesFlashbacksService {
 
       return flashback;
     } catch (e) {
-      developer.log('Error generating flashback: $e', name: 'memories_flashbacks_service');
+      developer.log('Error generating flashback: $e',
+          name: 'memories_flashbacks_service');
       return null;
     }
   }
@@ -420,7 +427,8 @@ class MemoriesFlashbacksService {
 
       return flashbacks;
     } catch (e) {
-      developer.log('Error getting today\'s flashbacks: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting today\'s flashbacks: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -443,7 +451,8 @@ class MemoriesFlashbacksService {
           .map((doc) => Flashback.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      developer.log('Error getting flashbacks: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting flashbacks: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -482,7 +491,8 @@ class MemoriesFlashbacksService {
 
       return memories;
     } catch (e) {
-      developer.log('Error getting flashback memories: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting flashback memories: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }
@@ -539,7 +549,8 @@ class MemoriesFlashbacksService {
 
       return storyId;
     } catch (e) {
-      developer.log('Error creating story from memories: $e', name: 'memories_flashbacks_service');
+      developer.log('Error creating story from memories: $e',
+          name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -562,7 +573,8 @@ class MemoriesFlashbacksService {
         'category': category.toString().split('.').last,
       });
     } catch (e) {
-      developer.log('Error updating memory category: $e', name: 'memories_flashbacks_service');
+      developer.log('Error updating memory category: $e',
+          name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -583,7 +595,8 @@ class MemoriesFlashbacksService {
             FieldValue.arrayUnion(tags.map((t) => t.toLowerCase()).toList()),
       });
     } catch (e) {
-      developer.log('Error adding tags: $e', name: 'memories_flashbacks_service');
+      developer.log('Error adding tags: $e',
+          name: 'memories_flashbacks_service');
       rethrow;
     }
   }
@@ -610,7 +623,8 @@ class MemoriesFlashbacksService {
           .map((doc) => Memory.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      developer.log('Error getting memories for date: $e', name: 'memories_flashbacks_service');
+      developer.log('Error getting memories for date: $e',
+          name: 'memories_flashbacks_service');
       return [];
     }
   }

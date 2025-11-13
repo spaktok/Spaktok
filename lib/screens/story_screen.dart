@@ -25,8 +25,9 @@ class _StoryScreenState extends State<StoryScreen> {
       body: StreamBuilder<Map<String, List<Story>>>(
         stream: _storyService.getGroupedStories(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData)
+          if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
+          }
           final groupedStories = snapshot.data!;
           final users = groupedStories.keys.toList();
           return PageView.builder(

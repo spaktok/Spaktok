@@ -33,7 +33,7 @@ class ImageFilterService {
     try {
       final bytes = await imageFile.readAsBytes();
       final image = img.decodeImage(bytes);
-      
+
       if (image == null) {
         throw Exception('Failed to decode image');
       }
@@ -45,7 +45,7 @@ class ImageFilterService {
 
       final filteredBytes = img.encodeJpg(filteredImage);
       await imageFile.writeAsBytes(filteredBytes);
-      
+
       return imageFile;
     } catch (e) {
       developer.log('Error applying filter: $e', name: 'image_filter_service');
@@ -54,10 +54,11 @@ class ImageFilterService {
   }
 
   // Apply filter to image bytes
-  Future<Uint8List> applyFilterToBytes(Uint8List bytes, FilterType filter) async {
+  Future<Uint8List> applyFilterToBytes(
+      Uint8List bytes, FilterType filter) async {
     try {
       final image = img.decodeImage(bytes);
-      
+
       if (image == null) {
         throw Exception('Failed to decode image');
       }
@@ -82,45 +83,42 @@ class ImageFilterService {
     switch (filter) {
       case FilterType.none:
         return image;
-      
+
       case FilterType.grayscale:
         return img.grayscale(image);
-      
+
       case FilterType.sepia:
         return _applySepia(image);
-      
+
       case FilterType.vintage:
         return _applyVintage(image);
-      
+
       case FilterType.cool:
         return _applyCool(image);
-      
+
       case FilterType.warm:
         return _applyWarm(image);
-      
+
       case FilterType.bright:
         return img.adjustColor(image, brightness: 1.2);
-      
+
       case FilterType.dark:
         return img.adjustColor(image, brightness: 0.8);
-      
+
       case FilterType.contrast:
         return img.adjustColor(image, contrast: 1.3);
-      
+
       case FilterType.saturate:
         return img.adjustColor(image, saturation: 1.5);
-      
+
       case FilterType.invert:
         return img.invert(image);
-      
+
       case FilterType.blur:
         return img.gaussianBlur(image, radius: 5);
-      
+
       case FilterType.sharpen:
         return img.convolution(image, filter: [0, -1, 0, -1, 5, -1, 0, -1, 0]);
-      
-      default:
-        return image;
     }
   }
 
@@ -154,7 +152,7 @@ class ImageFilterService {
         final g = pixel.g;
         final b = pixel.b;
         final a = pixel.a;
-        
+
         image.setPixel(
           x,
           y,
@@ -179,7 +177,7 @@ class ImageFilterService {
         final g = pixel.g;
         final b = pixel.b;
         final a = pixel.a;
-        
+
         image.setPixel(
           x,
           y,
@@ -200,11 +198,12 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
+
       final adjusted = img.adjustColor(image, brightness: brightness);
       return Uint8List.fromList(img.encodeJpg(adjusted));
     } catch (e) {
-      developer.log('Error adjusting brightness: $e', name: 'image_filter_service');
+      developer.log('Error adjusting brightness: $e',
+          name: 'image_filter_service');
       rethrow;
     }
   }
@@ -214,11 +213,12 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
+
       final adjusted = img.adjustColor(image, contrast: contrast);
       return Uint8List.fromList(img.encodeJpg(adjusted));
     } catch (e) {
-      developer.log('Error adjusting contrast: $e', name: 'image_filter_service');
+      developer.log('Error adjusting contrast: $e',
+          name: 'image_filter_service');
       rethrow;
     }
   }
@@ -228,11 +228,12 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
+
       final adjusted = img.adjustColor(image, saturation: saturation);
       return Uint8List.fromList(img.encodeJpg(adjusted));
     } catch (e) {
-      developer.log('Error adjusting saturation: $e', name: 'image_filter_service');
+      developer.log('Error adjusting saturation: $e',
+          name: 'image_filter_service');
       rethrow;
     }
   }
@@ -248,8 +249,9 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
-      final cropped = img.copyCrop(image, x: x, y: y, width: width, height: height);
+
+      final cropped =
+          img.copyCrop(image, x: x, y: y, width: width, height: height);
       return Uint8List.fromList(img.encodeJpg(cropped));
     } catch (e) {
       developer.log('Error cropping image: $e', name: 'image_filter_service');
@@ -262,7 +264,7 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
+
       final rotated = img.copyRotate(image, angle: angle);
       return Uint8List.fromList(img.encodeJpg(rotated));
     } catch (e) {
@@ -276,8 +278,9 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
-      final flipped = horizontal ? img.flipHorizontal(image) : img.flipVertical(image);
+
+      final flipped =
+          horizontal ? img.flipHorizontal(image) : img.flipVertical(image);
       return Uint8List.fromList(img.encodeJpg(flipped));
     } catch (e) {
       developer.log('Error flipping image: $e', name: 'image_filter_service');
@@ -294,7 +297,7 @@ class ImageFilterService {
     try {
       final image = img.decodeImage(bytes);
       if (image == null) throw Exception('Failed to decode image');
-      
+
       final resized = img.copyResize(image, width: width, height: height);
       return Uint8List.fromList(img.encodeJpg(resized));
     } catch (e) {

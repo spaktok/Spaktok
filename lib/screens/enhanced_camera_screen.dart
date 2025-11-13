@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class EnhancedCameraScreen extends StatefulWidget {
   const EnhancedCameraScreen({super.key});
@@ -16,7 +14,7 @@ class EnhancedCameraScreen extends StatefulWidget {
 class _EnhancedCameraScreenState extends State<EnhancedCameraScreen>
     with WidgetsBindingObserver {
   CameraController? _cameraController;
-  List<Face> _faces = [];
+  final List<Face> _faces = [];
 
   @override
   void initState() {

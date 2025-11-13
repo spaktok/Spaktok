@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spaktok/services/auth_service.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:developer' as developer;
 
 enum ReportType {

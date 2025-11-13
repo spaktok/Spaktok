@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 /// Service for managing global music and audio library
 class MusicLibraryService {
@@ -13,10 +12,12 @@ class MusicLibraryService {
         .orderBy('usageCount', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => {
-              ...doc.data(),
-              'id': doc.id,
-            }).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => {
+                  ...doc.data(),
+                  'id': doc.id,
+                })
+            .toList());
   }
 
   /// Search music by title or artist
@@ -55,10 +56,12 @@ class MusicLibraryService {
         .orderBy('usageCount', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => {
-              ...doc.data(),
-              'id': doc.id,
-            }).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => {
+                  ...doc.data(),
+                  'id': doc.id,
+                })
+            .toList());
   }
 
   /// Get all music categories
@@ -246,7 +249,8 @@ class MusicLibraryService {
   }
 
   /// Update music track (admin function)
-  Future<void> updateMusicTrack(String musicId, Map<String, dynamic> updates) async {
+  Future<void> updateMusicTrack(
+      String musicId, Map<String, dynamic> updates) async {
     await _firestore.collection('music').doc(musicId).update(updates);
   }
 
@@ -260,7 +264,7 @@ class MusicLibraryService {
   /// Get music used in a specific video
   Future<Map<String, dynamic>?> getMusicForVideo(String videoId) async {
     final videoDoc = await _firestore.collection('videos').doc(videoId).get();
-    
+
     if (!videoDoc.exists) {
       return null;
     }

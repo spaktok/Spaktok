@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:spaktok/services/reporting_service.dart';
-import 'package:spaktok/services/auth_service.dart';
 
 
 class ReportingScreen extends StatefulWidget {

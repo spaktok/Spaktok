@@ -257,6 +257,8 @@ class _FriendListScreenState extends State<FriendListScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
+                final navigator = Navigator.of(context);
+
                 if (friendUsername.isNotEmpty) {
                   // In a real app, you'd search for the user by username/email
                   // For now, let's assume friendUsername is the target userId for simplicity
@@ -264,6 +266,8 @@ class _FriendListScreenState extends State<FriendListScreen> {
                     // Find user by username/email (requires a Cloud Function or more complex query)
                     // For demonstration, we'll assume friendUsername is the actual UID for now.
                     // A proper implementation would involve a search function to get the UID.
+                    final messenger = ScaffoldMessenger.of(context);
+
                     final querySnapshot = await FirebaseFirestore.instance
                         .collection('users')
                         .where('username', isEqualTo: friendUsername)
@@ -273,26 +277,31 @@ class _FriendListScreenState extends State<FriendListScreen> {
                     if (querySnapshot.docs.isNotEmpty) {
                       final targetUserId = querySnapshot.docs.first.id;
                       await _authService.sendFriendRequest(targetUserId);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (!context.mounted) return;
+                      messenger.showSnackBar(
                         SnackBar(
                             content:
                                 Text('Friend request sent to $friendUsername')),
                       );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (!context.mounted) return;
+                      messenger.showSnackBar(
                         SnackBar(
                             content: Text('User $friendUsername not found.')),
                       );
                     }
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    if (!context.mounted) return;
+                    final messenger = ScaffoldMessenger.of(context);
+                    messenger.showSnackBar(
                       SnackBar(
                           content:
                               Text('Error sending request: ${e.toString()}')),
                     );
                   }
                 }
-                Navigator.pop(context);
+                if (!context.mounted) return;
+                navigator.pop();
               },
               child: const Text('Send Request'),
             ),

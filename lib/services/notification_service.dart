@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:developer' as developer;
 
@@ -44,7 +43,8 @@ class NotificationService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      developer.log('Error creating notification: $e', name: 'notification_service');
+      developer.log('Error creating notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -62,7 +62,8 @@ class NotificationService {
         actionId: user.uid,
       );
     } catch (e) {
-      developer.log('Error creating follow notification: $e', name: 'notification_service');
+      developer.log('Error creating follow notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -83,7 +84,8 @@ class NotificationService {
         actionId: postId,
       );
     } catch (e) {
-      developer.log('Error creating like notification: $e', name: 'notification_service');
+      developer.log('Error creating like notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -105,7 +107,8 @@ class NotificationService {
         actionId: postId,
       );
     } catch (e) {
-      developer.log('Error creating comment notification: $e', name: 'notification_service');
+      developer.log('Error creating comment notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -126,7 +129,8 @@ class NotificationService {
         actionId: user.uid,
       );
     } catch (e) {
-      developer.log('Error creating gift notification: $e', name: 'notification_service');
+      developer.log('Error creating gift notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -148,7 +152,8 @@ class NotificationService {
         actionId: senderId,
       );
     } catch (e) {
-      developer.log('Error creating message notification: $e', name: 'notification_service');
+      developer.log('Error creating message notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -184,7 +189,8 @@ class NotificationService {
 
       return snapshot.count ?? 0;
     } catch (e) {
-      developer.log('Error getting unread count: $e', name: 'notification_service');
+      developer.log('Error getting unread count: $e',
+          name: 'notification_service');
       return 0;
     }
   }
@@ -214,7 +220,8 @@ class NotificationService {
         'readAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      developer.log('Error marking notification as read: $e', name: 'notification_service');
+      developer.log('Error marking notification as read: $e',
+          name: 'notification_service');
     }
   }
 
@@ -237,7 +244,8 @@ class NotificationService {
         });
       }
     } catch (e) {
-      developer.log('Error marking all notifications as read: $e', name: 'notification_service');
+      developer.log('Error marking all notifications as read: $e',
+          name: 'notification_service');
     }
   }
 
@@ -246,7 +254,8 @@ class NotificationService {
     try {
       await _firestore.collection('notifications').doc(notificationId).delete();
     } catch (e) {
-      developer.log('Error deleting notification: $e', name: 'notification_service');
+      developer.log('Error deleting notification: $e',
+          name: 'notification_service');
     }
   }
 
@@ -265,7 +274,8 @@ class NotificationService {
         await doc.reference.delete();
       }
     } catch (e) {
-      developer.log('Error deleting all notifications: $e', name: 'notification_service');
+      developer.log('Error deleting all notifications: $e',
+          name: 'notification_service');
     }
   }
 
@@ -282,7 +292,8 @@ class NotificationService {
         'notificationPreferences': preferences,
       });
     } catch (e) {
-      developer.log('Error updating notification preferences: $e', name: 'notification_service');
+      developer.log('Error updating notification preferences: $e',
+          name: 'notification_service');
     }
   }
 
@@ -298,7 +309,8 @@ class NotificationService {
       }
       return {};
     } catch (e) {
-      developer.log('Error getting notification preferences: $e', name: 'notification_service');
+      developer.log('Error getting notification preferences: $e',
+          name: 'notification_service');
       return {};
     }
   }
@@ -313,7 +325,8 @@ class NotificationService {
         'notificationPreferences.$type': false,
       });
     } catch (e) {
-      developer.log('Error disabling notification type: $e', name: 'notification_service');
+      developer.log('Error disabling notification type: $e',
+          name: 'notification_service');
     }
   }
 
@@ -327,7 +340,8 @@ class NotificationService {
         'notificationPreferences.$type': true,
       });
     } catch (e) {
-      developer.log('Error enabling notification type: $e', name: 'notification_service');
+      developer.log('Error enabling notification type: $e',
+          name: 'notification_service');
     }
   }
 }
