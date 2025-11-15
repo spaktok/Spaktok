@@ -1,0 +1,130 @@
+# ============================================================================
+# Spaktok Local Development - Docker Compose Configuration
+# ============================================================================
+version: '3.9'
+
+networks:
+  spaktok-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  firebase-data:
+    driver: local
+  flutter-pub-cache:
+    driver: local
+  node-modules:
+    driver: local
+
+services:
+  # ==========================================================================
+  # Flutter Web Application
+  # ==========================================================================
+  spaktok_app:
+    container_name: spaktok_flutter
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - FLUTTER_VERSION=3.24.0
+    ports:
+      - "8080:8080"      # Flutter web app
+      - "5001:5001"      # Firebase Functions
+      - "9099:9099"      # Firebase Auth emulator
+      - "8081:8080"      # Firestore emulator UI
+      - "4000:4000"      # Firebase Hosting emulator
+    volumes:
+      # Live code sync for hot reload
+      - ./lib:/app/lib:cached
+      - ./web:/app/web:cached
+      - ./assets:/app/assets:cached
+      - ./pubspec.yaml:/app/pubspec.yaml:cached
+      - ./pubspec.lock:/app/pubspec.lock:cached
+      # Firebase config sync
+      - ./functions:/app/functions:cached
+      - ./firebase.json:/app/firebase.json:cached
+      - ./firestore.rules:/app/firestore.rules:cached
+      - ./firestore.indexes.json:/app/firestore.indexes.json:cached
+      - ./storage.rules:/app/storage.rules:cached
+      # Persistent caches
+      - flutter-pub-cache:/root/.pub-cache
+      - node-modules:/app/functions/node_modules
+      - firebase-data:/app/.firebase
+    environment:
+      - NODE_ENV=development
+      - FLUTTER_WEB_USE_SKIA=true
+      - FIREBASE_PROJECT_ID=spaktok-dev
+      - FIREBASE_EMULATOR_HUB=localhost:4400
+      - FIRESTORE_EMULATOR_HOST=localhost:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
+      - FUNCTIONS_EMULATOR_HOST=localhost:5001
+    networks:
+      spaktok-network:
+        ipv4_address: 172.25.0.10
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ==========================================================================
+  # Firebase Emulator Suite (Standalone for debugging)
+  # ==========================================================================
+  firebase_emulator:
+    container_name: spaktok_firebase
+    image: node:20-slim
+    working_dir: /firebase
+    command: >
+      sh -c "npm install -g firebase-tools &&
+             firebase emulators:start --only auth,firestore,functions,hosting --project spaktok-dev"
+    ports:
+      - "4400:4400"      # Emulator Suite UI
+      - "9000:9000"      # Firestore emulator
+      - "9098:9099"      # Auth emulator (alt port)
+    volumes:
+      - ./firebase.json:/firebase/firebase.json:ro
+      - ./firestore.rules:/firebase/firestore.rules:ro
+      - ./firestore.indexes.json:/firebase/firestore.indexes.json:ro
+      - ./functions:/firebase/functions:cached
+      - firebase-data:/firebase/.firebase
+    environment:
+      - FIREBASE_PROJECT_ID=spaktok-dev
+    networks:
+      spaktok-network:
+        ipv4_address: 172.25.0.20
+    restart: unless-stopped
+    depends_on:
+      - spaktok_app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+# ============================================================================
+# Additional Configuration Notes
+# ============================================================================
+# Access Points:
+# - Flutter App: http://localhost:8080
+# - Firebase Emulator UI: http://localhost:4400
+# - Firestore Emulator: http://localhost:8081
+# - Auth Emulator: http://localhost:9099
+# - Functions: http://localhost:5001
+#
+# Hot Reload: File changes in ./lib, ./web, ./assets auto-sync
+# 
+# Commands:
+#   docker-compose up -d          # Start in background
+#   docker-compose logs -f        # View logs
+#   docker-compose down           # Stop all services
+#   docker-compose restart        # Restart services
+# ============================================================================

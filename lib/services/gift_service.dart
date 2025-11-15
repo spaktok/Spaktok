@@ -46,12 +46,14 @@ class GiftService {
   }
 
   // --- Send Gift ---
-
   Future<bool> sendGift({
     required String receiverId,
     required Gift gift,
-    required String contextType, // e.g., 'live_stream', 'direct_message'
-    String? contextId, // e.g., streamId
+    required String contextType, // 'live_stream', 'video', 'profile', 'direct_message'
+    String? contextId, // e.g., streamId or videoId
+    int quantity = 1, // support combos/multiple
+    bool anonymous = false,
+    String? message,
   }) async {
     final currentUser = _authService.currentUser;
     if (currentUser == null) {
@@ -63,43 +65,128 @@ class GiftService {
 
     final senderRef = _firestore.collection('users').doc(currentUser.uid);
     final receiverRef = _firestore.collection('users').doc(receiverId);
+    final settingsRef = _firestore.collection('settings').doc('payouts');
+
+    // Helper to safely read double values
+    double _asDouble(dynamic v, [double d = 0.0]) {
+      if (v == null) return d;
+      if (v is int) return v.toDouble();
+      if (v is double) return v;
+      return d;
+    }
 
     return _firestore.runTransaction((transaction) async {
-      final senderSnapshot = await transaction.get(senderRef);
-
-      if (!senderSnapshot.exists) {
+      // Load sender/receiver
+      final senderSnap = await transaction.get(senderRef);
+      if (!senderSnap.exists) {
         throw Exception('Sender not found.');
       }
+      final receiverSnap = await transaction.get(receiverRef);
+      if (!receiverSnap.exists) {
+        throw Exception('Receiver not found.');
+      }
 
-      final senderBalance = (senderSnapshot.data()!)['coins'] ?? 0;
+      // Load payout settings (with sensible defaults)
+      double standardPayout = 0.50; // 50%
+      double premiumPayout = 0.90; // 90%
+      double coinToUsdRate = 0.01; // $0.01 per coin (default)
+      try {
+        final settingsSnap = await transaction.get(settingsRef);
+        if (settingsSnap.exists) {
+          final data = settingsSnap.data() as Map<String, dynamic>;
+          standardPayout = _asDouble(data['standardPayoutPercentage'], 0.50);
+          premiumPayout = _asDouble(data['premiumPayoutPercentage'], 0.90);
+          coinToUsdRate = _asDouble(data['coinToUsdRate'], 0.01);
+        }
+      } catch (_) {
+        // use defaults
+      }
 
-      if (senderBalance < gift.coinCost) {
+      // Validate sender balance
+      final senderData = senderSnap.data() as Map<String, dynamic>;
+      final currentCoins = (senderData['coins'] ?? 0) as int;
+      final totalCoinCost = gift.coinCost * quantity;
+      if (currentCoins < totalCoinCost) {
         throw Exception('Insufficient coins.');
       }
 
-      // 1. Deduct coins from sender
-      transaction
-          .update(senderRef, {'coins': FieldValue.increment(-gift.coinCost)});
+      // Determine receiver payout share
+      final receiverData = receiverSnap.data() as Map<String, dynamic>;
+      final isPremium = (receiverData['isPremiumAccount'] ?? false) as bool;
+      final payoutPct = isPremium ? premiumPayout : standardPayout;
 
-      // 2. Add revenue to receiver (e.g., 70% of the value)
-      final revenue = (gift.coinCost * 0.7).toInt();
-      transaction.update(receiverRef, {'coins': FieldValue.increment(revenue)});
+      // Monetary calculations (USD)
+      final double unitUsd = gift.realValueUSD != null
+          ? _asDouble(gift.realValueUSD)
+          : gift.coinCost * coinToUsdRate;
+      final double totalUsd = unitUsd * quantity;
+      final double receiverShareUsd = totalUsd * payoutPct;
+      final double platformShareUsd = totalUsd - receiverShareUsd;
 
-      // 3. Log the gift transaction for the live stream or context
-      transaction.set(_firestore.collection('gifts_log').doc(), {
-        'giftId': gift.id,
-        'senderId': currentUser.uid,
-        'receiverId': receiverId,
-        'timestamp': FieldValue.serverTimestamp(),
-        'contextType': contextType,
-        'contextId': contextId,
-        'coinCost': gift.coinCost,
-        'revenue': revenue,
+      // 1) Deduct coins from sender
+      transaction.update(senderRef, {
+        'coins': FieldValue.increment(-totalCoinCost),
+        'userGiftStats.totalGiftsSent': FieldValue.increment(quantity),
+        'userGiftStats.totalCoinsSpent': FieldValue.increment(totalCoinCost),
+        'userGiftStats.lastGiftSent': FieldValue.serverTimestamp(),
       });
 
+      // 2) Credit receiver BALANCE in USD (withdrawable), not coins
+      transaction.update(receiverRef, {
+        'balance': FieldValue.increment(receiverShareUsd),
+        'userGiftStats.totalGiftsReceived': FieldValue.increment(quantity),
+        'userGiftStats.totalRevenueEarned': FieldValue.increment(receiverShareUsd),
+        'userGiftStats.lastGiftReceived': FieldValue.serverTimestamp(),
+      });
+
+      // 3) Record gift transaction rich document
+      final txRef = _firestore.collection('giftTransactions').doc();
+      transaction.set(txRef, {
+        'transactionId': txRef.id,
+        'giftId': gift.id,
+        'giftName': gift.name,
+        'giftImageUrl': gift.imageUrl,
+        'giftAnimationUrl': gift.animationUrl,
+        'senderId': currentUser.uid,
+        'receiverId': receiverId,
+        'context': contextType,
+        'contextId': contextId,
+        'quantity': quantity,
+        'coinCost': totalCoinCost,
+        'realValueUSD': totalUsd,
+        'broadcasterShare': receiverShareUsd,
+        'platformShare': platformShareUsd,
+        'isPremiumReceiver': isPremium,
+        'revenueSharePercentage': payoutPct,
+        'message': message ?? '',
+        'isAnonymous': anonymous,
+        'status': 'completed',
+        'timestamp': FieldValue.serverTimestamp(),
+        'processedAt': FieldValue.serverTimestamp(),
+      });
+
+      // 4) Context-specific side channel (e.g., show gift in live chat feed)
+      if (contextType == 'live_stream' && contextId != null) {
+        final streamGiftRef = _firestore.collection('streamGifts').doc();
+        transaction.set(streamGiftRef, {
+          'streamId': contextId,
+          'giftId': gift.id,
+          'senderId': currentUser.uid,
+          'receiverId': receiverId,
+          'giftName': gift.name,
+          'giftImageUrl': gift.imageUrl,
+          'giftAnimationUrl': gift.animationUrl,
+          'coinCost': totalCoinCost,
+          'realValueUSD': totalUsd,
+          'timestamp': FieldValue.serverTimestamp(),
+          'isCombo': quantity > 1,
+          'comboCount': quantity,
+        });
+      }
+
       return true;
-    }).catchError((error) {
-      developer.log("Failed to send gift: $error", name: 'gift_service');
+    }).catchError((error, st) {
+      developer.log('Failed to send gift', error: error, stackTrace: st, name: 'gift_service');
       return false;
     });
   }

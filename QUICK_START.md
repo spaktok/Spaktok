@@ -4,24 +4,40 @@
 
 ---
 
-## ⚡ Get Started in 5 Minutes
+## ⚠️ **خطوة مهمة أولاً: تشغيل Docker Desktop**
 
-### Prerequisites
-- Node.js 22+
-- Flutter 3.24+
-- Firebase CLI
-- Docker (optional)
+### الخطوة 1: تشغيل Docker Desktop
+```
+1. افتح تطبيق Docker Desktop
+2. انتظر حتى يصبح جاهزاً (الأيقونة تتحول للون الأخضر)
+3. تأكد من التشغيل:
+```powershell
+# قبل أي شيء، تأكد من تشغيل Docker Desktop
+# ثم اختبر:
+docker ps
+
+# يجب أن ترى: "CONTAINER ID   IMAGE   ..."
+# إذا رأيت خطأ، افتح Docker Desktop وانتظر حتى يصبح جاهزاً
+```
+
+---
+
+## ⚡ البدء في 3 خطوات
+
+### ✅ الخطوة 1: تأكد من تشغيل Docker
 
 ### 1. Clone Repository
 ```bash
+**يجب أن يعمل بدون أخطاء**
 git clone https://github.com/spaktok/Spaktok.git
 cd Spaktok
 ```
 
 ### 2. Install Dependencies
+**مدة البناء:** 5-10 دقائق في المرة الأولى
 ```bash
-# Backend (Cloud Functions)
-cd functions
+### الخطوة 3: افتح التطبيق
+**بعد ظهور رسالة "Services are running":**
 npm install
 cd ..
 
