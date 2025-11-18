@@ -10,24 +10,40 @@
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
     "editor.defaultFormatter": "Blackboxapp.blackboxagent",
+    
+    // ===================================================================
+    // GitHub Copilot Agent - FULL TOOL CAPACITY CONFIGURATION
+    // ===================================================================
+    
+    // Enable ALL available tool categories without limitations
     "github.copilot.chat.tools.enabled": true,
+    
+    // Enable all tool categories - no restrictions
     "github.copilot.chat.tools.terminal": "enabled",
     "github.copilot.chat.tools.shell": "enabled",
     "github.copilot.chat.tools.codebase": "enabled",
     "github.copilot.chat.tools.web": "enabled",
     "github.copilot.chat.tools.code_search": "enabled",
     "github.copilot.chat.tools.vscode": "enabled",
+    
+    // Maximum tool memory and context capacity
     "github.copilot.chat.maxContextTokens": 32000,
     "github.copilot.chat.maxResponseTokens": 8000,
+    
+    // Enable advanced tool capabilities
     "github.copilot.advanced": {
         "authProvider": "github",
         "debug.overrideEngine": "",
         "debug.useElectronProxy": false,
         "debug.useNodeFetcher": false
     },
-    "github.copilot.chat.maxTools": 0,
+    
+    // Unlimited tool count - remove 128 limitation
+    "github.copilot.chat.maxTools": 0,  // 0 = unlimited
     "github.copilot.chat.toolDiscovery": "automatic",
     "github.copilot.chat.autoloadTools": true,
+    
+    // Enable all experimental features for maximum capability
     "github.copilot.editor.enableAutoCompletions": true,
     "github.copilot.enable": {
         "*": true,
@@ -58,23 +74,41 @@
         "shellscript": true,
         "dockerfile": true
     },
+    
+    // Enhanced context and workspace awareness
     "github.copilot.chat.useWorkspaceContext": true,
     "github.copilot.chat.localeOverride": "en",
     "github.copilot.chat.scopeSelection": true,
+    
+    // Enable all file types for full coverage
     "github.copilot.chat.fileTypes": ["*"],
+    
+    // Tool execution settings - no restrictions
     "github.copilot.chat.allowToolExecution": "always",
     "github.copilot.chat.confirmBeforeToolExecution": false,
-    "github.copilot.chat.toolTimeout": 300000,
+    "github.copilot.chat.toolTimeout": 300000,  // 5 minutes
+    
+    // Maximum parallel tool execution
     "github.copilot.chat.maxParallelTools": 50,
+    
+    // Enhanced agent capabilities
     "github.copilot.chat.agent.maxIterations": 100,
     "github.copilot.chat.agent.deepThinking": true,
     "github.copilot.chat.agent.multiStep": true,
     "github.copilot.chat.agent.codeExecution": true,
+    
+    // Full workspace indexing for better tool discovery
     "github.copilot.chat.indexWorkspace": true,
     "github.copilot.chat.workspaceIndexDepth": "unlimited",
+    
+    // Enable all command palette tools
     "github.copilot.chat.commandPalette": true,
+    
+    // Memory and caching for optimal performance
     "github.copilot.chat.cacheEnabled": true,
     "github.copilot.chat.cacheSizeMB": 2048,
+    
+    // Enable all integrations
     "github.copilot.chat.integrations": {
         "github": true,
         "terminal": true,

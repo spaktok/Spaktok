@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json.schemastore.org/github-copilot-tools.json",
+  "version": "1.0.0",
+  "description": "Extended GitHub Copilot Agent tool configuration for unlimited tool access",
+  
+  "tools": {
+    "enabled": true,
+    "categories": {
+      "terminal": {
+        "enabled": true,
+        "allowedCommands": "*",
+        "maxConcurrent": 10,
+        "timeout": 300000
+      },
+      "shell": {
+        "enabled": true,
+        "allowedShells": ["bash", "sh", "zsh", "powershell", "cmd"],
+        "maxConcurrent": 10,
+        "timeout": 300000
+      },
+      "codebase": {
+        "enabled": true,
+        "indexing": "full",
+        "maxFileSize": 10485760,
+        "excludePatterns": [
+          "**/node_modules/**",
+          "**/build/**",
+          "**/dist/**",
+          "**/.dart_tool/**",
+          "**/coverage/**"
+        ]
+      },
+      "web": {
+        "enabled": true,
+        "allowedDomains": "*",
+        "timeout": 30000,
+        "maxConcurrent": 5
+      },
+      "code_search": {
+        "enabled": true,
+        "scope": "workspace",
+        "includeExternalRepos": true,
+        "maxResults": 1000
+      },
+      "vscode": {
+        "enabled": true,
+        "allowedAPIs": "*",
+        "extensionAccess": true
+      },
+      "git": {
+        "enabled": true,
+        "operations": ["read", "status", "diff", "log", "branch"],
+        "allowCommit": false,
+        "allowPush": false
+      },
+      "filesystem": {
+        "enabled": true,
+        "readAccess": true,
+        "writeAccess": true,
+        "allowedPaths": ["**/*"],
+        "maxFileSize": 10485760
+      },
+      "language_servers": {
+        "enabled": true,
+        "servers": [
+          "typescript-language-server",
+          "dart-language-server",
+          "python-language-server",
+          "gopls",
+          "rust-analyzer"
+        ]
+      },
+      "debugger": {
+        "enabled": true,
+        "allowBreakpoints": true,
+        "allowVariableInspection": true
+      },
+      "testing": {
+        "enabled": true,
+        "frameworks": [
+          "jest",
+          "mocha",
+          "pytest",
+          "unittest",
+          "flutter_test",
+          "junit"
+        ],
+        "allowExecution": true
+      },
+      "package_managers": {
+        "enabled": true,
+        "managers": [
+          "npm",
+          "yarn",
+          "pnpm",
+          "pip",
+          "pipenv",
+          "pub",
+          "maven",
+          "gradle",
+          "cargo"
+        ],
+        "allowInstall": true,
+        "allowUpdate": true
+      },
+      "build_tools": {
+        "enabled": true,
+        "tools": [
+          "webpack",
+          "esbuild",
+          "vite",
+          "rollup",
+          "dart_build",
+          "flutter_build"
+        ],
+        "allowExecution": true
+      },
+      "linters": {
+        "enabled": true,
+        "tools": [
+          "eslint",
+          "prettier",
+          "dart_analyze",
+          "pylint",
+          "black",
+          "flake8"
+        ],
+        "autofix": true
+      },
+      "deployment": {
+        "enabled": true,
+        "tools": [
+          "wrangler",
+          "firebase-cli",
+          "vercel-cli",
+          "netlify-cli"
+        ],
+        "allowDeploy": false
+      },
+      "docker": {
+        "enabled": true,
+        "operations": ["ps", "images", "logs", "inspect"],
+        "allowBuild": true,
+        "allowRun": true
+      },
+      "database": {
+        "enabled": true,
+        "clients": [
+          "psql",
+          "mysql",
+          "sqlite3",
+          "mongodb"
+        ],
+        "allowQueries": true,
+        "allowModifications": false
+      }
+    },
+    
+    "limits": {
+      "maxTools": 0,
+      "maxConcurrentTools": 50,
+      "maxToolExecutionTime": 300000,
+      "maxMemoryPerTool": 512,
+      "maxTotalMemory": 4096
+    },
+    
+    "discovery": {
+      "automatic": true,
+      "scanWorkspace": true,
+      "scanInstalledExtensions": true,
+      "scanSystemPaths": true,
+      "cacheDiscoveredTools": true,
+      "cacheDuration": 3600000
+    },
+    
+    "context": {
+      "maxTokens": 32000,
+      "includeWorkspaceStructure": true,
+      "includeOpenFiles": true,
+      "includeRecentFiles": true,
+      "includeGitHistory": true,
+      "maxHistoryDepth": 100
+    },
+    
+    "performance": {
+      "parallelExecution": true,
+      "maxParallelTasks": 50,
+      "caching": true,
+      "cacheSizeMB": 2048,
+      "preloadCommonTools": true
+    },
+    
+    "security": {
+      "allowNetworkAccess": true,
+      "allowFileSystemAccess": true,
+      "allowProcessExecution": true,
+      "sandboxed": false,
+      "auditLogging": true
+    }
+  },
+  
+  "customTools": [
+    {
+      "name": "flutter_analyze",
+      "command": "flutter analyze",
+      "category": "linter",
+      "enabled": true
+    },
+    {
+      "name": "flutter_test",
+      "command": "flutter test",
+      "category": "testing",
+      "enabled": true
+    },
+    {
+      "name": "dart_format",
+      "command": "dart format .",
+      "category": "linter",
+      "enabled": true
+    },
+    {
+      "name": "flutter_build",
+      "command": "flutter build",
+      "category": "build",
+      "enabled": true
+    },
+    {
+      "name": "wrangler_deploy",
+      "command": "wrangler deploy",
+      "category": "deployment",
+      "enabled": true
+    },
+    {
+      "name": "npm_install",
+      "command": "npm install",
+      "category": "package_manager",
+      "enabled": true
+    },
+    {
+      "name": "pip_install",
+      "command": "pip install",
+      "category": "package_manager",
+      "enabled": true
+    }
+  ],
+  
+  "workspace": {
+    "primaryLanguages": ["dart", "javascript", "typescript", "python"],
+    "frameworks": ["flutter", "node", "cloudflare-workers"],
+    "buildTools": ["flutter", "npm", "webpack", "wrangler"],
+    "testingFrameworks": ["flutter_test", "jest", "pytest"],
+    "deploymentTargets": ["cloudflare", "firebase"]
+  }
+}
