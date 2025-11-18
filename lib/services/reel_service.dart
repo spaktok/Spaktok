@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// Removed Firestore
+// Removed Firebase Storage
 import 'package:spaktok/models/reel.dart';
 import 'package:spaktok/services/hashtag_service.dart';
 import 'package:spaktok/services/music_library_service.dart';

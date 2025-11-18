@@ -36,12 +36,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   firebase_core: ^4.1.1
-  agora_rtc_engine: ^6.5.3
-  permission_handler: ^12.0.1
-  cloud_firestore: ^6.0.2
+  permission_handler: ^10.4.5
   firebase_auth: ^6.1.0
   flutter_stripe: ^12.0.2
-  firebase_storage: ^13.0.2
   camera: ^0.11.0+1
   image_picker: ^1.0.7
   provider: ^6.1.2
@@ -54,16 +51,18 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_screenshot_detect: ^0.1.7
-  cloud_functions: ^6.0.2
   http: ^1.1.0
-  geolocator: ^14.0.2
+  geolocator: ^9.0.2
+  # WebRTC for P2P streaming
+  flutter_webrtc: ^0.11.7
   # Added packages for gift animations, sound, vibration and torch
   lottie: ^3.3.2
   audioplayers: ^6.5.1
   vibration: ^3.1.4
   torch_light: ^1.1.0
   visibility_detector: ^0.4.0+2
-  google_mlkit_face_detection: ^0.13.1
+  # Face detection - use tflite on-device instead of ML Kit
+  tflite_flutter: ^0.10.4
   google_sign_in: ^7.2.0
   flutter_facebook_auth: ^6.0.4
   sign_in_with_apple: ^7.0.1
@@ -71,8 +70,13 @@ dependencies:
   pointycastle: ^3.7.3
   encrypt: ^5.0.3
   flutter_secure_storage: ^10.0.0-beta.4
-  # Video & Image Processing
+  # Video & Image Processing (chunked upload support)
   ffmpeg_kit_flutter_min_gpl: ^6.0.3
+  # AR Features
+  ar_flutter_plugin: ^0.7.3
+  vector_math: ^2.1.4
+  # Speech & Captions - use on-device only
+  speech_to_text: ^7.0.0
   # Advanced UI
   animated_text_kit: ^4.2.2
   shimmer: ^3.0.0

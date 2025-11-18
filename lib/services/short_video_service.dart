@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// Removed Firestore
+// Removed Firebase Storage
 import 'dart:io';
 
 /// Service for managing short videos (up to 10 minutes)

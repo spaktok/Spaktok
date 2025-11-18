@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:spaktok/models/chat_message.dart';
+import 'cloudflare_api_service.dart';
 
 class ChatService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  static const String _base = CloudflareApiService.baseUrl;
 
   /// Get or create a chat room ID for two users
   Future<String> getChatRoomId(String userId1, String userId2) async {
@@ -15,54 +16,95 @@ class ChatService {
 
   /// Get a stream of messages for a chat room
   Stream<List<ChatMessage>> getMessages(String chatRoomId) {
-    return _firestore
-        .collection('chat_rooms').doc(chatRoomId).collection('messages')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => ChatMessage.fromFirestore(doc)).toList());
+    // Polling-based stream via Workers (can be upgraded to DO websockets)
+    final controller = StreamController<List<ChatMessage>>();
+    Timer? timer;
+    Future<void> fetch() async {
+      try {
+        final res = await http
+            .get(Uri.parse('$_base/chat/messages?roomId=$chatRoomId'));
+        if (res.statusCode < 300) {
+          final list = (jsonDecode(res.body) as List<dynamic>)
+              .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
+              .toList();
+          controller.add(list);
+        }
+      } catch (_) {}
+    }
+
+    // initial
+    fetch();
+    timer = Timer.periodic(const Duration(seconds: 2), (_) => fetch());
+    controller.onCancel = () => timer?.cancel();
+    return controller.stream;
   }
 
   /// Send a message
   Future<void> sendMessage(ChatMessage message) async {
-    await _firestore
-        .collection('chat_rooms').doc(message.chatRoomId).collection('messages')
-        .doc(message.id)
-        .set(message.toFirestore());
-    // Here you would also update the 'lastMessage' for the chat room document
+    await http.post(
+      Uri.parse('$_base/chat/send'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(message.toJson()),
+    );
   }
 
   /// Upload a media file (image, video, audio) to Firebase Storage
-  Future<String> uploadMedia(File file, String chatRoomId, String fileName) async {
-    final ref = _storage.ref().child('chat_media').child(chatRoomId).child(fileName);
-    final uploadTask = await ref.putFile(file);
-    return await uploadTask.ref.getDownloadURL();
+  Future<String> uploadMedia(
+      File file, String chatRoomId, String fileName) async {
+    final bytes = await file.readAsBytes();
+    final res = await http.put(
+      Uri.parse('$_base/r2/upload?path=chat_media/$chatRoomId/$fileName'),
+      headers: {'Content-Type': 'application/octet-stream'},
+      body: bytes,
+    );
+    if (res.statusCode >= 300) {
+      throw Exception('Failed to upload media: ${res.body}');
+    }
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return data['url'] as String;
   }
 
   /// Update the status of a message
-  Future<void> updateMessageStatus(String chatRoomId, String messageId, MessageStatus status) async {
-    await _firestore
-        .collection('chat_rooms').doc(chatRoomId).collection('messages').doc(messageId)
-        .update({'status': status.name});
+  Future<void> updateMessageStatus(
+      String chatRoomId, String messageId, MessageStatus status) async {
+    await http.post(
+      Uri.parse('$_base/chat/status'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'chatRoomId': chatRoomId,
+        'messageId': messageId,
+        'status': status.name,
+      }),
+    );
   }
 
   /// Set the typing status for a user in a chat room
-  Future<void> setTypingStatus(String chatRoomId, String userId, bool isTyping) async {
-    // This requires a different structure, e.g., updating the chat room document
-    await _firestore.collection('chat_rooms').doc(chatRoomId).set({
-      'typing_status': {
-        userId: isTyping,
-      }
-    }, SetOptions(merge: true));
+  Future<void> setTypingStatus(
+      String chatRoomId, String userId, bool isTyping) async {
+    await http.post(
+      Uri.parse('$_base/chat/typing'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'chatRoomId': chatRoomId,
+        'userId': userId,
+        'isTyping': isTyping,
+      }),
+    );
   }
 
   /// Get the typing status stream for a user in a chat room
   Stream<bool> getTypingStatus(String chatRoomId, String otherUserId) {
-     return _firestore.collection('chat_rooms').doc(chatRoomId).snapshots().map((snapshot) {
-         if(snapshot.exists && snapshot.data()!.containsKey('typing_status')){
-             final typingStatus = snapshot.data()!['typing_status'];
-             return typingStatus[otherUserId] ?? false;
-         }
-         return false;
-     });
+    // Poll KV via Workers
+    return Stream.periodic(const Duration(seconds: 2)).asyncMap((_) async {
+      try {
+        final res = await http.get(Uri.parse(
+            '$_base/chat/typing?chatRoomId=$chatRoomId&userId=$otherUserId'));
+        if (res.statusCode < 300) {
+          final data = jsonDecode(res.body) as Map<String, dynamic>;
+          return data['isTyping'] == true;
+        }
+      } catch (_) {}
+      return false;
+    });
   }
 }

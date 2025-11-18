@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Removed Firestore
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -104,8 +104,9 @@ class SnapMapService {
     }
 
     // Get current position (modern API with settings)
+    // Geolocator v9.x uses desiredAccuracy argument (no LocationSettings)
     return await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      desiredAccuracy: LocationAccuracy.high,
     );
   }
 

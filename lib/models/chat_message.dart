@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Cloudflare-first: avoid Firestore types
 
 enum MessageType { text, image, video, audio }
+
 enum MessageStatus { sending, sent, delivered, read }
 
 class ChatMessage {
@@ -8,7 +9,7 @@ class ChatMessage {
   final String chatRoomId;
   final String senderId;
   final MessageType type;
-  final Timestamp timestamp;
+  final DateTime timestamp;
 
   // Content fields
   final String? text;
@@ -32,28 +33,31 @@ class ChatMessage {
     this.isEphemeral = false,
   });
 
-  factory ChatMessage.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory ChatMessage.fromJson(Map<String, dynamic> data) {
     return ChatMessage(
-      id: doc.id,
+      id: data['id'] ?? '',
       chatRoomId: data['chatRoomId'] ?? '',
       senderId: data['senderId'] ?? '',
-      type: MessageType.values.firstWhere((e) => e.name == data['type'], orElse: () => MessageType.text),
-      timestamp: data['timestamp'] ?? Timestamp.now(),
+      type: MessageType.values.firstWhere((e) => e.name == data['type'],
+          orElse: () => MessageType.text),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(
+          (data['timestamp'] ?? DateTime.now().millisecondsSinceEpoch) as int),
       text: data['text'],
       mediaUrl: data['mediaUrl'],
       audioDuration: data['audioDuration'],
-      status: MessageStatus.values.firstWhere((e) => e.name == data['status'], orElse: () => MessageStatus.sent),
+      status: MessageStatus.values.firstWhere((e) => e.name == data['status'],
+          orElse: () => MessageStatus.sent),
       isEphemeral: data['isEphemeral'] ?? false,
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'chatRoomId': chatRoomId,
       'senderId': senderId,
       'type': type.name,
-      'timestamp': timestamp,
+      'timestamp': timestamp.millisecondsSinceEpoch,
       'text': text,
       'mediaUrl': mediaUrl,
       'audioDuration': audioDuration,

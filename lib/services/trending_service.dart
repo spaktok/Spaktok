@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Removed Firestore
 import 'package:spaktok/models/trending_content.dart';
 import 'dart:developer' as developer;
 

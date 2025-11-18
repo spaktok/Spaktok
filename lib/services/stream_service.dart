@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Removed Firestore
 import 'package:spaktok/services/auth_service.dart';
 
 class StreamService {

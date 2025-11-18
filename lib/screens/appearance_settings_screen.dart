@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../services/theme_service.dart';
+import '../services/app_theme_service.dart';
 import '../services/chat_background_service.dart';
 import '../services/sound_haptic_service.dart';
+import '../core/theme_mode.dart';
+import 'theme_selection_screen.dart';
 
 /// شاشة إعدادات المظهر والتخصيص
 class AppearanceSettingsScreen extends StatefulWidget {
@@ -62,11 +65,83 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen>
   /// تبويب الثيم
   /// ═══════════════════════════════════════════════════════════
   Widget _buildThemeTab() {
-    return Consumer<ThemeService>(
-      builder: (context, themeService, child) {
+    return Consumer2<ThemeService, AppThemeService>(
+      builder: (context, themeService, appThemeService, child) {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Modern theme selector card
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ThemeSelectionScreen(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.palette,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Theme Selection',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Current: ${appThemeService.currentTheme.name}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+
             const Text(
               'اختر الثيم',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

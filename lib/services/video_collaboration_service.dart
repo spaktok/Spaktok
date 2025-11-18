@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// Removed Firestore
+// Removed Firebase Storage
 import 'package:spaktok/services/auth_service.dart';
 import 'dart:io';
 import 'dart:developer' as developer;

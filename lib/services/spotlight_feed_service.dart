@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Removed Firestore
 import 'dart:developer' as developer;
 import 'package:spaktok/services/auth_service.dart';
 

@@ -2,51 +2,67 @@ name = "spaktok-edge"
 main = "src/index.ts"
 compatibility_date = "2025-11-14"
 
+# Ultra-Low-Cost Architecture Configuration
 [vars]
-# Stripe
-STRIPE_SECRET_KEY = "" # Set in Cloudflare dashboard (never commit real key)
+# Stripe (payment processing - 2.9% + $0.30 fee passed to users)
+STRIPE_SECRET_KEY = "" # Set in Cloudflare dashboard
 STRIPE_WEBHOOK_SECRET = ""
 
-# Agora
-AGORA_APP_ID = ""
-AGORA_APP_CERTIFICATE = ""
-
-# Chat
-CHAT_APP_KEY = ""
-CHAT_CLIENT_ID = ""
-CHAT_CLIENT_SECRET = ""
-
-# Cloudflare Stream
+# Cloudflare Stream (video transcoding & adaptive streaming)
 CLOUDFLARE_STREAM_ACCOUNT_ID = "b62ed7e1cf0e1dc886f363573bad4bdb"
-CLOUDFLARE_STREAM_API_TOKEN = "" # Use dashboard secret; worker uses bearer fetch
+CLOUDFLARE_STREAM_API_TOKEN = "" # Set in dashboard
 
-# R2 (bound via bindings below rather than vars for credentials)
-R2_BUCKET = "" # Name only; bind bucket below
+# WebRTC Signaling (replaces Agora - near-zero cost)
+CALLS_APP_ID = ""
+CALLS_APP_SECRET = ""
 
-# KV / D1 / Queues binding names (create resources then bind)
-KV_CACHE = ""
-D1_DB = ""
-QUEUE_EVENTS = ""
+# ========== BINDINGS ==========
+
+# R2 Bucket (video/image storage - $0.015/GB, FREE egress)
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "spaktok-media"
+preview_bucket_name = "spaktok-media-preview"
+
+# KV Namespace (sessions, cache, rate limits)
+[[kv_namespaces]]
+binding = "KV_CACHE"
+id = "YOUR_KV_NAMESPACE_ID"
+preview_id = "YOUR_KV_PREVIEW_ID"
+
+# D1 Database (relational data: users, videos, comments, likes)
+[[d1_databases]]
+binding = "D1_DB"
+database_name = "spaktok-db"
+database_id = "YOUR_D1_DATABASE_ID"
+preview_database_id = "YOUR_D1_PREVIEW_ID"
+
+# Queue (background processing: video transcoding, notifications)
+[[queues.producers]]
+binding = "QUEUE_EVENTS"
+queue = "spaktok-events"
+
+# Durable Objects (WebRTC signaling, live stream state)
+[[durable_objects.bindings]]
+name = "WEBRTC_SIGNALING"
+class_name = "WebRTCSignaling"
+script_name = "spaktok-edge"
+
+[[durable_objects.bindings]]
+name = "LIVE_STREAMS"
+class_name = "LiveStream"
+script_name = "spaktok-edge"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["WebRTCSignaling", "LiveStream"]
+
+# Workers AI (content moderation, captions, translation)
+[ai]
+binding = "AI"
 
 [observability]
 enabled = true
-
-# [[r2_buckets]]
-# binding = "R2"
-# bucket_name = "spaktok-media"  # Create bucket first, then uncomment
-# Example bindings (uncomment after creating resources)
-# [[r2_buckets]]
-# binding = "R2"
-# bucket_name = "spaktok-media"
-
-# Uncomment and configure once KV / D1 / Queue resources are provisioned
-# [[kv_namespaces]]
-# binding = "KV_CACHE"
-# id = "<kv-namespace-id>"
-# preview_id = "<kv-preview-id>"
-# binding = "KV_CACHE"
-# id = "<kv-namespace-id>"
-# preview_id = "<kv-preview-id>"
 
 # [[d1_databases]]
 # binding = "D1_DB"

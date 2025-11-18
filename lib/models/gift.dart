@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Removed: cloud_firestore
 
 class Gift {
   final String id;

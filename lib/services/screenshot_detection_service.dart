@@ -7,7 +7,8 @@ import 'dart:developer' as developer;
 /// Detects when users take screenshots of stories, ephemeral messages, or sensitive content
 /// and notifies content owners for privacy protection
 class ScreenshotDetectionService {
-  final ScreenshotDetect _detector = ScreenshotDetect();
+  // Plugin class name is FlutterScreenshotDetect (not ScreenshotDetect)
+  final FlutterScreenshotDetect _detector = FlutterScreenshotDetect();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -30,14 +31,12 @@ class ScreenshotDetectionService {
     _currentContentId = contentId;
     _currentOwnerId = ownerId;
 
-    _detector.initialize();
-    _isInitialized = true;
-
-    _detector.screenshotStream.listen((screenshotTaken) {
-      if (screenshotTaken) {
-        _handleScreenshot();
-      }
+    // Start listening for screenshot events; callback supplies an event map
+    _detector.startListening((event) {
+      // Each event indicates a screenshot was taken; event contains method/timestamp/path
+      _handleScreenshot();
     });
+    _isInitialized = true;
 
     developer.log(
       'Screenshot detection initialized for $contentType: $contentId',
@@ -226,7 +225,7 @@ class ScreenshotDetectionService {
   /// Dispose screenshot detector
   void dispose() {
     if (_isInitialized) {
-      _detector.dispose();
+      // FlutterScreenshotDetect doesn't have stopListening; just mark as disposed
       _isInitialized = false;
       _currentContentType = null;
       _currentContentId = null;

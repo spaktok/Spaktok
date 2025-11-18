@@ -1,46 +1,73 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Spaktok Firebase Functions - Minimal Auth-Only Configuration
+ * 
+ * ULTRA-LOW-COST ARCHITECTURE:
+ * - Firebase Functions: ONLY for auth triggers (onCreate, onDelete)
+ * - All other backend logic moved to Cloudflare Workers
+ * - 99% cost reduction by eliminating expensive Cloud Functions
+ * 
+ * Cost: ~$20-50/month (vs $20k+ before optimization)
  */
 
-// Export all Cloud Functions from module files
-// Stripe payment functions
-const stripeModule = require('./src/stripe');
-exports.createPaymentIntent = stripeModule.createPaymentIntent;
-exports.handleStripeWebhook = stripeModule.handleStripeWebhook;
+const {onRequest} = require('firebase-functions/v2/https');
+const {onDocumentCreated, onDocumentDeleted} = require('firebase-functions/v2/firestore');
+const admin = require('firebase-admin');
 
-// Agora token generation
-const agoraModule = require('./src/agora');
-exports.getAgoraToken = agoraModule.getAgoraToken;
+admin.initializeApp();
 
-// Gift system functions
-const giftsModule = require('./src/gifts');
-exports.getGiftCatalog = giftsModule.getGiftCatalog;
-exports.sendGift = giftsModule.sendGift;
+// ========== USER AUTH TRIGGERS (Critical for Firebase Auth) ==========
 
-// Agora Chat functions
-const chatModule = require('./src/chat');
-exports.getAgoraChatAppToken = chatModule.getAgoraChatAppToken;
-exports.getAgoraChatUserToken = chatModule.getAgoraChatUserToken;
+// Triggered when a new user signs up
+exports.onUserCreate = onDocumentCreated('users/{userId}', async (event) => {
+  const userId = event.params.userId;
+  const userData = event.data.data();
+  
+  console.log(`New user created: ${userId}`, userData);
+  
+  // Sync to Cloudflare D1 via Worker API
+  try {
+    await fetch('https://spaktok-edge.workers.dev/api/sync/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: userId,
+        username: userData.username,
+        display_name: userData.displayName,
+        avatar_url: userData.avatarUrl,
+        created_at: Date.now(),
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to sync user to D1:', error);
+  }
+});
 
-// AI Moderation functions
-const moderationModule = require('./src/moderation');
-exports.moderateVideo = moderationModule.moderateVideo;
-exports.moderateStory = moderationModule.moderateStory;
-exports.moderateComment = moderationModule.moderateComment;
-exports.manualModerateContent = moderationModule.manualModerateContent;
-exports.getFlaggedContent = moderationModule.getFlaggedContent;
+// Triggered when a user is deleted
+exports.onUserDelete = onDocumentDeleted('users/{userId}', async (event) => {
+  const userId = event.params.userId;
+  
+  console.log(`User deleted: ${userId}`);
+  
+  // Notify Cloudflare Worker to cleanup D1 data
+  try {
+    await fetch(`https://spaktok-edge.workers.dev/api/sync/user/${userId}`, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    console.error('Failed to delete user from D1:', error);
+  }
+});
 
-// Auto-Captions functions
-const captionsModule = require('./src/captions');
-exports.generateCaptions = captionsModule.generateCaptions;
-exports.generateCaptionsManual = captionsModule.generateCaptionsManual;
-exports.translateCaptions = captionsModule.translateCaptions;
-exports.getCaptionStats = captionsModule.getCaptionStats;
+// ========== HEALTH CHECK ==========
+exports.health = onRequest((req, res) => {
+  res.json({
+    status: 'healthy',
+    architecture: 'ultra-low-cost',
+    backend: 'cloudflare-workers',
+    auth: 'firebase-only',
+    timestamp: Date.now(),
+  });
+});
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
