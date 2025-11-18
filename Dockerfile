@@ -1,5 +1,5 @@
-# 1. Use the official Node.js image as a base
-FROM node:18
+# 1. Use secure Node.js 20 Alpine image for minimal attack surface
+FROM node:20-alpine
 
 # 2. Set the working directory inside the container
 WORKDIR /usr/src/app

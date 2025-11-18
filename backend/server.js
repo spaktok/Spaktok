@@ -12,6 +12,7 @@ const battleGiftingRoutes = require('./routes/battle_gifting');
 const paymentRoutes = require('./routes/payment');
 const agoraRoutes = require('./routes/agora');
 const authRoutes = require('./routes/auth');
+const cloudflareRoutes = require('./routes/cloudflare');
 
 const app = express();
 const server = http.createServer(app);
@@ -59,6 +60,7 @@ app.use('/battle-gifting', battleGiftingRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/agora', agoraRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/cloudflare', cloudflareRoutes);
 
 // ? API routes
 app.get('/', (req, res) => {

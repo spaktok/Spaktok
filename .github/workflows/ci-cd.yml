@@ -46,10 +46,14 @@ jobs:
       - name: Build Android APK
         env:
           AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
+          AGORA_APP_CERT: ${{ secrets.AGORA_APP_CERT }}
+          AGORA_CHAT_APP_KEY: ${{ secrets.AGORA_CHAT_APP_KEY }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
         run: |
           flutter build apk --release \
             --dart-define=AGORA_APP_ID=${AGORA_APP_ID} \
+            --dart-define=AGORA_APP_CERT=${AGORA_APP_CERT} \
+            --dart-define=AGORA_CHAT_APP_KEY=${AGORA_CHAT_APP_KEY} \
             --dart-define=STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
 
       - name: Build iOS (macOS only)
@@ -116,20 +120,18 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PAT }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKER_USERNAME }}/spaktok:latest
-            ${{ env.DOCKER_USERNAME }}/spaktok:${{ github.sha }}
+            ${{ secrets.DOCKER_USER }}/spaktok:latest
+            ${{ secrets.DOCKER_USER }}/spaktok:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

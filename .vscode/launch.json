@@ -1,8 +1,19 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
-    
+        {
+            "name": "Deploy Cloud Function",
+            "type": "cloudcode.cloudfunctions",
+            "request": "launch",
+            "functionName": "spaktok",
+            "gen": "GEN_2",
+            "revision": "",
+            "entryPoint": "helloWorld",
+            "testInput": "",
+            "region": "europe-west3",
+            "runtime": "python313",
+            "serviceAccount": "danialmq3@gmail.com"
+        },
         {
             "name": "Flutter: Web",
             "type": "dart",

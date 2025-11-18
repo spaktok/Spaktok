@@ -9,5 +9,6 @@
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "editor.defaultFormatter": "Blackboxapp.blackboxagent"
+    "editor.defaultFormatter": "Blackboxapp.blackboxagent",
+    "DockerRun.DisableDockerrc": true
 }

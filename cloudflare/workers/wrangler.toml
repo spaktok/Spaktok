@@ -1,0 +1,58 @@
+name = "spaktok-edge"
+main = "src/index.ts"
+compatibility_date = "2025-11-14"
+
+[vars]
+# Stripe
+STRIPE_SECRET_KEY = "" # Set in Cloudflare dashboard (never commit real key)
+STRIPE_WEBHOOK_SECRET = ""
+
+# Agora
+AGORA_APP_ID = ""
+AGORA_APP_CERTIFICATE = ""
+
+# Chat
+CHAT_APP_KEY = ""
+CHAT_CLIENT_ID = ""
+CHAT_CLIENT_SECRET = ""
+
+# Cloudflare Stream
+CLOUDFLARE_STREAM_ACCOUNT_ID = "b62ed7e1cf0e1dc886f363573bad4bdb"
+CLOUDFLARE_STREAM_API_TOKEN = "" # Use dashboard secret; worker uses bearer fetch
+
+# R2 (bound via bindings below rather than vars for credentials)
+R2_BUCKET = "" # Name only; bind bucket below
+
+# KV / D1 / Queues binding names (create resources then bind)
+KV_CACHE = ""
+D1_DB = ""
+QUEUE_EVENTS = ""
+
+[observability]
+enabled = true
+
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "spaktok-media"  # Create bucket first, then uncomment
+# Example bindings (uncomment after creating resources)
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "spaktok-media"
+
+# Uncomment and configure once KV / D1 / Queue resources are provisioned
+# [[kv_namespaces]]
+# binding = "KV_CACHE"
+# id = "<kv-namespace-id>"
+# preview_id = "<kv-preview-id>"
+# binding = "KV_CACHE"
+# id = "<kv-namespace-id>"
+# preview_id = "<kv-preview-id>"
+
+# [[d1_databases]]
+# binding = "D1_DB"
+# database_name = "spaktok"
+# database_id = "<d1-database-id>"
+
+# [[queues.producers]]
+# binding = "QUEUE_EVENTS"
+# queue = "spaktok-events"

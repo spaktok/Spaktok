@@ -1,0 +1,22 @@
+name = "spaktok-queue-consumer"
+main = "src/queue-consumer.ts"
+compatibility_date = "2025-11-14"
+
+[[queues.consumers]]
+queue = "spaktok-events"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[[d1_databases]]
+binding = "D1_DB"
+database_name = "spaktok"
+database_id = "<d1-database-id>" # Set after wrangler d1 create spaktok
+
+[[kv_namespaces]]
+binding = "KV_CACHE"
+id = "<kv-namespace-id>" # Set after wrangler kv:namespace create KV_CACHE
+preview_id = "<kv-preview-id>"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "<r2-bucket-name>"

@@ -39,6 +39,25 @@ const config = {
     registryUser: env.DOCKER_REGISTRY_USERNAME || '',
     registryPAT: env.DOCKER_REGISTRY_PAT || '',
   },
+
+  cloudflareR2: {
+    accessKeyId: env.CLOUDFLARE_R2_ACCESS_KEY_ID || '',
+    secretAccessKey: env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || '',
+    bucket: env.CLOUDFLARE_R2_BUCKET || '',
+    accountId: env.CLOUDFLARE_R2_ACCOUNT_ID || '',
+    endpoint: env.CLOUDFLARE_R2_ENDPOINT || '',
+  },
+
+  cloudflareStream: {
+    apiToken: env.CLOUDFLARE_STREAM_API_TOKEN || '',
+    accountId: env.CLOUDFLARE_STREAM_ACCOUNT_ID || '',
+  },
+
+  cloudflareImages: {
+    apiToken: env.CLOUDFLARE_IMAGES_API_TOKEN || '',
+    accountId: env.CLOUDFLARE_IMAGES_ACCOUNT_ID || '',
+    accountHash: env.CLOUDFLARE_IMAGES_ACCOUNT_HASH || '',
+  },
 };
 
 module.exports = config;

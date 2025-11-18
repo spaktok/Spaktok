@@ -1,3 +1,40 @@
+## Cloudflare Stream Integration
+Spaktok uses Cloudflare Stream for video hosting and delivery. Stream provides secure, scalable video upload and playback APIs.
+
+**Environment variables:**
+```
+CLOUDFLARE_STREAM_API_TOKEN=your-stream-api-token
+CLOUDFLARE_STREAM_ACCOUNT_ID=your-account-id
+```
+
+**Usage:**
+- See `src/stream.js` for upload/playback helpers.
+- Use `createDirectUpload()` to get a direct upload URL for client-side video upload.
+- Use `getVideoInfo(videoId)` to fetch playback info (HLS, thumbnail, status).
+- Use `deleteVideo(videoId)` to remove a video.
+
+**Next steps:**
+- Update video upload and playback endpoints to use Cloudflare Stream for all video content.
+
+## Cloudflare Images Integration
+Spaktok uses Cloudflare Images for image upload, compression, and optimization with automatic variants.
+
+**Environment variables:**
+```
+CLOUDFLARE_IMAGES_API_TOKEN=your-images-api-token
+CLOUDFLARE_IMAGES_ACCOUNT_ID=your-account-id
+CLOUDFLARE_IMAGES_ACCOUNT_HASH=your-account-hash
+```
+
+**Usage:**
+- See `src/images.js` for upload/delivery helpers.
+- Use `uploadImage(file, metadata)` to upload images with optional metadata.
+- Use `getImageUrl(imageId, variant)` to get delivery URLs with built-in variants (e.g., `public`, `thumbnail`).
+- Use `deleteImage(imageId)` to remove images.
+- Use `listImages(page, perPage)` for paginated listing.
+
+**Next steps:**
+- Update image upload endpoints to use Cloudflare Images for all user-uploaded content (avatars, posts, stories).
 # Spaktok Cloud Functions
 
 This directory contains Firebase Cloud Functions for Spaktok (payments, live streaming token generation, gifts system, webhooks, and supporting utilities).
@@ -115,6 +152,26 @@ USE_STRIPE_MOCK=true npm test
 - Never commit real secrets—use `.env` locally and Firebase config (`firebase functions:config:set`).
 - `.env.test` is gitignored.
 - Webhook secret must be configured in production.
+
+## Cloudflare R2 Integration
+Spaktok uses Cloudflare R2 as the main storage for videos and images. R2 is S3-compatible and integrated via the AWS SDK.
+
+**Environment variables:**
+```
+CLOUDFLARE_R2_ACCESS_KEY_ID=your-access-key
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-secret-key
+CLOUDFLARE_R2_BUCKET=your-bucket
+CLOUDFLARE_R2_ACCOUNT_ID=your-account-id
+CLOUDFLARE_R2_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
+```
+
+**Usage:**
+- See `src/r2.js` for upload/download helpers.
+- Use `uploadToR2(key, body, contentType)` to upload files.
+- Use `getFromR2(key)` to retrieve files.
+
+**Next steps:**
+- Update upload/download endpoints to use R2 for all video/image storage.
 
 ## Deployment
 Handled by CI/CD (GitHub Actions). Manual deploy:

@@ -23,25 +23,13 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return linux;
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -65,5 +53,43 @@ class DefaultFirebaseOptions {
     messagingSenderId: '603021639103',
     projectId: 'spaktok-e7866',
     storageBucket: 'spaktok-e7866.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M',
+    appId: '1:603021639103:ios:7d4c621adc13bedf5ab50a',
+    messagingSenderId: '603021639103',
+    projectId: 'spaktok-e7866',
+    storageBucket: 'spaktok-e7866.firebasestorage.app',
+    iosBundleId: 'com.spaktok.app',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBqdbdI6MI7mBdV0cu1oqw98vybIMczF1M',
+    appId: '1:603021639103:ios:7d4c621adc13bedf5ab50a',
+    messagingSenderId: '603021639103',
+    projectId: 'spaktok-e7866',
+    storageBucket: 'spaktok-e7866.firebasestorage.app',
+    iosBundleId: 'com.spaktok.app',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyAxG4sI_RO6IN8kItCTeXJkFb9zFeEnQ_M',
+    appId: '1:603021639103:web:5f39bf723c3d33365ab50a',
+    messagingSenderId: '603021639103',
+    projectId: 'spaktok-e7866',
+    authDomain: 'spaktok-e7866.firebaseapp.com',
+    storageBucket: 'spaktok-e7866.firebasestorage.app',
+    measurementId: 'G-GYLXK1H2VF',
+  );
+
+  static const FirebaseOptions linux = FirebaseOptions(
+    apiKey: 'AIzaSyAxG4sI_RO6IN8kItCTeXJkFb9zFeEnQ_M',
+    appId: '1:603021639103:web:5f39bf723c3d33365ab50a',
+    messagingSenderId: '603021639103',
+    projectId: 'spaktok-e7866',
+    authDomain: 'spaktok-e7866.firebaseapp.com',
+    storageBucket: 'spaktok-e7866.firebasestorage.app',
+    measurementId: 'G-GYLXK1H2VF',
   );
 }

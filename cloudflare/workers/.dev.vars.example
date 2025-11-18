@@ -1,0 +1,19 @@
+# Local development variables for wrangler dev (do not commit real secrets)
+# Copy this file to .dev.vars and fill values for local-only testing
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+# Agora
+AGORA_APP_ID=
+AGORA_APP_CERTIFICATE=
+
+# Cloudflare Stream
+CLOUDFLARE_STREAM_API_TOKEN=
+CLOUDFLARE_STREAM_ACCOUNT_ID=b62ed7e1cf0e1dc886f363573bad4bdb
+
+# Chat (optional)
+CHAT_APP_KEY=
+CHAT_CLIENT_ID=
+CHAT_CLIENT_SECRET=
