@@ -15,10 +15,11 @@ This file (`serviceAccountKey.json`) contains sensitive credentials and should *
 
 ## File Location
 
-Place the file here:
+Place the file locally (do NOT commit to git). If you need a template, use:
 ```
-functions/serviceAccountKey.json
+functions/serviceAccountKey.json.template
 ```
+This template uses safe placeholders and avoids PEM headers to prevent false positive secret scans.
 
 ## Verification
 
