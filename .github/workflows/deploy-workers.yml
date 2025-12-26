@@ -1,0 +1,98 @@
+name: Deploy Cloudflare Workers
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Target environment (staging or production)"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+  push:
+    branches: [ main ]
+    paths:
+      - "backend/cloudflare/workers/**"
+      - ".github/workflows/deploy-workers.yml"
+
+jobs:
+  deploy-workers:
+    runs-on: ubuntu-latest
+    env:
+      WORKING_DIR: backend/cloudflare/workers
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      # Common secrets (set only if present)
+      AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
+      AGORA_APP_CERTIFICATE: ${{ secrets.AGORA_APP_CERTIFICATE }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIR }}/package-lock.json
+
+      - name: Install Wrangler 4.56.0
+        run: npm install -g wrangler@4.56.0
+
+      - name: Select target environment
+        id: select-env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ENVIRONMENT=${{ inputs.target_env }}" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          fi
+          echo "Deploying environment: $(cat $GITHUB_ENV | grep ENVIRONMENT)"
+
+      - name: Validate Cloudflare credentials
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "CF_API_TOKEN and CF_ACCOUNT_ID must be set in GitHub Secrets" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies (Workers)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: npm ci
+
+      - name: Propagate secrets to Cloudflare (${env.ENVIRONMENT})
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          set -euo pipefail
+          echo "Pushing secrets to Cloudflare env: ${ENVIRONMENT}"
+          secrets=(
+            AGORA_APP_ID
+            AGORA_APP_CERTIFICATE
+            STRIPE_SECRET_KEY
+            STRIPE_WEBHOOK_SECRET
+            FIREBASE_PROJECT_ID
+            FIREBASE_CLIENT_EMAIL
+            FIREBASE_PRIVATE_KEY
+            OPENAI_API_KEY
+          )
+          for name in "${secrets[@]}"; do
+            value="${!name:-}"
+            if [ -n "$value" ]; then
+              printf "%s" "$value" | wrangler secret put "$name" --env "${ENVIRONMENT}" --force --yes
+              echo "✓ Set secret $name"
+            else
+              echo "- Skipping $name (not provided)"
+            fi
+          done
+
+      - name: Deploy to Cloudflare (${env.ENVIRONMENT})
+        working-directory: ${{ env.WORKING_DIR }}
+        run: wrangler deploy --env "${ENVIRONMENT}"

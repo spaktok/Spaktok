@@ -15,10 +15,10 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       
     - name: Set up Flutter
-      uses: subosito/flutter-action@v2
+      uses: spaktok/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e
       with:
         flutter-version: '3.16.0'
         channel: 'stable'
@@ -74,7 +74,7 @@ jobs:
       continue-on-error: true
       
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@c24449f33cd45d4826c6702db7e49f7cdb9b551d
       with:
         name: spaktok-builds
         path: |
@@ -87,10 +87,10 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       
     - name: Set up Flutter
-      uses: subosito/flutter-action@v2
+      uses: spaktok/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e
       with:
         flutter-version: '3.16.0'
         channel: 'stable'
@@ -108,10 +108,10 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       
     - name: Run security scan
-      uses: aquasecurity/trivy-action@master
+      uses: spaktok/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
       with:
         scan-type: 'fs'
         scan-ref: '.'
@@ -120,7 +120,7 @@ jobs:
       continue-on-error: true
       
     - name: Upload scan results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: spaktok/codeql-action/upload-sarif@45c373516f557556c15d420e3f5e0aa3d64366bc
       with:
         sarif_file: 'trivy-results.sarif'
       continue-on-error: true

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       # إلغاء أي Proxy على بيئة الـ runner (تحسباً)
       - name: Clear proxies on runner
@@ -22,7 +22,7 @@ jobs:
           echo "Proxies cleared on runner."
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: spaktok/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e
         with:
           flutter-version: '3.24.0'
 

@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: 🧾 Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       - name: 🛠 Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: spaktok/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e
         with:
           flutter-version: '3.35.4'
 
