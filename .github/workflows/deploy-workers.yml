@@ -42,12 +42,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
+      - name: Cache npm (Workers)
+        uses: actions/cache@3624ceb22c1c5a301c8db4169662070a689d9ea8
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-workers-npm-${{ hashFiles('backend/cloudflare/workers/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-workers-npm-
+
       - name: Use Node.js 20
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: cloudflare/workers/package-lock.json
+          cache-dependency-path: backend/cloudflare/workers/package-lock.json
 
       - name: Install Wrangler 4.56.0
         run: npm install -g wrangler@4.56.0
