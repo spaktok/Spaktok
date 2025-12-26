@@ -1,6 +1,10 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const stripe = require('stripe')('whsec_V4zeDXFiMhGrOx1xjBMoNfxBgav5eTpI'); // Use your secret key
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || functions.config().stripe?.secret_key;
+if (!stripeSecretKey) {
+  throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+}
+const stripe = require('stripe')(stripeSecretKey);
 
 admin.initializeApp();
 
