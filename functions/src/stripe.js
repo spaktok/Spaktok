@@ -83,13 +83,15 @@ exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
   let event;
 
   try {
-    if (webhookSecret) {
-      const signature = req.headers['stripe-signature'];
-      event = stripe.webhooks.constructEvent(req.rawBody, signature, webhookSecret);
-    } else {
-      // In testing/dev environments the secret might not be set; parse body directly
-      event = req.body;
+    if (!webhookSecret) {
+      // Aus Sicherheitsgründen erzwingen wir die Verwendung des Webhook-Secrets.
+      // Ohne Secret wird kein Event verarbeitet.
+      logger.error('Missing STRIPE_WEBHOOK_SECRET; refusing to process webhook');
+      return res.status(400).send('Missing STRIPE_WEBHOOK_SECRET');
     }
+
+    const signature = req.headers['stripe-signature'];
+    event = stripe.webhooks.constructEvent(req.rawBody, signature, webhookSecret);
   } catch (err) {
     logger.error('Stripe webhook signature verification failed', { error: err.message });
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -105,11 +107,9 @@ exports.handleStripeWebhook = functions.https.onRequest(async (req, res) => {
         if (uid) {
           const coins = Math.floor(pi.amount / 100); // simple conversion, customize as needed
           const userRef = admin.firestore().collection('users').doc(uid);
-          await admin.firestore().runTransaction(async (tx) => {
-            const snap = await tx.get(userRef);
-            const prev = snap.exists ? (snap.data().coins || 0) : 0;
-            tx.set(userRef, { coins: prev + coins }, { merge: true });
-          });
+          // Verwende einen atomaren Inkrement-Update ohne vorheriges Lesen,
+          // um Race Conditions zu vermeiden und Scanner-False-Positives zu reduzieren.
+          await userRef.set({ coins: admin.firestore.FieldValue.increment(coins) }, { merge: true });
         }
         break;
       }

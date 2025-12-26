@@ -1,0 +1,10 @@
+version: v1.5.0
+ignore:
+  javascript/HardcodedNonCryptoSecret:
+    - web/firebase-config.js:
+        reason: Firebase client API keys and config are public by design. Not a secret.
+        expires: 2026-01-01T00:00:00.000Z
+  javascript/Sqli:
+    - functions/src/stripe.js:
+        reason: No SQL used; this file uses Firestore transactions. False positive.
+        expires: 2026-01-01T00:00:00.000Z
