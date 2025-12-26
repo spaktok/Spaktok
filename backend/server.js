@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const mongoose = require('mongoose');
 const { Pool } = require('pg');
 const redis = require('redis');
@@ -17,6 +18,10 @@ const cloudflareRoutes = require('./routes/cloudflare');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+// Security hardening
+app.disable('x-powered-by');
+app.use(helmet());
 
 app.use(express.json());
 app.use(cors());

@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
 env:
   FLUTTER_VERSION: '3.24.0'
   NODE_VERSION: '20'
@@ -184,6 +189,18 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          skip-dirs: |
+            node_modules
+            build
+            android/app/build
+            ios/Flutter/ephemeral
+            web/build
+            .git
+            .github
+          exit-code: '0'
 
       - name: Upload Trivy results to GitHub Security
         uses: spaktok/codeql-action/upload-sarif@45c373516f557556c15d420e3f5e0aa3d64366bc

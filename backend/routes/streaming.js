@@ -2,6 +2,17 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
+
+// Simple rate limiter to prevent abuse of streaming endpoint
+const streamingLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+router.use(streamingLimiter);
 
 // Basic video streaming endpoint
 router.get('/video', (req, res) => {

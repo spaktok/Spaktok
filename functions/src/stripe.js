@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Stripe = require('stripe');
+const { randomUUID } = require('crypto');
 const config = require('./config');
 const logger = require('firebase-functions/logger');
 
@@ -23,11 +24,11 @@ if (process.env.USE_STRIPE_MOCK === 'true') {
       create: async ({ amount, currency, metadata }) => {
         // Return a fake payment intent
         return {
-          id: `pi_mock_${Date.now()}`,
+          id: `pi_mock_${randomUUID()}`,
           amount: amount || 0,
           currency: currency || 'usd',
           metadata: metadata || {},
-          client_secret: `cs_mock_${Math.random().toString(36).slice(2)}`,
+          client_secret: `cs_mock_${randomUUID()}`,
         };
       },
     },

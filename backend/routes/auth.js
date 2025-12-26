@@ -2,13 +2,37 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+
+// Basic rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.use(authLimiter);
 
 // @route   POST api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', async (req, res) => {
-  const { username, email, password } = req.body;
+router.post(
+  '/register',
+  [
+    body('username').trim().isLength({ min: 3, max: 50 }).escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8, max: 128 }),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username, email, password } = req.body;
 
   try {
     // Check if user already exists
@@ -37,13 +61,25 @@ router.post('/register', async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server error');
   }
-});
+  }
+);
 
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+router.post(
+  '/login',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8, max: 128 }),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
 
   try {
     // Check if user exists
@@ -65,9 +101,13 @@ router.post('/login', async (req, res) => {
       }
     };
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ msg: 'Server misconfiguration: JWT_SECRET is not set' });
+    }
     jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'your_default_secret',
+      secret,
       { expiresIn: 3600 }, // 1 hour
       (err, token) => {
         if (err) throw err;
@@ -79,6 +119,7 @@ router.post('/login', async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server error');
   }
-});
+  }
+);
 
 module.exports = router;

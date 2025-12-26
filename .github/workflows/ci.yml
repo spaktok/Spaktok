@@ -9,6 +9,11 @@ on:
     # Run every hour to check for updates
     - cron: '0 * * * *'
 
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
