@@ -27,16 +27,15 @@ jobs:
           echo "Proxies cleared on runner."
 
       - name: Setup Flutter
-        uses: spaktok/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1
         with:
           flutter-version: '3.24.0'
+          channel: 'stable'
 
       - name: Install dependencies
-        working-directory: ./frontend
         run: flutter pub get
 
       - name: Build Flutter Web
-        working-directory: ./frontend
         run: flutter build web --release
 
       - name: Deploy to Firebase Hosting
