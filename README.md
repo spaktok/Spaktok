@@ -24,13 +24,13 @@
 
 ```powershell
 # Run the interactive deployment menu
-.\deploy.ps1
+.\ops\scripts\deploy.ps1
 ```
 
 **Or see complete guides:**
-- 📘 **[ALL_GREEN_STATUS.md](ALL_GREEN_STATUS.md)** - Current status & quick commands
-- 📗 **[DEPLOYMENT_READY.md](DEPLOYMENT_READY.md)** - Complete deployment guide
-- 📙 **[QUICK_START_NOW.md](QUICK_START_NOW.md)** - Quick start instructions
+- 📘 **[All Green Status](documentation/reports/ALL_GREEN_STATUS.md)** - Current status & quick commands
+- 📗 **[Deployment Ready](documentation/reports/DEPLOYMENT_READY.md)** - Complete deployment guide
+- 📙 **[Quick Start Guide](documentation/guides/quick-start.md)** - Quick start instructions
 
 ---
 
@@ -132,9 +132,9 @@ Spaktok is not just another social media app - it's a **revolutionary platform**
 - ⏳ Production Environment
 
 For detailed implementation status and architecture documentation, see:
-- **[Complete Success Report](COMPLETE_SUCCESS_REPORT.md)** - Full implementation details
-- **[Final Roadmap](FINAL_ROADMAP.md)** - Next steps and timeline
-- **[Backend Implementation Summary V2](BACKEND_IMPLEMENTATION_SUMMARY_V2.md)** - Technical architecture
+- **[Complete Success Report](documentation/reports/COMPLETE_SUCCESS_REPORT.md)** - Full implementation details
+- **[Final Roadmap](documentation/reports/FINAL_ROADMAP.md)** - Next steps and timeline
+- **[Backend Implementation Summary V2](documentation/reports/BACKEND_IMPLEMENTATION_SUMMARY_V2.md)** - Technical architecture
 
 ## 🚀 Getting Started
 
@@ -206,6 +206,27 @@ flutter run -d linux
 *   Implement proper internationalization using `AppLocalizations`.
 *   Further testing and optimization of all features.
 *   Deployment to production environments.
+
+## 📁 Project Organization
+
+This repository is organized for clarity and ease of navigation:
+
+- **`documentation/`** - All project documentation
+  - `guides/` - User guides and tutorials
+  - `reports/` - Status reports and summaries
+  - `security/` - Security documentation
+  - `legacy/` - Archived/deprecated documents
+- **`ops/`** - DevOps and operational files
+  - `scripts/` - Setup, deployment, and maintenance scripts
+  - `docker/` - Docker and container configurations
+  - `nginx/` - Web server configurations
+  - `artifacts/` - Build artifacts and generated files
+- **`lib/`** - Flutter application source code
+- **`functions/`** - Firebase Cloud Functions
+- **`backend/`** - Backend services
+- Root directory contains only essential build and configuration files
+
+See `documentation/README.md` and `ops/README.md` for detailed structure information.
 
 ## Contributing
 

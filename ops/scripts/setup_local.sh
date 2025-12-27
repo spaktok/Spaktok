@@ -130,7 +130,7 @@ clean_environment() {
     # Stop running containers
     if [ "$(docker ps -q -f name=spaktok)" ]; then
         info "Stopping running Spaktok containers..."
-        docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
+        docker-compose -f ops/docker/docker-compose.dev.yml down 2>/dev/null || true
     fi
     
     # Optional: Remove old images (uncomment if needed)
@@ -146,8 +146,8 @@ validate_configs() {
     log "Step 3/7: Validating configuration files..."
     
     local required_files=(
-        "Dockerfile.dev"
-        "docker-compose.dev.yml"
+        "ops/docker/Dockerfile.dev"
+        "ops/docker/docker-compose.dev.yml"
         "firebase.json"
         "pubspec.yaml"
         ".dockerignore"
@@ -172,7 +172,7 @@ build_images() {
     
     info "Building with layer caching enabled..."
     
-    if docker-compose -f docker-compose.dev.yml build --parallel 2>&1 | tee -a "$LOG_FILE"; then
+    if docker-compose -f ops/docker/docker-compose.dev.yml build --parallel 2>&1 | tee -a "$LOG_FILE"; then
         log "✅ Docker images built successfully"
     else
         error "Docker build failed! Check $LOG_FILE for details"
@@ -188,7 +188,7 @@ launch_services() {
     
     info "Starting containers in detached mode..."
     
-    if docker-compose -f docker-compose.dev.yml up -d 2>&1 | tee -a "$LOG_FILE"; then
+    if docker-compose -f ops/docker/docker-compose.dev.yml up -d 2>&1 | tee -a "$LOG_FILE"; then
         log "✅ Services launched successfully"
     else
         error "Failed to start services! Check $LOG_FILE for details"
@@ -256,10 +256,10 @@ Functions:            http://localhost:5001
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔧 Management Commands
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-View logs:       docker-compose -f docker-compose.dev.yml logs -f
-Stop services:   docker-compose -f docker-compose.dev.yml down
-Restart:         docker-compose -f docker-compose.dev.yml restart
-Rebuild:         docker-compose -f docker-compose.dev.yml build
+View logs:       docker-compose -f ops/docker/docker-compose.dev.yml logs -f
+Stop services:   docker-compose -f ops/docker/docker-compose.dev.yml down
+Restart:         docker-compose -f ops/docker/docker-compose.dev.yml restart
+Rebuild:         docker-compose -f ops/docker/docker-compose.dev.yml build
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Features Enabled
@@ -275,7 +275,7 @@ Rebuild:         docker-compose -f docker-compose.dev.yml build
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Code changes in ./lib, ./web, ./assets sync automatically
 - Firebase data persists in Docker volumes
-- For production deployment, use docker-compose.yml
+- For production deployment, use ops/docker/docker-compose.yml
 
 Full logs available in: $LOG_FILE
 
