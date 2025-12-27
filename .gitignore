@@ -74,6 +74,9 @@ cloudflare/workers/.dev.vars
 Spaktok/
 Spaktok/**
 
+# Flutter build artifacts (apps/ contains only generated ephemeral files)
+apps/
+
 # Flutter/Dart build artifacts and generated files
 .dart_tool/
 build/
