@@ -228,6 +228,8 @@ This repository is organized for clarity and ease of navigation:
 
 See `documentation/README.md` and `ops/README.md` for detailed structure information.
 
+**Note:** The repository was reorganized on December 27, 2025. See [Reorganization Summary](documentation/REORGANIZATION_SUMMARY.md) for details about what changed.
+
 ## Contributing
 
 We welcome contributions! Please read `CONTRIBUTING.md` for guidelines on how to contribute to this project.
