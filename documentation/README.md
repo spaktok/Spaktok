@@ -15,16 +15,16 @@ User-facing guides and tutorials:
 
 ### `/reports/`
 Project status reports and summaries:
-- `ALL_GREEN_STATUS.md` - Current project status
-- `COMPLETION_SUMMARY.md` - Feature completion summary
-- `DEPLOYMENT_READY.md` - Deployment readiness report
-- `FEATURES_STATUS.md` - Feature implementation status
-- `PROJECT_REMEDIATION_COMPLETE.md` - Project remediation report
-- `PROJECT_STATUS_FINAL.md` - Final project status
-- `INFRASTRUCTURE_SETUP_REPORT.md` - Infrastructure setup details
-- `INFRASTRUCTURE_COST_ANALYSIS.md` - Cost analysis
-- `ENGINEERING_REDESIGN_REPORT.md` - Engineering redesign report
-- `MISSING_FEATURES_PLAN.md` - Plan for missing features
+- **Active Reports:**
+  - `DEPLOYMENT_READY.md` - Deployment readiness report
+  - `FEATURES_STATUS.md` - Feature implementation status
+  - `INFRASTRUCTURE_SETUP_REPORT.md` - Infrastructure setup details
+  - `INFRASTRUCTURE_COST_ANALYSIS.md` - Cost analysis
+  - `ENGINEERING_REDESIGN_REPORT.md` - Engineering redesign report
+  - `MISSING_FEATURES_PLAN.md` - Plan for missing features
+- **Legacy Reports** (archived in `reports/legacy/`):
+  - Historical status snapshots from November 2025
+  - See `reports/legacy/README.md` for details
 
 ### `/security/`
 Security-related documentation:
@@ -37,7 +37,14 @@ Archived/legacy documentation files:
 - Original versions of merged documents
 - Deprecated guides
 
-### Existing Documentation
+### Root Documentation
+The following documents are in the root documentation directory:
+- `PROJECT_STATUS.md` - **Unified project status** (current state + historical timeline)
+- `REORGANIZATION_SUMMARY.md` - Repository reorganization details
+- `VERIFICATION_CHECKLIST.md` - Post-reorganization verification
+- `MAINTENANCE_REPORT.md` - Repository maintenance report
+
+### Architecture & Design
 The following design documents remain in this directory:
 - `Spaktok_Frontend_Development_Outline.md`
 - `Spaktok_Core_Architecture_Design.md`
@@ -49,6 +56,7 @@ The following design documents remain in this directory:
 ## Quick Links
 
 - **Getting Started**: See `guides/quick-start.md`
-- **Current Status**: See `reports/ALL_GREEN_STATUS.md`
+- **Current Status**: See `PROJECT_STATUS.md` (unified status document)
 - **Deployment**: See `reports/DEPLOYMENT_READY.md`
 - **Security**: See `security/` folder
+- **Historical Status**: See `reports/legacy/` for archived reports
