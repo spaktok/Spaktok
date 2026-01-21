@@ -29,6 +29,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.spaktok.android.features.camera.CameraViewModel
 import com.spaktok.android.data.repo.MediaRepositoryImpl
+import com.spaktok.android.data.repo.SessionRepositoryImpl
 import com.spaktok.android.network.OkHttpApiClient
 
 /**
@@ -44,6 +45,7 @@ fun CameraScreen() {
     val app = remember(context) { context.applicationContext as Application }
     val api = remember { OkHttpApiClient() }
     val repo = remember { MediaRepositoryImpl(api) }
+    val sessionRepo = remember { SessionRepositoryImpl(api) }
     val vm: CameraViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(CameraViewModel::class.java)) {
@@ -56,6 +58,13 @@ fun CameraScreen() {
 
     val state by vm.recordingState.collectAsState()
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
+    // Ensure backend session exists so uploads and token issuance succeed
+    LaunchedEffect(Unit) {
+        sessionRepo.ensureSession().onSuccess { token ->
+            api.setAuthToken(token)
+        }
+    }
 
     Box(
         modifier = Modifier
