@@ -1,31 +1,60 @@
-# Gradle
-.gradle/
-build/
+# Expo
+.expo/
+.expo-shared/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.next/
+.cache/
 
 # Android
 **/build/
 **/local.properties
 **/*.iml
+.gradle/
 
-# IntelliJ / Android Studio
-.idea/
+# iOS
+Pods/
+*.xcworkspace/
+*.xcodeproj/
+DerivedData/
 
-# VS Code
-.vscode/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Keystore
-*.jks
-*.keystore
-
-# Kotlin
-**/out/
-
-# NDK
-**/.cxx/
+# Temporary files
+*.tmp
+.turbo/
+dist/
