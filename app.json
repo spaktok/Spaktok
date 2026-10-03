@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "Spaktok",
+    "slug": "spaktok",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.spaktok.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Spaktok needs access to your camera to record videos and take photos",
+        "NSMicrophoneUsageDescription": "Spaktok needs access to your microphone for video and audio recording",
+        "NSPhotoLibraryUsageDescription": "Spaktok needs access to your photo library to upload videos and images",
+        "NSPhotoLibraryAddUsageDescription": "Spaktok needs permission to save photos and videos to your library"
+      },
+      "entitlements": {
+        "com.apple.developer.networking.multicast": true
+      }
+    },
+    "android": {
+      "package": "com.spaktok.app",
+      "minSdkVersion": 24,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "READ_CONTACTS",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Spaktok to access your camera"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Spaktok to access your photos",
+          "savePhotosPermission": "Allow Spaktok to save photos"
+        }
+      ],
+      [
+        "expo-file-system",
+        {
+          "documentsFolderType": "Documents"
+        }
+      ]
+    ],
+    "scheme": "spaktok",
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#FF6B6B"
+    }
+  }
+}
